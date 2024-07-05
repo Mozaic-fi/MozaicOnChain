@@ -14,7 +14,6 @@ const baseContract: OmniPointHardhat = {
 }
 const config: OAppOmniGraphHardhat = {
     contracts: [
-        //Mainnet
         {
             contract: arbitrumOneContract,
         },
@@ -23,7 +22,6 @@ const config: OAppOmniGraphHardhat = {
         }
     ],
     connections: [
-        //Mainnet
         {
             from: arbitrumOneContract,
             to: baseContract,

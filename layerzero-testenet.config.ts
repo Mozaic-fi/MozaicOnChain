@@ -21,7 +21,6 @@ const baseSepoliaContract: OmniPointHardhat = {
 
 const config: OAppOmniGraphHardhat = {
     contracts: [
-        //Testnet
         {
             contract: sepoliaContract,
         },
@@ -33,7 +32,6 @@ const config: OAppOmniGraphHardhat = {
         }
     ],
     connections: [
-        //Testnet
         {
             from: sepoliaContract,
             to: arbitrumSepoliaContract,

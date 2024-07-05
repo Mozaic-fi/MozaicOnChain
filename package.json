@@ -12,9 +12,29 @@
     "lint:fix": "eslint --fix '**/*.{js,ts,json}' && prettier --write . && solhint 'contracts/**/*.sol' --fix --noPrompt",
     "lint:js": "eslint '**/*.{js,ts,json}' && prettier --check .",
     "lint:sol": "solhint 'contracts/**/*.sol'",
+
+    "lz-config-testenet": "npx hardhat lz:oapp:wire --oapp-config layerzero-testenet.config.ts",
+    "lz-config-mainnet": "npx hardhat lz:oapp:wire --oapp-config layerzero-mainnet.config.ts",
+
     "test": "$npm_execpath run test:forge && $npm_execpath run test:hardhat",
     "test:forge": "forge test",
-    "test:hardhat": "hardhat test"
+    "test-lztransfer-arbitrumSepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network arbitrumSepolia",
+    "test-lztransfer-baseSepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network baseSepolia",
+    "test-lztransfer-sepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network sepolia",
+
+
+    "deploy-mozstaking-testnet": "npx hardhat deploy --tags MozStaking --network baseSepolia && npx hardhat deploy --tags MozStaking --network sepolia ",
+    "deploy-xmoz-testnet": "npx hardhat deploy --tags XMozToken --network baseSepolia && npx hardhat deploy --tags XMozToken --network sepolia",
+    "deploy-moz-testnet": "npx hardhat deploy --tags MozTokenAdapter --network arbitrumSepolia && npx hardhat deploy --tags MozToken --network baseSepolia && npx hardhat deploy --tags MozToken --network sepolia",
+    "init-mozstaking-testnet": "npx hardhat run scripts/InitMozStaking.ts --network baseSepolia && npx hardhat run scripts/InitMozStaking.ts --network sepolia",
+
+    
+    "deploy-mozstaking-base": "npx hardhat deploy --tags MozStaking --network base",
+    "deploy-xmoz-base": "npx hardhat deploy --tags XMozToken --network base",
+    "deploy-moz-base": "npx hardhat deploy --tags MozToken --network base",
+    "init-mozstaking-base": "npx hardhat run scripts/InitMozStaking.ts --network base",
+
+    "deploy-moz-arbitrum": "npx hardhat deploy --tags MozTokenAdapter --network arbitrumOne"
   },
   "resolutions": {
     "@nomicfoundation/edr": "0.3.5",
