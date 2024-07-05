@@ -1,32 +1,29 @@
-// Get the environment configuration from .env file
-//
-// To make use of automatic environment setup:
-// - Duplicate .env.example file and name it .env
-// - Fill in the environment variables
 import 'dotenv/config'
+
+import { HardhatUserConfig, HttpNetworkAccountsUserConfig } from 'hardhat/types'
 
 import 'hardhat-deploy'
 import 'hardhat-contract-sizer'
 import '@nomiclabs/hardhat-ethers'
 import '@layerzerolabs/toolbox-hardhat'
-import { HardhatUserConfig, HttpNetworkAccountsUserConfig } from 'hardhat/types'
+import '@nomicfoundation/hardhat-verify'
+
 
 import { EndpointId } from '@layerzerolabs/lz-definitions'
-
-// Set your preferred authentication method
-//
-// If you prefer using a mnemonic, set a MNEMONIC environment variable
-// to a valid mnemonic
-const MNEMONIC = process.env.MNEMONIC
 
 // If you prefer to be authenticated using a private key, set a PRIVATE_KEY environment variable
 const PRIVATE_KEY = process.env.PRIVATE_KEY
 
-const accounts: HttpNetworkAccountsUserConfig | undefined = MNEMONIC
-    ? { mnemonic: MNEMONIC }
-    : PRIVATE_KEY
-      ? [PRIVATE_KEY]
-      : undefined
+
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY
+
+const ARBISCAN_API_KEY = process.env.ARBISCAN_API_KEY
+const BASESCAN_API_KEY = process.env.BASESCAN_API_KEY
+const SEPOLIA_ARBISCAN_API_KEY = process.env.SEPOLIA_ARBISCAN_API_KEY
+const SEPOLIA_BASESCAN_API_KEY = process.env.SEPOLIA_BASESCAN_API_KEY
+const SEPOLIA_API_KEY = process.env.SEPOLIA_API_KEY
+
+const accounts: HttpNetworkAccountsUserConfig | undefined = [PRIVATE_KEY!]
 
 if (accounts == null) {
     console.warn(
@@ -49,20 +46,45 @@ const config: HardhatUserConfig = {
         ],
     },
     networks: {
+        arbitrumSepolia: {
+            eid: EndpointId.ARBSEP_V2_TESTNET,
+            url: `https://arb-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            chainId: 421614,
+            accounts: accounts,
+        },
+        baseSepolia: {
+            eid: EndpointId.BASESEP_V2_TESTNET,
+            url: `https://base-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            chainId: 84532,
+            accounts: accounts,
+        },
         sepolia: {
             eid: EndpointId.SEPOLIA_V2_TESTNET,
-            url: process.env.RPC_URL_SEPOLIA || 'https://rpc.sepolia.org/',
-            accounts,
+            url: `https://eth-sepolia.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            chainId: 11155111,
+            accounts: accounts,
         },
-        fuji: {
-            eid: EndpointId.AVALANCHE_V2_TESTNET,
-            url: process.env.RPC_URL_FUJI || 'https://rpc.ankr.com/avalanche_fuji',
-            accounts,
+        //Mainnet
+        arbitrumOne: {
+            eid: EndpointId.ARBITRUM_V2_MAINNET,
+            url: `https://arb-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            chainId: 42161,
+            accounts: accounts,
         },
-        amoy: {
-            eid: EndpointId.AMOY_V2_TESTNET,
-            url: process.env.RPC_URL_AMOY || 'https://polygon-amoy-bor-rpc.publicnode.com',
-            accounts,
+        base: {
+            eid: EndpointId.BASE_V2_MAINNET,
+            url: `https://base-mainnet.g.alchemy.com/v2/${ALCHEMY_API_KEY}`,
+            chainId: 8453,
+            accounts: accounts
+        },
+    },
+    etherscan: {
+        apiKey: {
+            arbitrumSepolia: SEPOLIA_ARBISCAN_API_KEY!,
+            baseSepolia: SEPOLIA_BASESCAN_API_KEY!,
+            sepolia: SEPOLIA_API_KEY!,
+            arbitrumOne: ARBISCAN_API_KEY!,
+            base: BASESCAN_API_KEY!,
         },
     },
     namedAccounts: {
