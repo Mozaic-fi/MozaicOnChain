@@ -1,0 +1,58 @@
+import { EndpointId } from '@layerzerolabs/lz-definitions'
+
+import type { OAppOmniGraphHardhat, OmniPointHardhat } from '@layerzerolabs/toolbox-hardhat'
+import { ExecutorOptionType } from '@layerzerolabs/lz-v2-utilities';
+
+const arbitrumOneContract: OmniPointHardhat = {
+    eid: EndpointId.ARBITRUM_V2_MAINNET,
+    contractName: 'MozTokenAdapter',
+}
+
+const baseContract: OmniPointHardhat = {
+    eid: EndpointId.BASE_V2_MAINNET,
+    contractName: 'MozToken',
+}
+const config: OAppOmniGraphHardhat = {
+    contracts: [
+        //Mainnet
+        {
+            contract: arbitrumOneContract,
+        },
+        {
+            contract: baseContract,
+        }
+    ],
+    connections: [
+        //Mainnet
+        {
+            from: arbitrumOneContract,
+            to: baseContract,
+            config:{
+                enforcedOptions:[
+                    {
+                        msgType: 1,
+                        optionType: ExecutorOptionType.LZ_RECEIVE,
+                        gas: 100000,
+                        value: 0,
+                    }
+                ]          
+            }
+        },
+        {
+            from: baseContract,
+            to: arbitrumOneContract,
+            config:{
+                enforcedOptions:[
+                    {
+                        msgType: 1,
+                        optionType: ExecutorOptionType.LZ_RECEIVE,
+                        gas: 100000,
+                        value: 0,
+                    }
+                ]          
+            }
+        },
+    ],
+}
+
+export default config
