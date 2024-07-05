@@ -3,12 +3,11 @@ import { expect } from 'chai'
 import { Contract, ContractFactory } from 'ethers'
 import { deployments, ethers } from 'hardhat'
 import {NetworkInfo, networkConfigs} from '../../../utils/networkConfigs'
-import { EndpointId } from '@layerzerolabs/lz-definitions'
 
 import { Options } from '@layerzerolabs/lz-v2-utilities'
 import { Deployment } from 'hardhat-deploy/types'
 
-const hre = require('hardhat');
+import hre from 'hardhat'
 
 describe('MozTransfer Test', function () {
     // Declaration of variables to be used in the test suite
