@@ -27,7 +27,7 @@
     "deploy-xmoz-testnet": "npx hardhat deploy --tags XMozToken --network baseSepolia && npx hardhat deploy --tags XMozToken --network sepolia",
     "deploy-moz-testnet": "npx hardhat deploy --tags MozTokenAdapter --network arbitrumSepolia && npx hardhat deploy --tags MozToken --network baseSepolia && npx hardhat deploy --tags MozToken --network sepolia",
     "init-mozstaking-testnet": "npx hardhat run tasks/InitializeMozStaking.ts --network baseSepolia && npx hardhat run tasks/InitializeMozStaking.ts --network sepolia",
-
+    "deploy-tokens-testnet": "yarn run deploy-mozstaking-testnet && yarn run deploy-xmoz-testnet && yarn run deploy-moz-testnet && yarn run init-mozstaking-testnet",
     
     "deploy-mozstaking-base": "npx hardhat deploy --tags MozStaking --network base",
     "deploy-xmoz-base": "npx hardhat deploy --tags XMozToken --network base",
