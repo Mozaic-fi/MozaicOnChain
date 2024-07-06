@@ -37,11 +37,20 @@ contract XMozTest is Test {
         assertFalse(xmoz.isTransferWhitelisted(whiteListedUser), "Address whitelisted");
     }
 
-    function testMintNoneStakingContract() public {
+    function testNoneStakingContract() public {
         vm.expectRevert("Invalid caller");
         xmoz.mint(100, noneWhiteListedUser);
         vm.expectRevert("Invalid caller");
         xmoz.burn(100, noneWhiteListedUser);
+    }
+
+    function testStakingContract() public{
+        vm.prank(mozStaking);
+        xmoz.mint(100, noneWhiteListedUser);
+        assertTrue(xmoz.balanceOf(noneWhiteListedUser) == 100, "Balance not updated");
+        vm.prank(mozStaking);
+        xmoz.burn(100, noneWhiteListedUser);
+        assertTrue(xmoz.balanceOf(noneWhiteListedUser) == 0, "Balance not updated");
     }
 
 
