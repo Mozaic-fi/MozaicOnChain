@@ -1,6 +1,8 @@
 import { networkConfigs, NetworkInfo } from "./networkConfigs";
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 
+import {cliConfirmation} from './cliUtils'
+
 export class DeploymentUtils {
     private hre: HardhatRuntimeEnvironment;
     private network: string;
@@ -23,6 +25,9 @@ export class DeploymentUtils {
         const { deployer } = await getNamedAccounts()
 
         console.log(`Deploying contract: ${this.contractName}, network: ${this.network} with args: ${this.constructorArgs}`)
+        if (!await cliConfirmation('Do you want to continue?')) {
+            throw new Error('User cancelled deployment')
+        }
 
         const { address } = await deploy(this.contractName, {
             from: deployer,
@@ -37,10 +42,18 @@ export class DeploymentUtils {
 
     async verifyContract() {
         console.log(`Verifying contract: ${this.contractAddress}`)
+        if (!await cliConfirmation('Do you want to continue?')) {
+            throw new Error('User cancelled verification')
+        }
         await this.hre.run('verify:verify', {
             address: this.contractAddress,
             constructorArguments: this.constructorArgs,
         })
         console.log(`Contract verified: ${this.contractAddress}`)
+    }
+
+    async deployAndVerifyContract() {
+        await this.deployContract()
+        await this.verifyContract()
     }
 }
