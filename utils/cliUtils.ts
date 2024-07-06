@@ -7,9 +7,10 @@ export function cliConfirmation(question: string): Promise<boolean> {
     });
 
     return new Promise((resolve) => {
-        rl.question(`${question} (Y/N): `, (answer) => {
+        rl.question(`${question} (Y/n): `, (answer) => {
             rl.close();
-            resolve(answer.trim().toLowerCase() === 'y');
+            const trimmedAnswer = answer.trim().toLowerCase();
+            resolve(trimmedAnswer === 'y' || trimmedAnswer === '');
         });
     });
 }
