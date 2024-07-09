@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
+
 import "../../interfaces/vaults/IPlugin.sol";
 import "../../interfaces/vaults/IVaultLocker.sol";
 import "../TokenPriceConsumer.sol";
@@ -636,24 +637,24 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
         require(success, "Vault: Failed to send Ether");
     }
 
-    function bridgeViaLifi(
-        address _srcToken,
-        uint256 _amount,
-        uint256 _value,
-        bytes calldata _data
-    ) external onlyMaster nonReentrant {
-        require(
-            address(LIFI_CONTRACT) != address(0),
-            "Lifi: zero address"
-        );
-        bool isNative = (_srcToken == address(0));
-        if (!isNative) {
-            IERC20(_srcToken).safeApprove(address(LIFI_CONTRACT), 0);
-            IERC20(_srcToken).safeApprove(address(LIFI_CONTRACT), _amount);
-        }
-        (bool success,) = LIFI_CONTRACT.call{value: _value}(_data);
-        require(success, "Lifi: call failed");
-    }
+    // function bridgeViaLifi(
+    //     address _srcToken,
+    //     uint256 _amount,
+    //     uint256 _value,
+    //     bytes calldata _data
+    // ) external onlyMaster nonReentrant {
+    //     require(
+    //         address(LIFI_CONTRACT) != address(0),
+    //         "Lifi: zero address"
+    //     );
+    //     bool isNative = (_srcToken == address(0));
+    //     if (!isNative) {
+    //         IERC20(_srcToken).safeApprove(address(LIFI_CONTRACT), 0);
+    //         IERC20(_srcToken).safeApprove(address(LIFI_CONTRACT), _amount);
+    //     }
+    //     (bool success,) = LIFI_CONTRACT.call{value: _value}(_data);
+    //     require(success, "Lifi: call failed");
+    // }
 
     /* ========== VIEW FUNCTIONS ========== */
 
