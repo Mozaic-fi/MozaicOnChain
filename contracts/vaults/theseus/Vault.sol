@@ -427,12 +427,12 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
                 // Execute the specified action on the plugin with the provided payload.
                 IPlugin(plugin).execute(IPlugin.ActionType.Stake, payload);
                 
+                emit StakeToSelectedPool(selectedPluginId, selectedPoolId, _token, _tokenAmount);
                 // Exit the function after successfully staking the token.
                 return;
             }
-        }
-
-        emit StakeToSelectedPool(selectedPluginId, selectedPoolId, _token, _tokenAmount);
+        }     
+        revert("Vault: deposit token not in allowedTokens");
     }
 
     // Function to add a withdrawal request for a specified LP token amount from a selected pool using a specified plugin.
