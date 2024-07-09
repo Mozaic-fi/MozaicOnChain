@@ -5,8 +5,8 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-import { IMozToken } from "../interfaces/IMozToken.sol";
-import { IXMozToken } from "../interfaces/IXMozToken.sol";
+import { IMozToken } from "../interfaces/tokens/IMozToken.sol";
+import { IXMozToken } from "../interfaces/tokens/IXMozToken.sol";
 
 /*
  * MozStaking is Mozaic's escrowed governance token obtainable by converting MOZ to it

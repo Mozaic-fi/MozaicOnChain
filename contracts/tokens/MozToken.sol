@@ -6,7 +6,7 @@ import { OFT } from "@layerzerolabs/lz-evm-oapp-v2/contracts/oft/OFT.sol";
 import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import { IMozToken } from "../interfaces/IMozToken.sol";
+import { IMozToken } from "../interfaces/tokens/IMozToken.sol";
 
 contract MozToken is IMozToken, OFT {
 	using SafeERC20 for IERC20;

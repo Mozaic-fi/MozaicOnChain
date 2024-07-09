@@ -5,7 +5,7 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import { ERC20 } from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-import { IXMozToken } from "../interfaces/IXMozToken.sol";
+import { IXMozToken } from "../interfaces/tokens/IXMozToken.sol";
 
 contract XMozToken is IXMozToken, ERC20, Ownable {
     using EnumerableSet for EnumerableSet.AddressSet;
