@@ -64,9 +64,6 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     }
 
     /* ========== STATE VARIABLES ========== */
-    // Address of the master contract, controlling the overall functionality.
-    address public master;
-
     // Address of the local vault associated with the smart contract.
     address public localVault;
 
@@ -96,7 +93,6 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     mapping(address => uint256) public decimals;
 
     /* ========== EVENTS ========== */
-    event SetMaster(address master);
     event PoolAdded(uint8 poolId);
     event PoolRemoved(uint8 poolId);
     event SetTreasury(address payable treasury);
@@ -123,16 +119,6 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         require(_localVault != address(0), "GMX: Invalid Address");
         // Set the localVault address.
         localVault = _localVault;
-    }
-
-    // Function allowing the owner to set the address of the master contract.
-    function setMaster(address _master) public onlyOwner {
-        // Ensure the provided master address is valid.
-        require(_master != address(0), "GMX: Invalid Address");
-        // Set the master address.
-        master = _master;
-        // Emit an event signaling the master address update.
-        emit SetMaster(_master);
     }
 
     // Function allowing the owner to set the treasury address.
