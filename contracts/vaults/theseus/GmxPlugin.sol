@@ -91,6 +91,10 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     // Address of the token price consumer contract used for obtaining token prices.
     address public tokenPriceConsumer;
 
+
+    //Mapping of a token decimals for GMX none contract index token addresses
+    mapping(address => uint256) public decimals;
+
     /* ========== EVENTS ========== */
     event SetMaster(address master);
     event PoolAdded(uint8 poolId);
@@ -190,6 +194,20 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
             shouldUnwrapNativeToken: _shouldUnwrapNativeToken
         });
     }
+
+    //Function to set the token price consumer contract addresses based on provided values from GMX API
+    function setDecimals(address token, uint256 decimal) external onlyOwner {
+        decimals[token] = decimal;
+    }
+
+    //Function to batch set the token price consumer contract addresses based on provided values from GMX API
+    function setDecimalsBatch(address[] calldata tokens, uint256[] calldata newDecimals) external onlyOwner {
+    require(tokens.length == newDecimals.length, "Arrays must have the same length");
+    for (uint256 i = 0; i < tokens.length; i++) {
+        decimals[tokens[i]] = newDecimals[i];
+    }
+}
+
 
     // Function allowing the owner to set the token price consumer contract address.
     function setTokenPriceConsumer(address _tokenPriceConsumer) public onlyOwner {
@@ -728,12 +746,17 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         // Create an instance of TokenPriceConsumer for fetching token prices
         TokenPriceConsumer priceConsumer = TokenPriceConsumer(tokenPriceConsumer);
 
-        uint256 tokenDecimal = IERC20Metadata(token).decimals();
+        uint256 tokenDecimal = getIndexTokenDecimal(token);
         IPrice.Props memory tokenPrice = IPrice.Props(
             convertDecimals(priceConsumer.getTokenPrice(token), priceConsumer.decimals(token), MARKET_TOKEN_PRICE_DECIMALS - tokenDecimal),
             convertDecimals(priceConsumer.getTokenPrice(token), priceConsumer.decimals(token), MARKET_TOKEN_PRICE_DECIMALS - tokenDecimal)
         );
         return tokenPrice;
+    }
+
+    function getIndexTokenDecimal(address token) internal view returns (uint256) {
+        if(isContract(token)) return IERC20Metadata(token).decimals();
+        else return decimals[token];
     }
 
     // Retrieves the long and short tokens allowed in a pool.
@@ -809,5 +832,12 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         require(treasury != address(0), "Vault: Invalid treasury");
         (bool success, ) = treasury.call{value: _amount}("");
         require(success, "Vault: Failed to send Ether");
+    }
+
+
+    function isContract(address account) internal view returns (bool) {
+        uint256 size;
+        assembly { size := extcodesize(account) }
+        return size > 0;
     }
 }
