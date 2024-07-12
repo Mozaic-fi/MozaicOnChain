@@ -1,5 +1,6 @@
 import { ethers  } from 'hardhat'
 import {networkConfigs} from '../utils/networkConfigs'
+import { contractNames } from '../utils/contractNames'
 
 import hre from 'hardhat';
 
@@ -11,13 +12,13 @@ async function main() {
     const signer = (await ethers.getSigners())[0]
     const networkConfig = networkConfigs.get(hre.network.name)
     
-    if(networkConfig?.requireAdapter){
+    if(networkConfig?.tokensInfo?.requireAdapter){
         return
     }
     else {
-        const mozStaking = 'MozStaking'
-        const xMozToken = 'XMozToken'
-        const mozToken = 'MozToken'
+        const mozStaking = contractNames.Tokens.MozStaking
+        const xMozToken = contractNames.Tokens.XMozToken
+        const mozToken = contractNames.Tokens.MozToken
 
         const mozStakingDeploymentAdress = (await deployments.get(mozStaking)).address
         const xMozDeploymentAdress = (await deployments.get(xMozToken)).address

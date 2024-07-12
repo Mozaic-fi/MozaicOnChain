@@ -1,22 +1,24 @@
 import { EndpointId } from '@layerzerolabs/lz-definitions'
+import { contractNames } from './utils/contractNames'
+
 import type { OAppOmniGraphHardhat, OmniPointHardhat } from '@layerzerolabs/toolbox-hardhat'
 import { ExecutorOptionType } from '@layerzerolabs/lz-v2-utilities';
 
 //Testnet
 const sepoliaContract: OmniPointHardhat = {
     eid: EndpointId.SEPOLIA_V2_TESTNET,
-    contractName: 'MozToken',
+    contractName: contractNames.Tokens.MozToken,
 }
 
 const arbitrumSepoliaContract: OmniPointHardhat = {
     eid: EndpointId.ARBSEP_V2_TESTNET,
-    contractName: 'MozTokenAdapter',
+    contractName: contractNames.Tokens.MozTokenAdapter,
     
 }
 
 const baseSepoliaContract: OmniPointHardhat = {
     eid: EndpointId.BASESEP_V2_TESTNET,
-    contractName: 'MozToken'
+    contractName: contractNames.Tokens.MozToken
 }
 
 const config: OAppOmniGraphHardhat = {
