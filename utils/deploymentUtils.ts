@@ -8,7 +8,7 @@ export class DeploymentUtils {
     private network: string;
     private networkConfig: NetworkInfo;
     private contractName: string;
-    private contractAddress: string = ''
+    private _contractAddress: string = ''
     private constructorArgs: any[]
     constructor(hre: HardhatRuntimeEnvironment, contractName: string, constructorArgs: any[]) {
         this.hre = hre;
@@ -35,25 +35,34 @@ export class DeploymentUtils {
             log: true,
             skipIfAlreadyDeployed: false,
         })
-        this.contractAddress = address; 
+        this._contractAddress = address; 
         console.log(`Deployed contract: ${this.contractName}, network: ${this.network}, address: ${address}`)
         return address;
     }
 
     async verifyContract() {
-        console.log(`Verifying contract: ${this.contractAddress}`)
+        console.log(`Verifying contract: ${this._contractAddress}`)
         if (!await cliConfirmation('Do you want to continue?')) {
             throw new Error('User cancelled verification')
         }
         await this.hre.run('verify:verify', {
-            address: this.contractAddress,
+            address: this._contractAddress,
             constructorArguments: this.constructorArgs,
         })
-        console.log(`Contract verified: ${this.contractAddress}`)
+        console.log(`Contract verified: ${this._contractAddress}`)
     }
 
     async deployAndVerifyContract() {
         await this.deployContract()
         await this.verifyContract()
+    }
+
+    public get contractAddress(): string {
+        return this._contractAddress
+    }
+
+    async getDeployedContract() {
+        const signer = (await this.hre.ethers.getSigners())[0]
+        return await this.hre.ethers.getContractAt(this.contractName, this._contractAddress, signer)
     }
 }

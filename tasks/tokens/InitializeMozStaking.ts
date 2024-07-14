@@ -1,7 +1,7 @@
 import { ethers  } from 'hardhat'
-import {networkConfigs} from '../utils/networkConfigs'
-import { contractNames } from '../utils/names/contractNames'
-import {cliConfirmation} from '../utils/cliUtils'
+import {networkConfigs} from '../../utils/networkConfigs'
+import { contractNames } from '../../utils/names/contractNames'
+import {cliConfirmation} from '../../utils/cliUtils'
 
 import hre from 'hardhat';
 
