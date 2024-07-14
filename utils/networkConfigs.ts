@@ -1,6 +1,6 @@
-import { networkNames } from './networkNames'
+import { networkNames } from './names/networkNames'
 import { vaultPlugin } from './vaultPlugins'
-import { pluginNames } from './pluginNames'
+import { pluginNames } from './names/pluginNames'
 import { arbitrumOneGMXVaultTokens, arbitrumSepoliaGMXVaultTokens } from './vaultTokens'
 export type LZInfo = {
     layerZeroEndpointV2: string

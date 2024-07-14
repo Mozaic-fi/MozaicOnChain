@@ -1,8 +1,8 @@
 import {networkConfigs} from '../../utils/networkConfigs'
-import { networkNames } from '../../utils/networkNames'
-import { pluginNames } from '../../utils/pluginNames'
+import { networkNames } from '../../utils/names/networkNames'
+import { pluginNames } from '../../utils/names/pluginNames'
 import {DeploymentUtils} from '../../utils/deploymentUtils'
-import { contractNames } from '../../utils/contractNames'
+import { contractNames } from '../../utils/names/contractNames'
 
 import { type DeployFunction } from 'hardhat-deploy/types'
 

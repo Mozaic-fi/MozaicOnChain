@@ -1,6 +1,6 @@
 import {networkConfigs} from '../../utils/networkConfigs'
 import {DeploymentUtils} from '../../utils/deploymentUtils'
-import { contractNames } from '../../utils/contractNames'
+import { contractNames } from '../../utils/names/contractNames'
 
 import { type DeployFunction } from 'hardhat-deploy/types'
 

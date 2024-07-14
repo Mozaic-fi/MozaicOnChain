@@ -1,5 +1,5 @@
-import { networkNames } from './networkNames'
-import { pluginNames } from './pluginNames'
+import { networkNames } from './names/networkNames'
+import { pluginNames } from './names/pluginNames'
 export type vaultToken= {
     address: string
     decimals?: number
