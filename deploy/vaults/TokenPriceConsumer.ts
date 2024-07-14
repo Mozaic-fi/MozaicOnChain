@@ -1,5 +1,6 @@
-import {networkConfigs, networkNames} from '../../utils/networkConfigs'
-import {pluginNames} from '../../utils/vaultPlugins'
+import {networkConfigs} from '../../utils/networkConfigs'
+import { networkNames } from '../../utils/networkNames'
+import { pluginNames } from '../../utils/pluginNames'
 import {DeploymentUtils} from '../../utils/deploymentUtils'
 import { contractNames } from '../../utils/contractNames'
 

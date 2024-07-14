@@ -1,8 +1,5 @@
 import { vaultToken } from './vaultTokens'
 
-export const pluginNames = {
-    gmx : {name :'gmx', id: 1}
-}
 export type vaultPlugin = {
     pluginId: number
     pluginName: string

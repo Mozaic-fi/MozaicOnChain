@@ -1,4 +1,6 @@
-import { vaultPlugin, pluginNames } from './vaultPlugins'
+import { networkNames } from './networkNames'
+import { vaultPlugin } from './vaultPlugins'
+import { pluginNames } from './pluginNames'
 import { arbitrumOneGMXVaultTokens, arbitrumSepoliaGMXVaultTokens } from './vaultTokens'
 export type LZInfo = {
     layerZeroEndpointV2: string
@@ -33,13 +35,6 @@ export type NetworkInfo = {
     testNet: boolean
 }
 
-export enum networkNames {
-    arbitrumSepolia = 'arbitrumSepolia',
-    baseSepolia = 'baseSepolia',
-    sepolia = 'sepolia',
-    arbitrumOne = 'arbitrumOne',
-    base = 'base'
-}
 export const networkConfigs = new Map<string, NetworkInfo>([
     [
         networkNames.arbitrumSepolia,
