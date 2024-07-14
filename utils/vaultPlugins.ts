@@ -14,5 +14,6 @@ export interface  gmxPluginInfo extends  vaultPlugin {
 }
 
 
-export interface  uniswapPluginInfo extends  vaultPlugin {
+export interface  mockPluginInfo extends  vaultPlugin {
+    mockAddress: string
 }

@@ -1,5 +1,5 @@
 import { networkNames } from './names/networkNames'
-import { vaultPlugin, gmxPluginInfo, uniswapPluginInfo as mockPluginInfo } from './vaultPlugins'
+import { vaultPlugin, gmxPluginInfo, mockPluginInfo } from './vaultPlugins'
 import { pluginNames } from './names/pluginNames'
 import { arbitrumOneGMXVaultTokens, arbitrumSepoliaGMXVaultTokens } from './vaultTokens'
 export type LZInfo = {
@@ -67,7 +67,10 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                             pluginId: pluginNames.gmx.id,
                             pluginName: pluginNames.gmx.name,
                             tokens: arbitrumSepoliaGMXVaultTokens,
-                            depositHandlerAddress: '0x'
+                            depositHandlerAddress: '0x',
+                            exchangeRouterAddress: '0x',
+                            orderHandlerAddress: '0x',
+                            withdrawHandlerAddress: '0x'
                         } as gmxPluginInfo
                     ],
                     [
@@ -75,7 +78,8 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                         {
                             pluginId: -1,
                             pluginName: 'mock',
-                            tokens: []
+                            tokens: [],
+                            mockAddress: '0x'
                         } as mockPluginInfo
                     ]
                 ]),

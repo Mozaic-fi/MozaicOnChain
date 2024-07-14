@@ -1,5 +1,5 @@
 import { EndpointId } from '@layerzerolabs/lz-definitions'
-import { contractNames } from './utils/contractNames'
+import { contractNames } from './utils/names/contractNames'
 
 import type { OAppOmniGraphHardhat, OmniPointHardhat } from '@layerzerolabs/toolbox-hardhat'
 import { ExecutorOptionType } from '@layerzerolabs/lz-v2-utilities';
