@@ -1,15 +1,18 @@
 import { vaultToken } from './vaultTokens'
 
-export type vaultPlugin = {
+export interface vaultPlugin {
     pluginId: number
     pluginName: string
     tokens: vaultToken[]
 
 }
-export type gmxPluginInfo = vaultPlugin & {
+export interface  gmxPluginInfo extends  vaultPlugin {
     depositHandlerAddress: string
     withdrawHandlerAddress: string
     orderHandlerAddress: string
     exchangeRouterAddress: string
 }
 
+
+export interface  uniswapPluginInfo extends  vaultPlugin {
+}
