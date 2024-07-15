@@ -10,21 +10,26 @@ import hre from 'hardhat';
 
 export const main = async () => {
     const { deployments } = hre
-    const contractName = contractNames.Vaults.Theseus.GmxCallback
+    const contractName = contractNames.Vaults.Theseus.GmxPlugin
     console.log(`Initializing ${contractName} on ${hre.network.name}`)
 
     const signer = (await ethers.getSigners())[0]
     const networkConfig = networkConfigs.get(hre.network.name)
     
     const contractDeploymentAddress = (await deployments.get(contractName)).address
-    const vaultInfo = networkConfig?.theseusVaultInfo?.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
+
+    const vaultInfo = networkConfig?.theseusVaultInfo!
+    const vpi = vaultInfo.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
+
 
     const contractUtil = new ContractUtils(hre, contractName, [], true, contractDeploymentAddress)
 
-    const functionNames = ['depositHandler', 'withdrawalHandler' , 'orderHandler']  
-    const values = [vaultInfo.handlerInfo.depositHandlerAddress, vaultInfo.handlerInfo.withdrawHandlerAddress, vaultInfo.handlerInfo.orderHandlerAddress]
+    await contractUtil.setContractConfigValues('setTreasury', ['treasury'], [vaultInfo.treasuryAddress])
+    await contractUtil.setContractConfigValuesStruct('setRouterConfig', 'routerConfig',
+        ['exchangeRouter', 'router', 'depositVault', 'withdrawVault', 'orderVault', 'reader'], 
+        [vpi.vaultInfo.exchangeRouterAddress, vpi.vaultInfo.routerAddress, vpi.vaultInfo.depositVaultAddress, vpi.vaultInfo.withdrawVaultAddress, vpi.vaultInfo.orderVaultAddress, vpi.vaultInfo.readerAddress])
 
-    await contractUtil.setContractConfigValues('setHandler',functionNames, values)
+    const callBackContractAddress = (await deployments.get(contractNames.Vaults.Theseus.GmxCallback)).address
 }
 
 main()

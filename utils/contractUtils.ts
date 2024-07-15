@@ -89,7 +89,7 @@ export class ContractUtils {
         return await this.hre.ethers.getContractAt(this.contractName, this._contractAddress, signer)
     }
 
-    async setContractConfigValues(functionName: string, prevValuesFunctionName: string[], args: any[]) {
+    async setContractConfigValues(functionName: string, prevValuesFunctionNames: string[], args: any[]) {
         console.log(`Setting contract values for function: ${functionName}`)
         const contract = await this.getDeployedContract()
         if (typeof contract[functionName] !== "function") {
@@ -97,20 +97,73 @@ export class ContractUtils {
             process.exit(1);
         }
 
-        if(prevValuesFunctionName.length !== 0) {
-            if(prevValuesFunctionName.length!=args.length){
+        if(prevValuesFunctionNames.length !== 0) {
+            if(prevValuesFunctionNames.length!=args.length){
                 console.error(`Wrong number of arguments for the function`);
                 process.exit(1);
             }
-            for (const prevValueFunctionName of prevValuesFunctionName) {
+            for (const prevValueFunctionName of prevValuesFunctionNames) {
                 if (typeof contract[prevValueFunctionName] !== "function") {
                     console.error(`Function ${prevValueFunctionName} does not exist on the ${this.contractName} contract.`);
                     process.exit(1);
                 }
             }
             let prevValues = new Map<string, any[]>();
-            for (let i = 0; i < prevValuesFunctionName.length; i++) {
-                prevValues.set(prevValuesFunctionName[i], [await contract[prevValuesFunctionName[i]](), args[i]]);
+            for (let i = 0; i < prevValuesFunctionNames.length; i++) {
+                prevValues.set(prevValuesFunctionNames[i], [await contract[prevValuesFunctionNames[i]](), args[i]]);
+            }
+
+            let updateRequired = false;
+            for (const [key, value] of prevValues) {
+                if (value[0] != value[1]) {
+                    updateRequired = true;
+                    break;
+                }
+            }
+            if (!updateRequired) {
+                console.log(`No changes detected in the values of the contract variables`);
+                for (const [key, value] of prevValues) {
+                    console.log(`${key}: ${value[0]}`);
+                }
+                return;
+            }
+            for (const [key, value] of prevValues) {
+                console.log(`Updating ${key}: from ${value[0]} to ${value[1]}`);
+            }
+        }
+        console.log(`Calling function: ${functionName} with args: ${args}`)
+        if (!await cliConfirmation('Do you want to continue?', this.getCLIConfirmation)) {
+            throw new Error('User cancelled function call')
+        }
+        const result = await contract[functionName](...args)
+        console.log(`Function: ${functionName} result: ${result}`)
+        return result
+    }
+
+
+    async setContractConfigValuesStruct(functionName: string, prevValuesFunctionName: string, propertyNames: string[], args: any[]) {
+        console.log(`Setting contract values for function: ${functionName}`)
+        const contract = await this.getDeployedContract()
+        if (typeof contract[functionName] !== "function") {
+            console.error(`Function ${functionName} does not exist on the ${this.contractName} contract.`);
+            process.exit(1);
+        }
+
+        if(prevValuesFunctionName) {
+            if(propertyNames.length!=args.length){
+                console.error(`Wrong number of arguments for the function`);
+                process.exit(1);
+            }
+
+            if (typeof contract[prevValuesFunctionName] !== "function") {
+                console.error(`Function ${prevValuesFunctionName} does not exist on the ${this.contractName} contract.`);
+                process.exit(1);
+            }
+            
+            let prevValues = new Map<string, any[]>();
+            const prevValueStruct = await contract[prevValuesFunctionName]();
+            for (let i = 0; i < propertyNames.length; i++) {
+                prevValues.set(propertyNames[i], [prevValueStruct[propertyNames[i]], args[i]]);
             }
 
             let updateRequired = false;

@@ -1,5 +1,7 @@
 import { networkNames } from './names/networkNames'
-import { vaultPlugin, gmxPluginInfo, mockPluginInfo } from './vaultPlugins'
+import { gmxPluginInfo } from './vaultPlugins/gmxVaultPlugins'
+import { vaultPlugin } from './vaultPlugins/baseVaultPlugins'
+import { mockPluginInfo } from './vaultPlugins/mockVaultPlugins'
 import { pluginNames } from './names/pluginNames'
 import { arbitrumOneGMXVaultTokens, arbitrumSepoliaGMXVaultTokens } from './vaultTokens'
 export type LZInfo = {
@@ -67,15 +69,19 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                             pluginId: pluginNames.gmx.id,
                             pluginName: pluginNames.gmx.name,
                             tokens: arbitrumSepoliaGMXVaultTokens,
-                            depositHandlerAddress: '0x',
-                            exchangeRouterAddress: '0x',
-                            orderHandlerAddress: '0x',
-                            withdrawHandlerAddress: '0x',
-                            routerAddress: '0x',
-                            depositVaultAddress: '0x',
-                            orderVaultAddress: '0x',
-                            withdrawVaultAddress: '0x',
-                            readerAddress: '0x'                         
+                            handlerInfo:{
+                                depositHandlerAddress: '0x',
+                                orderHandlerAddress: '0x',
+                                withdrawHandlerAddress: '0x',
+                            },
+                            vaultInfo:{
+                                exchangeRouterAddress: '0x',
+                                routerAddress: '0x',
+                                depositVaultAddress: '0x',
+                                orderVaultAddress: '0x',
+                                withdrawVaultAddress: '0x',
+                                readerAddress: '0x'   
+                            }                      
                         } as gmxPluginInfo
                     ],
                     [

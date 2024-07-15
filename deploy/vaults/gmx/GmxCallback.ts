@@ -2,7 +2,7 @@ import {networkConfigs} from '../../../utils/networkConfigs'
 import {ContractUtils} from '../../../utils/contractUtils'
 import { contractNames } from '../../../utils/names/contractNames'
 import { pluginNames } from '../../../utils/names/pluginNames'
-import { gmxPluginInfo } from '../../../utils/vaultPlugins'
+import { gmxPluginInfo } from '../../../utils/vaultPlugins/gmxVaultPlugins'
 
 import { type DeployFunction } from 'hardhat-deploy/types'
 
@@ -19,10 +19,6 @@ const deploy: DeployFunction = async (hre) => {
     const deployer = new ContractUtils(hre, contractName, constructorArgs)
 
     await deployer.deployAndVerifyContract()
-
-    
-    const vaultInfo = networkConfig?.theseusVaultInfo?.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
-    await deployer.setContractConfigValues('setHandler', [], [vaultInfo.depositHandlerAddress, vaultInfo.withdrawHandlerAddress, vaultInfo.orderHandlerAddress])
 }
 
 deploy.tags = [contractName]
