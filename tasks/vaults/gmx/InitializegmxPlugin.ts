@@ -5,31 +5,38 @@ import {cliConfirmation} from '../../../utils/cliUtils'
 import { pluginNames } from '../../../utils/names/pluginNames'
 import { gmxPluginInfo } from '../../../utils/vaultPlugins/gmxVaultPlugins'
 import { ContractUtils } from '../../../utils/contractUtils'
+import { TaskManagerUtils } from '../../../utils/taskManagerUtils'
 
 import hre from 'hardhat';
 
 export const main = async () => {
-    const { deployments } = hre
     const contractName = contractNames.Vaults.Theseus.GmxPlugin
-    console.log(`Initializing ${contractName} on ${hre.network.name}`)
-
-    const signer = (await ethers.getSigners())[0]
-    const networkConfig = networkConfigs.get(hre.network.name)
     
-    const contractDeploymentAddress = (await deployments.get(contractName)).address
+    const taskManager = new TaskManagerUtils(hre, contractName, [contractNames.Vaults.Theseus.GmxCallback])
+    taskManager.registerInitCallback(async( hre, contractName, deployments, signer, contractAddress, networkConfig,  dependencies, data) => {
+        console.log(`Initializing ${contractName} on ${hre.network.name}`)
+        data.vaultInfo = networkConfig?.theseusVaultInfo!
+        data.vpi = data.vaultInfo.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
+        data.contractUtil = new ContractUtils(hre, contractName, [], true, contractAddress)
+    })
 
-    const vaultInfo = networkConfig?.theseusVaultInfo!
-    const vpi = vaultInfo.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
+    taskManager.registerFinalizeCallback(async( hre, contractName, deployments, signer, contractAddress, networkConfig,  dependencies, data) => {
+        console.log(`Finalizing ${contractName} on ${hre.network.name}`)
+    });
 
+    taskManager.registerTask('setTreasury', async( hre, contractName, deployments, signer, contractAddress, networkConfig,  dependencies, data) => {
+        await data.contractUtil.setContractConfigValues('setTreasury', ['treasury'], [data.vaultInfo.treasuryAddress])
+    });
+   
+    taskManager.registerTask('setRouterConfig', async( hre, contractName, deployments, signer, contractAddress, networkConfig,  dependencies, data) => {
+        await data.contractUtil.setContractConfigValuesStruct('setRouterConfig', 'routerConfig',
+            ['exchangeRouter', 'router', 'depositVault', 'withdrawVault', 'orderVault', 'reader'], 
+            [data.vpi.vaultInfo.exchangeRouterAddress, data.vpi.vaultInfo.routerAddress, data.vpi.vaultInfo.depositVaultAddress, data.vpi.vaultInfo.withdrawVaultAddress, data.vpi.vaultInfo.orderVaultAddress, data.vpi.vaultInfo.readerAddress])
+    });
 
-    const contractUtil = new ContractUtils(hre, contractName, [], true, contractDeploymentAddress)
-
-    await contractUtil.setContractConfigValues('setTreasury', ['treasury'], [vaultInfo.treasuryAddress])
-    await contractUtil.setContractConfigValuesStruct('setRouterConfig', 'routerConfig',
-        ['exchangeRouter', 'router', 'depositVault', 'withdrawVault', 'orderVault', 'reader'], 
-        [vpi.vaultInfo.exchangeRouterAddress, vpi.vaultInfo.routerAddress, vpi.vaultInfo.depositVaultAddress, vpi.vaultInfo.withdrawVaultAddress, vpi.vaultInfo.orderVaultAddress, vpi.vaultInfo.readerAddress])
-
-    const callBackContractAddress = (await deployments.get(contractNames.Vaults.Theseus.GmxCallback)).address
+    taskManager.registerTask('setGmxParams', async( hre, contractName, deployments, signer, contractAddress, networkConfig,  dependencies, data) => {
+        const callBackContractAddress = (await deployments.get(contractNames.Vaults.Theseus.GmxCallback)).address
+    });
 }
 
 main()

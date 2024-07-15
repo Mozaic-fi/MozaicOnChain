@@ -4,11 +4,11 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "yarn run clean && npx tsc --noEmit",
     "clean": "rm -rf artifacts cache out && npx hardhat clean",
     "compile": "$npm_execpath run compile:forge && $npm_execpath run compile:hardhat",
     "compile:forge": "forge build",
     "compile:hardhat": "hardhat compile",
+    "build": "yarn run clean && npx tsc --noEmit && yarn run compile:hardhat",
     "lint": "$npm_execpath run lint:js && $npm_execpath run lint:sol",
     "lint:fix": "eslint --fix '**/*.{js,ts,json}' && prettier --write . && solhint 'contracts/**/*.sol' --fix --noPrompt",
     "lint:js": "eslint '**/*.{js,ts,json}' && prettier --check .",

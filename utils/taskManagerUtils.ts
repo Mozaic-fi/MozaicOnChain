@@ -5,7 +5,7 @@ import {cliConfirmation} from './cliUtils'
 
 import * as readline from 'readline';
 
-type TaskCallback = (hre: HardhatRuntimeEnvironment, contractName: string, deployments: any, signer: string, contractAddress: string, networkConfig: NetworkInfo) => Promise<void>;
+type TaskCallback = (hre: HardhatRuntimeEnvironment, contractName: string, deployments: any, signer: string, contractAddress: string, networkConfig: NetworkInfo, dependencies: Map<string,string>, data: any) => Promise<void>;
 
 export class TaskManagerUtils {
     private initCallback: TaskCallback | null = null;
@@ -17,7 +17,9 @@ export class TaskManagerUtils {
     private signer: string;
     private mainContractDeploymentAddress: string;
     private networkConfig: NetworkInfo;
-    constructor(hre: HardhatRuntimeEnvironment, contractName: string) {
+    private dependencies: Map<string,string>;
+    private deploymentData: any;
+    constructor(hre: HardhatRuntimeEnvironment, contractName: string, dependencies: string[]) {
         this.hardhatRuntimeEnvironment = hre;
         this.contractName = contractName;
         const { deployments } = this.hardhatRuntimeEnvironment;
@@ -25,6 +27,31 @@ export class TaskManagerUtils {
         this.signer = '';
         this.mainContractDeploymentAddress = '';
         this.networkConfig = networkConfigs.get(hre.network.name)!;
+        this.dependencies = dependencies.map(dep => [dep, '']).reduce((acc, [key, value]) => acc.set(key, value), new Map<string, string>());
+        this.deploymentData = {};
+    }
+
+    async checkDependencies(): Promise<void> {
+        try{
+            this.mainContractDeploymentAddress = (await this.deploymentExtension.get(this.contractName)).address          
+        } catch (error) {
+            console.log(`Contract ${this.contractName} not found in deployments on ${this.hardhatRuntimeEnvironment.network.name}`);
+            throw error;
+        }
+        for (const [contractName, deploymentName] of this.dependencies) {
+            try {
+                const deployment = await this.deploymentExtension.get(contractName);
+                this.dependencies.set(contractName, deployment.address);
+            } catch (error) {
+                console.log(`Contract ${contractName} not found in deployments on ${this.hardhatRuntimeEnvironment.network.name}`);
+                throw error;
+            }  
+        }
+        console.log(`Contract ${this.contractName} found at ${this.mainContractDeploymentAddress} on ${this.hardhatRuntimeEnvironment.network.name}`);
+        console.log(`Dependencies on ${this.hardhatRuntimeEnvironment.network.name}:`);
+        this.dependencies.forEach((address, name) => {
+            console.log(`- ${name} found at ${address}`);
+        });
     }
 
     registerInitCallback(callback: TaskCallback): void {
@@ -43,21 +70,21 @@ export class TaskManagerUtils {
     }
 
     async initialize(): Promise<void> {
-        this.signer = (await this.hardhatRuntimeEnvironment.ethers.getSigners())[0].address;
-        this.mainContractDeploymentAddress = (await this.deploymentExtension.get(this.contractName)).address
+        this.signer = (await this.hardhatRuntimeEnvironment.ethers.getSigners())[0].address;  
         if (this.initCallback) {
-            await this.initCallback(this.hardhatRuntimeEnvironment, this.contractName, this.deploymentExtension, this.signer, this.mainContractDeploymentAddress, this.networkConfig);
+            await this.initCallback(this.hardhatRuntimeEnvironment, this.contractName, this.deploymentExtension, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
         }
     }
 
     async finalize(): Promise<void> {
         if (this.finalizeCallback) {
-            await this.finalizeCallback(this.hardhatRuntimeEnvironment, this.contractName, this.deploymentExtension, this.signer, this.mainContractDeploymentAddress, this.networkConfig);
+            await this.finalizeCallback(this.hardhatRuntimeEnvironment, this.contractName, this.deploymentExtension, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
         }
         console.log("Task execution completed.");
     }
 
-    async execute(): Promise<void> {
+    async run(): Promise<void> {
+        await this.checkDependencies();
         const rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
@@ -110,7 +137,7 @@ export class TaskManagerUtils {
             await this.initialize();
                 for (const taskName of tasksToRun) {
                     console.log(`\nExecuting task: ${taskName}`);
-                    await this.tasks.get(taskName)!(this.hardhatRuntimeEnvironment, this.contractName, this.deploymentExtension, this.signer, this.mainContractDeploymentAddress, this.networkConfig);
+                    await this.tasks.get(taskName)!(this.hardhatRuntimeEnvironment, this.contractName, this.deploymentExtension, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
                 }
                 this.finalize();
 

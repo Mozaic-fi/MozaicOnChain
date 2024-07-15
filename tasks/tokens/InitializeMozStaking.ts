@@ -7,34 +7,30 @@ import { TaskManagerUtils } from '../../utils/taskManagerUtils'
 import hre from 'hardhat';
 
 async function main() {
-    const mozStaking = contractNames.Tokens.MozStaking
+    const contractAddress = contractNames.Tokens.MozStaking
 
-    const taskManager = new TaskManagerUtils(hre, mozStaking)
-    taskManager.registerInitCallback(async( hre, contractName, deployments, signer, contractAddress, networkConfig) => {
-        console.log(`Initializing ${mozStaking} on ${hre.network.name}`)
+    const taskManager = new TaskManagerUtils(hre, contractAddress, [contractNames.Tokens.XMozToken, contractNames.Tokens.MozToken])
+    taskManager.registerInitCallback(async( hre, contractName, deployments, signer, contractAddress, networkConfig, dependencies, data) => {
+        console.log(`Initializing ${contractAddress} on ${hre.network.name}`)
     })
-    taskManager.registerTask('initialize', async( hre, contractName, deployments, signer, contractAddress, networkConfig) => {
+
+    taskManager.registerFinalizeCallback(async( hre, contractName, deployments, signer, contractAddress, networkConfig, dependencies, data) => {
+        console.log(`Finalizing ${contractAddress} on ${hre.network.name}`)
+    });
+
+    taskManager.registerTask('initialize', async( hre, contractName, deployments, signer, contractAddress, networkConfig, dependencies, data) => {
         if(networkConfig?.tokensInfo?.requireAdapter){
             return
         }
         else {
-            const xMozToken = contractNames.Tokens.XMozToken
-            const mozToken = contractNames.Tokens.MozToken
-    
-            const mozStakingDeploymentAdress = (await deployments.get(mozStaking)).address
-            const xMozDeploymentAdress = (await deployments.get(xMozToken)).address
-            const mozDeploymentAdress = (await deployments.get(mozToken)).address
             
-            const contractUtil = new ContractUtils(hre, mozStaking, [], true, mozStakingDeploymentAdress)
-            await contractUtil.setContractConfigValues('initialize', ['mozaicToken', 'xMozToken'], [mozDeploymentAdress, xMozDeploymentAdress])
+            const contractUtil = new ContractUtils(hre, contractAddress, [], true, contractAddress)
+            await contractUtil.setContractConfigValues('initialize-contract', ['mozaicToken', 'xMozToken'],
+                 [dependencies.get(contractNames.Tokens.MozToken), dependencies.get(contractNames.Tokens.MozToken)])
         }
     });
 
-    taskManager.registerFinalizeCallback(async( hre, contractName, deployments, signer, contractAddress, networkConfig) => {
-        console.log(`Finalizing ${mozStaking} on ${hre.network.name}`)
-    });
-
-    await taskManager.execute()
+    await taskManager.run()
 }
 
 main()
