@@ -90,7 +90,7 @@ export class ContractUtils {
     }
 
     async setContractConfigValues(functionName: string, prevValuesFunctionNames: string[], args: any[]) {
-        console.log(`Setting contract values for function: ${functionName}`)
+        console.log(`Setting contract values for function: ${functionName} on ${this.contractName} at ${this.network}`)
         const contract = await this.getDeployedContract()
         if (typeof contract[functionName] !== "function") {
             console.error(`Function ${functionName} does not exist on the ${this.contractName} contract.`);

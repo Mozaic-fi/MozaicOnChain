@@ -18,15 +18,15 @@ async function main() {
         console.log(`Finalizing ${contractAddress} on ${hre.network.name}`)
     });
 
-    taskManager.registerTask('initialize', async( hre, contractName, deployments, signer, contractAddress, networkConfig, dependencies, data) => {
+    taskManager.registerTask('initialize-contract', async( hre, contractName, deployments, signer, contractAddress, networkConfig, dependencies, data) => {
         if(networkConfig?.tokensInfo?.requireAdapter){
             return
         }
         else {
             
-            const contractUtil = new ContractUtils(hre, contractAddress, [], true, contractAddress)
-            await contractUtil.setContractConfigValues('initialize-contract', ['mozaicToken', 'xMozToken'],
-                 [dependencies.get(contractNames.Tokens.MozToken), dependencies.get(contractNames.Tokens.MozToken)])
+            const contractUtil = new ContractUtils(hre, contractName, [], true, contractAddress)
+            await contractUtil.setContractConfigValues('initialize', ['mozaicToken', 'xMozToken'],
+                 [dependencies.get(contractNames.Tokens.MozToken), dependencies.get(contractNames.Tokens.XMozToken)])
         }
     });
 

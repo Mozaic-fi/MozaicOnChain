@@ -23,10 +23,9 @@ export const main = async () => {
     });
 
     taskManager.registerTask('setHandlers', async( hre, contractName, deployments, signer, contractAddress, networkConfig,  dependencies, data) => {
-        const contractDeploymentAddress = (await deployments.get(contractName)).address
         const vaultInfo = networkConfig?.theseusVaultInfo?.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
     
-        const contractUtil = new ContractUtils(hre, contractName, [], true, contractDeploymentAddress)
+        const contractUtil = new ContractUtils(hre, contractName, [], true, contractAddress)
     
         const functionNames = ['depositHandler', 'withdrawalHandler' , 'orderHandler']  
         const values = [vaultInfo.handlerInfo.depositHandlerAddress, vaultInfo.handlerInfo.withdrawHandlerAddress, vaultInfo.handlerInfo.orderHandlerAddress]
