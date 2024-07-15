@@ -14,23 +14,30 @@ export const main = async () => {
     
     
     const taskManager = new TaskManagerUtils(hre, contractName, [])
-    taskManager.registerInitCallback(async( hre, contractName, deployments, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerInitCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         console.log(`Initializing ${contractName} on ${hre.network.name}`)
     })
     
-    taskManager.registerFinalizeCallback(async( hre, contractName, deployments, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerFinalizeCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         console.log(`Finalizing ${contractName} on ${hre.network.name}`)
     });
 
-    taskManager.registerTask('setHandlers', async( hre, contractName, deployments, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setHandlers', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vaultInfo = networkConfig?.theseusVaultInfo?.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
     
         const contractUtil = new ContractUtils(hre, contractName, [], true, contractAddress)
     
-        const functionNames = ['depositHandler', 'withdrawalHandler' , 'orderHandler']  
-        const values = [vaultInfo.handlerInfo.depositHandlerAddress, vaultInfo.handlerInfo.withdrawHandlerAddress, vaultInfo.handlerInfo.orderHandlerAddress]
-    
-        await contractUtil.setContractConfigValues('setHandler',functionNames, values)
+        const propertyNames = ['depositHandler', 'withdrawalHandler' , 'orderHandler']  
+        const propertyValues = [vaultInfo.handlerInfo.depositHandlerAddress, vaultInfo.handlerInfo.withdrawHandlerAddress, vaultInfo.handlerInfo.orderHandlerAddress]
+        const functionName = 'setHandler'
+
+        await contractUtil.setContractConfigValues(functionName, propertyNames, propertyValues)
+        return {
+            functionName,
+            propertyStructName: '',
+            propertyNames,
+            propertyValues
+        }
     });
 
     await taskManager.run()
