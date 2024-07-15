@@ -11,6 +11,11 @@ export interface  gmxPluginInfo extends  vaultPlugin {
     withdrawHandlerAddress: string
     orderHandlerAddress: string
     exchangeRouterAddress: string
+    routerAddress: string
+    depositVaultAddress: string
+    withdrawVaultAddress: string
+    orderVaultAddress: string
+    readerAddress: string
 }
 
 

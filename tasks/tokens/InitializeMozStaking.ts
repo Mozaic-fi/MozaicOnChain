@@ -1,7 +1,7 @@
 import { ethers  } from 'hardhat'
 import {networkConfigs} from '../../utils/networkConfigs'
 import { contractNames } from '../../utils/names/contractNames'
-import {cliConfirmation} from '../../utils/cliUtils'
+import { ContractUtils } from '../../utils/contractUtils'
 
 import hre from 'hardhat';
 
@@ -24,19 +24,8 @@ async function main() {
         const xMozDeploymentAdress = (await deployments.get(xMozToken)).address
         const mozDeploymentAdress = (await deployments.get(mozToken)).address
         
-        const mozStakingContract = await ethers.getContractAt(mozStaking, mozStakingDeploymentAdress, signer)
-
-        const currentMozToken = await mozStakingContract.mozaicToken()
-        const currentXMozToken = await mozStakingContract.xMozToken()
-        if(currentMozToken != mozDeploymentAdress || currentXMozToken != xMozDeploymentAdress){
-            if(!(await cliConfirmation(`MozStaking is already initialized with MozToken at address: ${currentMozToken} and XMozToken at address: ${currentXMozToken}. Do you want to reinitialize it with MozToken at address: ${mozDeploymentAdress} and XMozToken at address: ${xMozDeploymentAdress}?`))){
-                return
-            }
-            await mozStakingContract.initialize(mozDeploymentAdress, xMozDeploymentAdress);
-            console.log(`MozStaking initialized on ${hre.network.name} with MozToken at address: ${mozDeploymentAdress} and XMozToken at address: ${xMozDeploymentAdress}`);
-        }else{
-            console.log(`MozStaking is already initialized on ${hre.network.name} with MozToken at address: ${mozDeploymentAdress} and XMozToken at address: ${xMozDeploymentAdress}`);
-        }
+        const contractUtil = new ContractUtils(hre, mozStaking, [], true, mozStakingDeploymentAdress)
+        await contractUtil.setContractConfigValues('initialize', ['mozaicToken', 'xMozToken'], [mozDeploymentAdress, xMozDeploymentAdress])
     }
 }
 

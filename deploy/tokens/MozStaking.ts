@@ -1,5 +1,5 @@
 import {networkConfigs} from '../../utils/networkConfigs'
-import {DeploymentUtils} from '../../utils/deploymentUtils'
+import {ContractUtils} from '../../utils/contractUtils'
 import { contractNames } from '../../utils/names/contractNames'
 
 import { type DeployFunction } from 'hardhat-deploy/types'
@@ -11,7 +11,7 @@ const deploy: DeployFunction = async (hre) => {
     let networkConfig = networkConfigs.get(hre.network.name)
 
     const constructorArgs = [networkConfig?.tokensInfo?.treasuryAddress!]
-    const deployer = new DeploymentUtils(hre, contractName, constructorArgs)
+    const deployer = new ContractUtils(hre, contractName, constructorArgs)
 
     await deployer.deployAndVerifyContract()
 }

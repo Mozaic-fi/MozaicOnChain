@@ -70,7 +70,12 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                             depositHandlerAddress: '0x',
                             exchangeRouterAddress: '0x',
                             orderHandlerAddress: '0x',
-                            withdrawHandlerAddress: '0x'
+                            withdrawHandlerAddress: '0x',
+                            routerAddress: '0x',
+                            depositVaultAddress: '0x',
+                            orderVaultAddress: '0x',
+                            withdrawVaultAddress: '0x',
+                            readerAddress: '0x'                         
                         } as gmxPluginInfo
                     ],
                     [
