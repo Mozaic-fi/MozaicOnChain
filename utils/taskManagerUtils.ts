@@ -5,7 +5,7 @@ import {cliConfirmation} from './cliUtils'
 
 import * as readline from 'readline';
 
-type TaskCallback = (hre: HardhatRuntimeEnvironment, contractName: string, deploy: any, signer: string, contractAddress: string, networkConfig: NetworkInfo) => Promise<void>;
+type TaskCallback = (hre: HardhatRuntimeEnvironment, contractName: string, deployments: any, signer: string, contractAddress: string, networkConfig: NetworkInfo) => Promise<void>;
 
 export class TaskManagerUtils {
     private initCallback: TaskCallback | null = null;
@@ -57,7 +57,7 @@ export class TaskManagerUtils {
         console.log("Task execution completed.");
     }
 
-    async executeCLI(): Promise<void> {
+    async execute(): Promise<void> {
         const rl = readline.createInterface({
             input: process.stdin,
             output: process.stdout
