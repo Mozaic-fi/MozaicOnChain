@@ -60,63 +60,6 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                 multiSigOwnerAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
                 version: 1
             },
-            theseusVaultInfo:{
-                name: 'theseusVault',
-                treasuryAddress: '0x0000000000000000000000000000000000000000',
-                multiSigOwnerAddress: '0x0000000000000000000000000000000000000000',
-                vaultMasterAddress: '0x0000000000000000000000000000000000000000',
-                protocolFeePercentage: 0.01,
-                vaultPlugins: new Map<string, vaultPlugin>([
-                    [
-                        pluginNames.gmx.name,
-                        {
-                            pluginId: pluginNames.gmx.id,
-                            pluginName: pluginNames.gmx.name,
-                            pluginContractName: contractNames.Vaults.Theseus.GmxPlugin,
-                            tokens: getTokens(networkNames.arbitrumSepolia),
-                            handlerInfo:{
-                                depositHandlerAddress: '0x',
-                                orderHandlerAddress: '0x',
-                                withdrawHandlerAddress: '0x',
-                            },
-                            vaultInfo:{
-                                exchangeRouterAddress: '0x',
-                                routerAddress: '0x',
-                                depositVaultAddress: '0x',
-                                orderVaultAddress: '0x',
-                                withdrawVaultAddress: '0x',
-                                readerAddress: '0x'   
-                            },
-                            params:{
-                                uiFeeReceiverAddress: '0x',
-                                callbackGasLimit: 0,
-                                executionFee: 0,
-                                shouldUnwrapNativeToken: false
-                            },
-                            pools: [
-                                {
-                                    poolId: 0,
-                                    indexToken: getToken(tokenSymbols.USDC, networkNames.arbitrumSepolia),
-                                    longToken: getToken(tokenSymbols.USDC, networkNames.arbitrumSepolia),
-                                    shortToken: getToken(tokenSymbols.USDC, networkNames.arbitrumSepolia),
-                                    marketToken: getToken(tokenSymbols.USDC, networkNames.arbitrumSepolia)
-                                }
-                            ]                      
-                        } as gmxPluginInfo
-                    ],
-                    [
-                        'mock',
-                        {
-                            pluginId: -1,
-                            pluginName: 'mock',
-                            pluginContractName: 'mock',
-                            tokens: [],
-                            mockAddress: '0x'
-                        } as mockPluginInfo
-                    ]
-                ]),
-                version:1
-            },
             testNet: true,
         },
     ],
@@ -156,6 +99,72 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                 version: 1
             },
             testNet: true,
+        },
+    ],
+    [
+        networkNames.avalancheFuji,
+        {
+            networkName: networkNames.avalancheFuji,
+            chainId: 43113,
+            theseusVaultInfo:{
+                name: 'theseusVault',
+                treasuryAddress: '0x0000000000000000000000000000000000000000',
+                multiSigOwnerAddress: '0x0000000000000000000000000000000000000000',
+                vaultMasterAddress: '0x0000000000000000000000000000000000000000',
+                protocolFeePercentage: 0.01,
+                vaultPlugins: new Map<string, vaultPlugin>([
+                    [
+                        pluginNames.gmx.name,
+                        {
+                            pluginId: pluginNames.gmx.id,
+                            pluginName: pluginNames.gmx.name,
+                            pluginContractName: contractNames.Vaults.Theseus.GmxPlugin,
+                            tokens: getTokens(networkNames.avalancheFuji),
+                            handlerInfo:{
+                                depositHandlerAddress: '0x',
+                                orderHandlerAddress: '0x',
+                                withdrawHandlerAddress: '0x',
+                            },
+                            vaultInfo:{
+                                exchangeRouterAddress: '0x',
+                                routerAddress: '0x',
+                                depositVaultAddress: '0x',
+                                orderVaultAddress: '0x',
+                                withdrawVaultAddress: '0x',
+                                readerAddress: '0x'   
+                            },
+                            params:{
+                                uiFeeReceiverAddress: '0x',
+                                callbackGasLimit: 0,
+                                executionFee: 0,
+                                shouldUnwrapNativeToken: false
+                            },
+                            pools: [
+                                {
+                                    poolId: 0,
+                                    indexToken: getToken(tokenSymbols.USDC, networkNames.avalancheFuji),
+                                    longToken: getToken(tokenSymbols.USDC, networkNames.avalancheFuji),
+                                    shortToken: getToken(tokenSymbols.USDC, networkNames.avalancheFuji),
+                                    marketToken: getToken(tokenSymbols.USDC, networkNames.avalancheFuji)
+                                }
+                            ]                      
+                        } as gmxPluginInfo
+                    ],
+                    [
+                        'mock',
+                        {
+                            pluginId: -1,
+                            pluginName: 'mock',
+                            pluginContractName: 'mock',
+                            tokens: [],
+                            mockAddress: '0x'
+                        } as mockPluginInfo
+                    ]
+                ]),
+                version:1
+            },
+            testNet: true,
+            
         },
     ],
     [

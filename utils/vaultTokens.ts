@@ -1,21 +1,51 @@
 import { networkNames } from './names/networkNames'
 import { tokenSymbols } from './names/tokenSymbols'
-import { pluginNames } from './names/pluginNames'
-export type vaultToken= {
-    name: string,
-    symbol: tokenSymbols
-    address: string
-    decimals?: number
-    priceFeedAddress: string
-    heartBeatDuration: number
-    sequencerStatusReportedAddress?: string  
-    acceptedInVault: boolean
-    depositAllowed: boolean
-    network: networkNames
-}
-const vaultTokens: vaultToken[] = []
 
-const arbitrumOneTokens: vaultToken[] = [
+export class VaultToken {
+    public name: string
+    public symbol: tokenSymbols
+    public address: string
+    public decimals?: number
+    public priceFeedAddress: string
+    public heartBeatDuration: number
+    public sequencerStatusReportedAddress?: string  
+    public acceptedInVault: boolean
+    public depositAllowed: boolean
+    public network: networkNames
+    constructor(name: string, symbol: tokenSymbols, decimals?: number) {
+        this.name = name
+        this.symbol = symbol
+        this.decimals = decimals
+        this.address = ''
+        this.priceFeedAddress = ''
+        this.heartBeatDuration = 0
+        this.acceptedInVault = false
+        this.depositAllowed = false
+        this.network = networkNames.arbitrumOne
+    }
+    // a constructor to build more vault tokens based on existing ones, this should accept a vault token and read the 3 base properties vaules from and then read other values from the user
+    public static fromVaultToken(vaultToken: VaultToken): VaultToken {
+        const newToken = new VaultToken(vaultToken.name, vaultToken.symbol, vaultToken.decimals!)
+        newToken.address = vaultToken.address
+        newToken.priceFeedAddress = vaultToken.priceFeedAddress
+        newToken.heartBeatDuration = vaultToken.heartBeatDuration
+        newToken.acceptedInVault = vaultToken.acceptedInVault
+        newToken.depositAllowed = vaultToken.depositAllowed
+        newToken.network = vaultToken.network
+        return newToken
+    }
+}
+
+const BaseTokens: VaultToken[] = [
+    new VaultToken('Tether USD', tokenSymbols.USDT, 6),
+    new VaultToken('USD Coin', tokenSymbols.USDC, 6),
+    new VaultToken('Bridged USDC', tokenSymbols.USDCe, 6),
+    new VaultToken('USD Coin', tokenSymbols.USDC, 6),
+    new VaultToken('USD Coin', tokenSymbols.USDC, 6),
+]
+const vaultTokens: VaultToken[] = []
+
+const arbitrumOneTokens: VaultToken[] = [
     {
         name: 'USD Coin',
         symbol: tokenSymbols.USDC,
@@ -29,7 +59,7 @@ const arbitrumOneTokens: vaultToken[] = [
     }
 ]
 vaultTokens.push(...arbitrumOneTokens)
-const arbitrumSepoliaTokens: vaultToken[] = [
+const arbitrumSepoliaTokens: VaultToken[] = [
     {
         name: 'USD Coin',
         symbol: tokenSymbols.USDC,
@@ -44,11 +74,24 @@ const arbitrumSepoliaTokens: vaultToken[] = [
 ]
 vaultTokens.push(...arbitrumSepoliaTokens)
 
+const avalancheFujiTokens: VaultToken[] = [
+    {
+        name: 'USD Coin',
+        symbol: tokenSymbols.USDC,
+        address: '0xf3C3351D6Bd0098EEb33ca8f830FAf2a141Ea2E1',
+        decimals: 6,
+        priceFeedAddress: '0x0153002d20B96532C639313c2d54c3dA09109309',
+        heartBeatDuration: 86400,
+        acceptedInVault: true,
+        depositAllowed: true,
+        network: networkNames.arbitrumSepolia
+    }
+]
 
-export const getTokens = (network: networkNames): vaultToken[] => {
+export const getTokens = (network: networkNames): VaultToken[] => {
     return vaultTokens.filter(token => token.network === network)
 }
-export const getToken = (symbol: tokenSymbols, network: networkNames): vaultToken => {
+export const getToken = (symbol: tokenSymbols, network: networkNames): VaultToken => {
     return vaultTokens.find(token => token.symbol === symbol && token.network === network)!
 }
 

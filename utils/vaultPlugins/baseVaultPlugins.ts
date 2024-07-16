@@ -1,8 +1,8 @@
-import { vaultToken } from '../vaultTokens';
+import { VaultToken } from '../vaultTokens';
 
 export interface vaultPlugin {
     pluginId: number
     pluginName: string
     pluginContractName: string
-    tokens: vaultToken[]
+    tokens: VaultToken[]
 }
