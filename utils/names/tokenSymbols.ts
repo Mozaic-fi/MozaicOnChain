@@ -13,6 +13,7 @@ export enum tokenSymbols {
     ARB = 'ARB',
     WBNB = 'WBNB',
     AAVE = 'AAVE',
+    OP = 'OP',
+    AVAX = 'AVAX',
     WAVAX = 'WAVAX',
-    OP = 'OP'
 }

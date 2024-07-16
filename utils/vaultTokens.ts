@@ -12,6 +12,7 @@ export class VaultToken {
     public acceptedInVault: boolean
     public depositAllowed: boolean
     public network: networkNames
+    private static tokens: VaultToken[]
     constructor(name: string, symbol: tokenSymbols, decimals?: number) {
         this.name = name
         this.symbol = symbol
@@ -22,70 +23,48 @@ export class VaultToken {
         this.acceptedInVault = false
         this.depositAllowed = false
         this.network = networkNames.arbitrumOne
+        VaultToken.tokens.push(this)
     }
-    // a constructor to build more vault tokens based on existing ones, this should accept a vault token and read the 3 base properties vaules from and then read other values from the user
-    public static fromVaultToken(vaultToken: VaultToken): VaultToken {
-        const newToken = new VaultToken(vaultToken.name, vaultToken.symbol, vaultToken.decimals!)
-        newToken.address = vaultToken.address
-        newToken.priceFeedAddress = vaultToken.priceFeedAddress
-        newToken.heartBeatDuration = vaultToken.heartBeatDuration
-        newToken.acceptedInVault = vaultToken.acceptedInVault
-        newToken.depositAllowed = vaultToken.depositAllowed
-        newToken.network = vaultToken.network
+    public static fromVaultToken(symbol: tokenSymbols,address: string,
+            priceFeedAddress: string,heartBeatDuration: number,acceptedInVault: boolean,depositAllowed: boolean,network: networkNames): VaultToken 
+        {
+        const token = VaultToken.tokens.find(token => token.symbol === symbol)!
+        const newToken = new VaultToken(token.name, token.symbol, token.decimals)
+        newToken.address = address
+        newToken.priceFeedAddress = priceFeedAddress
+        newToken.heartBeatDuration = heartBeatDuration
+        newToken.acceptedInVault = acceptedInVault
+        newToken.depositAllowed = depositAllowed
+        newToken.network = network
         return newToken
     }
 }
 
-const BaseTokens: VaultToken[] = [
-    new VaultToken('Tether USD', tokenSymbols.USDT, 6),
-    new VaultToken('USD Coin', tokenSymbols.USDC, 6),
-    new VaultToken('Bridged USDC', tokenSymbols.USDCe, 6),
-    new VaultToken('USD Coin', tokenSymbols.USDC, 6),
-    new VaultToken('USD Coin', tokenSymbols.USDC, 6),
-]
+new VaultToken('Tether USD', tokenSymbols.USDT, 6)
+new VaultToken('USD Coin', tokenSymbols.USDC, 6)
+new VaultToken('Bridged USDC', tokenSymbols.USDCe, 6)
+new VaultToken('Dai Stablecoin', tokenSymbols.DAI, 18)
+new VaultToken('Wrapped BTC', tokenSymbols.WBTC, 8)
+new VaultToken('Wrapped ETH', tokenSymbols.WETH, 18)
+new VaultToken('Wrapped AVAX', tokenSymbols.WAVAX, 8)
+
 const vaultTokens: VaultToken[] = []
 
 const arbitrumOneTokens: VaultToken[] = [
-    {
-        name: 'USD Coin',
-        symbol: tokenSymbols.USDC,
-        address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
-        decimals: 6,
-        priceFeedAddress: '0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3',
-        heartBeatDuration: 86400,
-        acceptedInVault: true,
-        depositAllowed: true,
-        network: networkNames.arbitrumOne
-    }
+    VaultToken.fromVaultToken(tokenSymbols.USDC, '0xaf88d065e77c8cC2239327C5EDb3A432268e5831', '0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3', 86400, true, true, networkNames.arbitrumOne)
 ]
+
 vaultTokens.push(...arbitrumOneTokens)
 const arbitrumSepoliaTokens: VaultToken[] = [
-    {
-        name: 'USD Coin',
-        symbol: tokenSymbols.USDC,
-        address: '0xf3C3351D6Bd0098EEb33ca8f830FAf2a141Ea2E1',
-        decimals: 6,
-        priceFeedAddress: '0x0153002d20B96532C639313c2d54c3dA09109309',
-        heartBeatDuration: 86400,
-        acceptedInVault: true,
-        depositAllowed: true,
-        network: networkNames.arbitrumSepolia
-    }
+    VaultToken.fromVaultToken(tokenSymbols.USDC, '0xf3C3351D6Bd0098EEb33ca8f830FAf2a141Ea2E1', '0x0153002d20B96532C639313c2d54c3dA09109309', 86400, true, true, networkNames.arbitrumSepolia)
 ]
 vaultTokens.push(...arbitrumSepoliaTokens)
 
 const avalancheFujiTokens: VaultToken[] = [
-    {
-        name: 'USD Coin',
-        symbol: tokenSymbols.USDC,
-        address: '0xf3C3351D6Bd0098EEb33ca8f830FAf2a141Ea2E1',
-        decimals: 6,
-        priceFeedAddress: '0x0153002d20B96532C639313c2d54c3dA09109309',
-        heartBeatDuration: 86400,
-        acceptedInVault: true,
-        depositAllowed: true,
-        network: networkNames.arbitrumSepolia
-    }
+    VaultToken.fromVaultToken(tokenSymbols.USDC, '0x3eBDeaA0DB3FfDe96E7a0DBBAFEC961FC50F725F', '0x97FE42a7E96640D932bbc0e1580c73E705A8EB73', 86400, true, true, networkNames.avalancheFuji),
+    VaultToken.fromVaultToken(tokenSymbols.USDT, '0x50df4892Bd13f01E4e1Cd077ff394A8fa1A3fD7c', '0x7898AcCC83587C3C55116c5230C17a6Cd9C71bad', 86400, true, true, networkNames.avalancheFuji),
+    VaultToken.fromVaultToken(tokenSymbols.WBTC, '0x3Bd8e00c25B12E6E60fc8B6f1E1E2236102073Ca', '0x31CF013A08c6Ac228C94551d535d5BAfE19c602a', 86400, true, true, networkNames.avalancheFuji),
+    VaultToken.fromVaultToken(tokenSymbols.WAVAX, '0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3', '0x5498BB86BC934c8D34FDA08E81D444153d0D06aD', 600, true, true, networkNames.avalancheFuji),
 ]
 
 export const getTokens = (network: networkNames): VaultToken[] => {
