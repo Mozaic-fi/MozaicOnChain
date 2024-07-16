@@ -1,7 +1,7 @@
 import { ethers  } from 'hardhat'
 import {networkConfigs} from '../../../utils/networkConfigs'
 import { contractNames } from '../../../utils/names/contractNames'
-import {cliQuestionNumber} from '../../../utils/cliUtils'
+import {cliSelectItem} from '../../../utils/cliUtils'
 import { pluginNames } from '../../../utils/names/pluginNames'
 import { gmxPluginInfo } from '../../../utils/vaultPlugins/gmxVaultPlugins'
 import { ContractUtils } from '../../../utils/contractUtils'
@@ -126,17 +126,8 @@ export const main = async () => {
         const functionName = 'addPool'
         const propertyStructName = 'pools'
         const propertyNames = ['poolId', 'indexToken', 'longToken', 'shortToken', 'marketToken']
-        console.log("List of Available Pools")
-        for (let i = 0; i < vpi.pools.length; i++) {
-            console.log(`Pool ${i}:`)
-            console.log(vpi.pools[i])
-            console.log('\n-----------------------------------\n')
-        }
 
-        let cliQuestionNumberResponse = await cliQuestionNumber('Enter the poolId of the pool you want to add')
-        if(cliQuestionNumberResponse < 0 || cliQuestionNumberResponse >= vpi.pools.length) {
-            throw new Error('Invalid poolId')
-        }
+        let cliQuestionNumberResponse = await cliSelectItem('Enter the poolId of the pool you want to add', vpi.pools)
         const pool = vpi.pools[cliQuestionNumberResponse]
         const propertyValues = [pool.poolId, pool.indexToken, pool.longToken, pool.shortToken, pool.marketToken]
         await (data.contractUtil as ContractUtils).setContractConfigValuesArray(functionName, propertyStructName, propertyNames, propertyValues) 

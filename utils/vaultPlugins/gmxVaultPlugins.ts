@@ -37,4 +37,6 @@ export interface  gmxPluginInfo extends  vaultPlugin {
     vaultInfo: gmxPluginVaultInfo
     params: gmxParams
     pools: gmxPool[]
+    minDepositFee: number
+    minWithdrawFee: number
 }

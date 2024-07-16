@@ -37,3 +37,31 @@ export function cliQuestionNumber(question: string): Promise<number> {
     });
 }
 
+export function cliSelectItem(question: string, items: any[]): Promise<number> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise((resolve) => {
+        rl.question(`${question}: `, (answer) => {
+            console.log('List of Possible Values:')
+            for (let i = 0; i < items.length; i++) {
+                console.log(`${i + 1}:\n${items[i]}`);
+                console.log('\n-----------------------------------\n')
+            }
+            if(/^\d+$/.test(answer.trim())) {
+                let index = parseInt(answer.trim());
+                if(index < 0 || index >= items.length) {
+                    rl.write("Invalid input\n");
+                }
+                resolve(index);
+            }
+            else{
+                rl.write("Invalid input\n");
+            }
+            rl.close();
+        });
+    });
+}
+
