@@ -16,6 +16,7 @@ export const main = async () => {
     taskManager.registerInitCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         console.log(`Initializing ${contractName} on ${hre.network.name}`)
         data.vaultInfo = networkConfig?.theseusVaultInfo!
+        //Note: this is fine since this script is only for gmx plugin
         data.vpi = data.vaultInfo.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
         data.contractUtil = new ContractUtils(hre, contractName, [], true, contractAddress)
     })

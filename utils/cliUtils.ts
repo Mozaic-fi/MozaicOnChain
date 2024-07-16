@@ -65,3 +65,22 @@ export function cliSelectItem(question: string, items: any[]): Promise<number> {
     });
 }
 
+export function cliInputList(question: string): Promise<string[]> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise((resolve) => {
+        rl.question(`${question} (Press enter twice to submit): `, async(answer) => {
+            const values: string[] = [];
+            let trimmedAnswer = answer.trim();
+            while (trimmedAnswer !== '') {
+                values.push(trimmedAnswer);
+                trimmedAnswer = await new Promise<string>((resolve) => rl.question('', resolve));
+            }
+            rl.close();
+            resolve(values);
+        });
+    });
+}

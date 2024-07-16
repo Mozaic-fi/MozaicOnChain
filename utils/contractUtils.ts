@@ -268,4 +268,36 @@ export class ContractUtils {
         console.log(`Function: ${functionName} result: ${result}`)
         return result
     }
+
+    async getArrayValues(arrayName: string) {
+        const contract = await this.getDeployedContract()
+        if (typeof contract[arrayName] !== "function") {
+            console.error(`Function ${arrayName} does not exist on the ${this.contractName} contract.`);
+            process.exit(1);
+        }
+        const arrayLength = await contract[arrayName].length;
+        let values = []
+        for (let i = 0; i < arrayLength; i++) {
+            values.push(await contract[arrayName](i));
+        }
+        return values;
+    }
+
+    async getVariableValues(variableName: string) {
+        const contract = await this.getDeployedContract()
+        if (typeof contract[variableName] !== "function") {
+            console.error(`Function ${variableName} does not exist on the ${this.contractName} contract.`);
+            process.exit(1);
+        }
+        return await contract[variableName]();
+    }
+
+    async getMappingValues(mappingName: string, key: any) {
+        const contract = await this.getDeployedContract()
+        if (typeof contract[mappingName] !== "function") {
+            console.error(`Function ${mappingName} does not exist on the ${this.contractName} contract.`);
+            process.exit(1);
+        }
+        return await contract[mappingName](key);
+    }
 }

@@ -5,6 +5,7 @@ import { vaultPlugin } from './vaultPlugins/baseVaultPlugins'
 import { mockPluginInfo } from './vaultPlugins/mockVaultPlugins'
 import { pluginNames } from './names/pluginNames'
 import { getTokens, getToken } from './vaultTokens'
+import { contractNames } from './names/contractNames'
 export type LZInfo = {
     layerZeroEndpointV2: string
     layerZeroEIDV2: number
@@ -26,11 +27,12 @@ export type VaultInfo = {
     multiSigOwnerAddress: string
     vaultMasterAddress: string
     vaultPlugins: Map<string, vaultPlugin>
-    version: number
+    version: number,
+    protocolFeePercentage: number
 }
 
 export type NetworkInfo = {
-    networkName: string
+    networkName: networkNames
     chainId: number
     layerZeroInfo?: LZInfo
     tokensInfo?: TokensInfo
@@ -63,12 +65,14 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                 treasuryAddress: '0x0000000000000000000000000000000000000000',
                 multiSigOwnerAddress: '0x0000000000000000000000000000000000000000',
                 vaultMasterAddress: '0x0000000000000000000000000000000000000000',
+                protocolFeePercentage: 0.01,
                 vaultPlugins: new Map<string, vaultPlugin>([
                     [
                         pluginNames.gmx.name,
                         {
                             pluginId: pluginNames.gmx.id,
                             pluginName: pluginNames.gmx.name,
+                            pluginContractName: contractNames.Vaults.Theseus.GmxPlugin,
                             tokens: getTokens(networkNames.arbitrumSepolia),
                             handlerInfo:{
                                 depositHandlerAddress: '0x',
@@ -105,6 +109,7 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                         {
                             pluginId: -1,
                             pluginName: 'mock',
+                            pluginContractName: 'mock',
                             tokens: [],
                             mockAddress: '0x'
                         } as mockPluginInfo
