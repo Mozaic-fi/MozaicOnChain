@@ -1,9 +1,10 @@
 import { networkNames } from './names/networkNames'
+import { tokenSymbols } from './names/tokenSymbols'
 import { gmxPluginInfo } from './vaultPlugins/gmxVaultPlugins'
 import { vaultPlugin } from './vaultPlugins/baseVaultPlugins'
 import { mockPluginInfo } from './vaultPlugins/mockVaultPlugins'
 import { pluginNames } from './names/pluginNames'
-import { arbitrumOneGMXVaultTokens, arbitrumSepoliaGMXVaultTokens } from './vaultTokens'
+import { getTokens, getToken } from './vaultTokens'
 export type LZInfo = {
     layerZeroEndpointV2: string
     layerZeroEIDV2: number
@@ -68,7 +69,7 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                         {
                             pluginId: pluginNames.gmx.id,
                             pluginName: pluginNames.gmx.name,
-                            tokens: arbitrumSepoliaGMXVaultTokens,
+                            tokens: getTokens(networkNames.arbitrumSepolia),
                             handlerInfo:{
                                 depositHandlerAddress: '0x',
                                 orderHandlerAddress: '0x',
@@ -81,7 +82,22 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                                 orderVaultAddress: '0x',
                                 withdrawVaultAddress: '0x',
                                 readerAddress: '0x'   
-                            }                      
+                            },
+                            params:{
+                                uiFeeReceiverAddress: '0x',
+                                callbackGasLimit: 0,
+                                executionFee: 0,
+                                shouldUnwrapNativeToken: false
+                            },
+                            pools: [
+                                {
+                                    poolId: 0,
+                                    indexToken: getToken(tokenSymbols.USDC, networkNames.arbitrumSepolia),
+                                    longToken: getToken(tokenSymbols.USDC, networkNames.arbitrumSepolia),
+                                    shortToken: getToken(tokenSymbols.USDC, networkNames.arbitrumSepolia),
+                                    marketToken: getToken(tokenSymbols.USDC, networkNames.arbitrumSepolia)
+                                }
+                            ]                      
                         } as gmxPluginInfo
                     ],
                     [

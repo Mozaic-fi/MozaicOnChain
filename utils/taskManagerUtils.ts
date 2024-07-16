@@ -147,6 +147,7 @@ export class TaskManagerUtils {
                     console.log(`\nExecuting task: ${taskName}`);
                     let valuesToLog = await this.tasks.get(taskName)!(this.hardhatRuntimeEnvironment, this.contractName, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
                     console.log(`Task ${taskName} executed with values: ${JSON.stringify(valuesToLog)}`);
+                    console.log('\n-----------------------------------\n')
                 }
                 this.finalize();
 
@@ -155,5 +156,8 @@ export class TaskManagerUtils {
         }
 
         rl.close();
+        console.log('\n===================================\n')
+        console.log("Task execution completed.");
+        console.log('\n===================================\n')
     }
 }

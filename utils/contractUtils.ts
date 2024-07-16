@@ -193,6 +193,67 @@ export class ContractUtils {
         return result
     }
 
+
+    async setContractConfigValuesArray(functionName: string, arrayName: string, propertyNames: string[], args: any[]) {
+        console.log(`Setting contract values for function: ${functionName}`)
+        const contract = await this.getDeployedContract()
+        if (typeof contract[functionName] !== "function") {
+            console.error(`Function ${functionName} does not exist on the ${this.contractName} contract.`);
+            process.exit(1);
+        }
+
+        if(arrayName) {
+            if(propertyNames.length!=args.length) {
+                console.error(`Wrong number of arguments for the function`);
+                process.exit(1);
+            }
+
+            if (typeof contract[arrayName] !== "function") {
+                console.error(`Function ${arrayName} does not exist on the ${this.contractName} contract.`);
+                process.exit(1);
+            }
+            const arrayLength = await contract[arrayName].length;
+            if(arrayLength !== 0) {
+
+                let prevValues = new Map<string, any[]>();
+                for (let i = 0; i < arrayLength; i++) {
+                    let prevValueInArray = await contract[arrayName](i);
+                    if(prevValueInArray[propertyNames[0]] === args[0]) {
+                        for (let j = 0; j < propertyNames.length; j++) {
+                            prevValues.set(propertyNames[j], [prevValueInArray[propertyNames[j]], args[j]]);  
+                        }                     
+                    }
+                }
+
+                let updateRequired = false;
+                for (const [key, value] of prevValues) {
+                    if (value[0] != value[1]) {
+                        updateRequired = true;
+                        break;
+                    }
+                }
+                if (!updateRequired) {
+                    console.log(`No changes detected in the values of the contract variables`);
+                    for (const [key, value] of prevValues) {
+                        console.log(`${key}: ${value[0]}`);
+                    }
+                    return;
+                }
+                for (const [key, value] of prevValues) {
+                    console.log(`Updating ${key}: from ${value[0]} to ${value[1]}`);
+                }
+            }
+        
+        }
+        console.log(`Calling function: ${functionName} with args: ${args}`)
+        if (!await cliConfirmation('Do you want to continue?', this.getCLIConfirmation)) {
+            throw new Error('User cancelled function call')
+        }
+        const result = await contract[functionName](...args)
+        console.log(`Function: ${functionName} result: ${result}`)
+        return result
+    }
+
     async runContractFunction(functionName: string, ...args: any[]) {
         const contract = await this.getDeployedContract()
         if (typeof contract[functionName] !== "function") {

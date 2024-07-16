@@ -1,7 +1,7 @@
 import { ethers  } from 'hardhat'
 import {networkConfigs} from '../../../utils/networkConfigs'
 import { contractNames } from '../../../utils/names/contractNames'
-import {cliConfirmation} from '../../../utils/cliUtils'
+import {cliQuestionNumber} from '../../../utils/cliUtils'
 import { pluginNames } from '../../../utils/names/pluginNames'
 import { gmxPluginInfo } from '../../../utils/vaultPlugins/gmxVaultPlugins'
 import { ContractUtils } from '../../../utils/contractUtils'
@@ -98,7 +98,55 @@ export const main = async () => {
         }
     })
 
-    
+    taskManager.registerTask('addPools', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+        const vpi = data.vpi as gmxPluginInfo
+        const functionName = 'addPool'
+        const propertyStructName = 'pools'
+        let propertyNames = ['poolId', 'indexToken', 'longToken', 'shortToken', 'marketToken']
+        let propertyValues: any[][] = []
+        vpi.pools.forEach(async(pool) => {
+            console.log(`Adding pool ${pool.poolId}`)
+            const propertyValuesInner = [pool.poolId, pool.indexToken, pool.longToken, pool.shortToken, pool.marketToken]
+            await (data.contractUtil as ContractUtils).setContractConfigValuesArray(functionName, propertyStructName, propertyNames, propertyValuesInner) 
+            propertyValues.push(propertyValuesInner)
+            console.log('\n-----------------------------------\n')
+        })
+ 
+        return {
+            functionName,
+            propertyStructName,
+            propertyNames,
+            propertyValues
+        }
+    })
+
+    taskManager.registerTask('addPool (Single Pool)', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+        const vpi = data.vpi as gmxPluginInfo
+
+        const functionName = 'addPool'
+        const propertyStructName = 'pools'
+        const propertyNames = ['poolId', 'indexToken', 'longToken', 'shortToken', 'marketToken']
+        console.log("List of Available Pools")
+        for (let i = 0; i < vpi.pools.length; i++) {
+            console.log(`Pool ${i}:`)
+            console.log(vpi.pools[i])
+            console.log('\n-----------------------------------\n')
+        }
+
+        let cliQuestionNumberResponse = await cliQuestionNumber('Enter the poolId of the pool you want to add')
+        if(cliQuestionNumberResponse < 0 || cliQuestionNumberResponse >= vpi.pools.length) {
+            throw new Error('Invalid poolId')
+        }
+        const pool = vpi.pools[cliQuestionNumberResponse]
+        const propertyValues = [pool.poolId, pool.indexToken, pool.longToken, pool.shortToken, pool.marketToken]
+        await (data.contractUtil as ContractUtils).setContractConfigValuesArray(functionName, propertyStructName, propertyNames, propertyValues) 
+        return {
+            functionName,
+            propertyStructName,
+            propertyNames,
+            propertyValues
+        }
+    })
 
     await taskManager.run()
 }

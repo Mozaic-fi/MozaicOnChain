@@ -1,6 +1,9 @@
 import { networkNames } from './names/networkNames'
+import { tokenSymbols } from './names/tokenSymbols'
 import { pluginNames } from './names/pluginNames'
 export type vaultToken= {
+    name: string,
+    symbol: tokenSymbols
     address: string
     decimals?: number
     priceFeedAddress: string
@@ -8,34 +11,46 @@ export type vaultToken= {
     sequencerStatusReportedAddress?: string  
     acceptedInVault: boolean
     depositAllowed: boolean
-    network: string
-    pluginId: number
+    network: networkNames
 }
-export const vaultTokens: vaultToken[] = [
+const vaultTokens: vaultToken[] = []
+
+const arbitrumOneTokens: vaultToken[] = [
     {
+        name: 'USD Coin',
+        symbol: tokenSymbols.USDC,
         address: '0xaf88d065e77c8cC2239327C5EDb3A432268e5831',
         decimals: 6,
         priceFeedAddress: '0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3',
         heartBeatDuration: 86400,
         acceptedInVault: true,
         depositAllowed: true,
-        network: networkNames.arbitrumOne,
-        pluginId: pluginNames.gmx.id
-    },
+        network: networkNames.arbitrumOne
+    }
+]
+vaultTokens.push(...arbitrumOneTokens)
+const arbitrumSepoliaTokens: vaultToken[] = [
     {
+        name: 'USD Coin',
+        symbol: tokenSymbols.USDC,
         address: '0xf3C3351D6Bd0098EEb33ca8f830FAf2a141Ea2E1',
         decimals: 6,
         priceFeedAddress: '0x0153002d20B96532C639313c2d54c3dA09109309',
         heartBeatDuration: 86400,
         acceptedInVault: true,
         depositAllowed: true,
-        network: networkNames.arbitrumSepolia,
-        pluginId: pluginNames.gmx.id
+        network: networkNames.arbitrumSepolia
     }
 ]
-export const arbitrumOneGMXVaultTokens: vaultToken[] = vaultTokens.filter((token) => token.network === networkNames.arbitrumOne && token.pluginId === pluginNames.gmx.id)
-export const arbitrumSepoliaGMXVaultTokens: vaultToken[] = vaultTokens.filter((token) => token.network === networkNames.arbitrumSepolia && token.pluginId === pluginNames.gmx.id)  
- 
+vaultTokens.push(...arbitrumSepoliaTokens)
+
+
+export const getTokens = (network: networkNames): vaultToken[] => {
+    return vaultTokens.filter(token => token.network === network)
+}
+export const getToken = (symbol: tokenSymbols, network: networkNames): vaultToken => {
+    return vaultTokens.find(token => token.symbol === symbol && token.network === network)!
+}
 
 
 // -----Decoded View---------------

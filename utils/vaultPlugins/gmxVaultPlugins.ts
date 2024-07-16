@@ -1,4 +1,5 @@
 import { vaultPlugin } from './baseVaultPlugins'
+import { vaultToken } from '../vaultTokens'
 
 export type gmxPluginHandlerInfo = {
     depositHandlerAddress: string
@@ -23,8 +24,17 @@ export type gmxParams = {
     shouldUnwrapNativeToken: boolean
 }
 
+export type gmxPool = {
+    poolId : number
+    indexToken: vaultToken
+    longToken: vaultToken
+    shortToken: vaultToken
+    marketToken: vaultToken
+}
+
 export interface  gmxPluginInfo extends  vaultPlugin {
     handlerInfo: gmxPluginHandlerInfo
     vaultInfo: gmxPluginVaultInfo
     params: gmxParams
+    pools: gmxPool[]
 }
