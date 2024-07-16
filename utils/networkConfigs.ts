@@ -121,17 +121,17 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                             pluginContractName: contractNames.Vaults.Theseus.GmxPlugin,
                             tokens: getTokens(networkNames.avalancheFuji),
                             handlerInfo:{
-                                depositHandlerAddress: '0x',
-                                orderHandlerAddress: '0x',
-                                withdrawHandlerAddress: '0x',
+                                depositHandlerAddress: '0x3cD8Ac94471A52761666F14D9846cbCcF8FeeD69',
+                                orderHandlerAddress: '0xC451e5A0cEf62aEcF94AeDc3c3B415a50ebA9C78',
+                                withdrawHandlerAddress: '0x2c8779162fa256f828704d4a83f08aA94CAA990D',
                             },
                             vaultInfo:{
-                                exchangeRouterAddress: '0x',
-                                routerAddress: '0x',
-                                depositVaultAddress: '0x',
-                                orderVaultAddress: '0x',
-                                withdrawVaultAddress: '0x',
-                                readerAddress: '0x'   
+                                exchangeRouterAddress: '0xc9c1f8aff1035236223005742A95782B06f39E65',
+                                routerAddress: '0x5e7d61e4C52123ADF651961e4833aCc349b61491',
+                                depositVaultAddress: '0x2964d242233036C8BDC1ADC795bB4DeA6fb929f2',
+                                orderVaultAddress: '0x25D23e8E655727F2687CC808BB9589525A6F599B',
+                                withdrawVaultAddress: '0x74d49B6A630Bf519bDb6E4efc4354C420418A6A2',
+                                readerAddress: '0xD52216D3A57F7eb1126498f00A4771553c737AE4'   
                             },
                             params:{
                                 uiFeeReceiverAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
