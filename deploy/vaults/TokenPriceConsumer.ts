@@ -12,13 +12,17 @@ const deploy: DeployFunction = async (hre) => {
 
     let networkConfig = networkConfigs.get(hre.network.name)
 
-    const tokensData = networkConfig?.theseusVaultInfo?.vaultPlugins.get(pluginNames.gmx.name)?.tokens?.map(token => 
+    let tokensData = networkConfig?.theseusVaultInfo?.vaultPlugins.get(pluginNames.gmx.name)?.tokens
+        ?.map(token => 
         ({
             address: token.address,
             priceFeedAddress: token.priceFeedAddress,
             heartBeatDuration: token.heartBeatDuration
         }))!
     
+    
+    tokensData = tokensData?.filter(token => token.priceFeedAddress !== '')!
+
     const address = tokensData?.map(token => token.address)
     const priceFeeds = tokensData?.map(token => token.priceFeedAddress)
     const heartBeats = tokensData?.map(token => token.heartBeatDuration)

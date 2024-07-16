@@ -46,6 +46,7 @@ const baseTokens: VaultToken[] = [
     , new VaultToken('Wrapped BTC', tokenSymbols.WBTC, 8)
     , new VaultToken('Wrapped ETH', tokenSymbols.WETH, 18)
     , new VaultToken('Wrapped AVAX', tokenSymbols.WAVAX, 8)
+    , new VaultToken('GMX Market', tokenSymbols.GMX, 18)
 ]
 
 const vaultTokens: VaultToken[] = []
@@ -65,6 +66,7 @@ const avalancheFujiTokens: VaultToken[] = [
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.USDT, '0x50df4892Bd13f01E4e1Cd077ff394A8fa1A3fD7c', '0x7898AcCC83587C3C55116c5230C17a6Cd9C71bad', 86400, true, true, networkNames.avalancheFuji),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.WBTC, '0x3Bd8e00c25B12E6E60fc8B6f1E1E2236102073Ca', '0x31CF013A08c6Ac228C94551d535d5BAfE19c602a', 86400, true, true, networkNames.avalancheFuji),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.WAVAX, '0x1D308089a2D1Ced3f1Ce36B1FcaF815b07217be3', '0x5498BB86BC934c8D34FDA08E81D444153d0D06aD', 600, true, true, networkNames.avalancheFuji),
+    VaultToken.fromVaultToken(baseTokens,tokenSymbols.WETH, '0x82F0b3695Ed2324e55bbD9A9554cB4192EC3a514', '0x86d67c3D38D2bCeE722E601025C25a575021c6EA', 86400, true, true, networkNames.avalancheFuji),
 ]
 
 export const getTokens = (network: networkNames): VaultToken[] => {
@@ -72,6 +74,10 @@ export const getTokens = (network: networkNames): VaultToken[] => {
 }
 export const getToken = (symbol: tokenSymbols, network: networkNames): VaultToken => {
     return vaultTokens.find(token => token.symbol === symbol && token.network === network)!
+}
+
+export const getGMXToken = (network: networkNames, address: string): VaultToken => {
+    return   VaultToken.fromVaultToken(baseTokens,tokenSymbols.GMX, address, '', 0, true, true, network)
 }
 
 

@@ -16,4 +16,5 @@ export enum tokenSymbols {
     OP = 'OP',
     AVAX = 'AVAX',
     WAVAX = 'WAVAX',
+    GMX = 'GMX',
 }

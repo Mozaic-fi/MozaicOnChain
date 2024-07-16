@@ -4,7 +4,7 @@ import { gmxPluginInfo } from './vaultPlugins/gmxVaultPlugins'
 import { vaultPlugin } from './vaultPlugins/baseVaultPlugins'
 import { mockPluginInfo } from './vaultPlugins/mockVaultPlugins'
 import { pluginNames } from './names/pluginNames'
-import { getTokens, getToken } from './vaultTokens'
+import { getTokens, getToken, getGMXToken } from './vaultTokens'
 import { contractNames } from './names/contractNames'
 export type LZInfo = {
     layerZeroEndpointV2: string
@@ -108,10 +108,10 @@ export const networkConfigs = new Map<string, NetworkInfo>([
             chainId: 43113,
             theseusVaultInfo:{
                 name: 'theseusVault',
-                treasuryAddress: '0x0000000000000000000000000000000000000000',
-                multiSigOwnerAddress: '0x0000000000000000000000000000000000000000',
-                vaultMasterAddress: '0x0000000000000000000000000000000000000000',
-                protocolFeePercentage: 0.01,
+                treasuryAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
+                multiSigOwnerAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
+                vaultMasterAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
+                protocolFeePercentage: 1000,
                 vaultPlugins: new Map<string, vaultPlugin>([
                     [
                         pluginNames.gmx.name,
@@ -134,19 +134,33 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                                 readerAddress: '0x'   
                             },
                             params:{
-                                uiFeeReceiverAddress: '0x',
-                                callbackGasLimit: 0,
-                                executionFee: 0,
+                                uiFeeReceiverAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
+                                callbackGasLimit: 2000000,
+                                executionFee: 5000000000000000,
                                 shouldUnwrapNativeToken: false
                             },
                             pools: [
                                 {
-                                    poolId: 0,
-                                    indexToken: getToken(tokenSymbols.USDC, networkNames.avalancheFuji),
-                                    longToken: getToken(tokenSymbols.USDC, networkNames.avalancheFuji),
+                                    poolId: 1,
+                                    indexToken: getToken(tokenSymbols.WAVAX, networkNames.avalancheFuji),
+                                    longToken: getToken(tokenSymbols.WAVAX, networkNames.avalancheFuji),
                                     shortToken: getToken(tokenSymbols.USDC, networkNames.avalancheFuji),
-                                    marketToken: getToken(tokenSymbols.USDC, networkNames.avalancheFuji)
-                                }
+                                    marketToken: getGMXToken(networkNames.avalancheFuji, '0xD996ff47A1F763E1e55415BC4437c59292D1F415')
+                                },
+                                {
+                                    poolId: 2,
+                                    indexToken: getToken(tokenSymbols.WETH, networkNames.avalancheFuji),
+                                    longToken: getToken(tokenSymbols.WETH, networkNames.avalancheFuji),
+                                    shortToken: getToken(tokenSymbols.USDC, networkNames.avalancheFuji),
+                                    marketToken: getGMXToken(networkNames.avalancheFuji, '0xbf338a6C595f06B7Cfff2FA8c958d49201466374')
+                                },
+                                {
+                                    poolId: 2,
+                                    indexToken: getToken(tokenSymbols.WBTC, networkNames.avalancheFuji),
+                                    longToken: getToken(tokenSymbols.WBTC, networkNames.avalancheFuji),
+                                    shortToken: getToken(tokenSymbols.USDC, networkNames.avalancheFuji),
+                                    marketToken: getGMXToken(networkNames.avalancheFuji, '0x79E6e0E454dE82fA98c02dB012a2A69103630B07')
+                                },
                             ]                      
                         } as gmxPluginInfo
                     ],

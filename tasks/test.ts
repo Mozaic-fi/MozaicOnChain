@@ -3,7 +3,7 @@ import { GmxUtils, gmxContracts } from '../utils/gmxUtils';
 import hre from 'hardhat';
 
 async function main() {
-    console.log(await new GmxUtils(hre.network.name).getPools());
+    console.log((await new GmxUtils(hre.network.name).getPools()));
 }
 
 main()
