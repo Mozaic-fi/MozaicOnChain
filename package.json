@@ -29,7 +29,8 @@
     "test:forge": "forge test",
     "test-lztransfer-arbitrumSepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network arbitrumSepolia",
     "test-lztransfer-baseSepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network baseSepolia",
-    "test-lztransfer-sepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network sepolia"
+    "test-lztransfer-sepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network sepolia",
+    "test-gmx": "npx hardhat run tasks/test.ts --network avalancheFuji"
   },
   "resolutions": {
     "@nomicfoundation/edr": "0.3.5",
