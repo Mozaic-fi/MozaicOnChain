@@ -35,7 +35,7 @@
     "deploy-vault-testnet" : "npx hardhat deploy --tags Vault --network avalancheFuji",
     "deploy-vault-gmx-testnet" : "npx hardhat deploy --tags GmxPlugin --network avalancheFuji && npx hardhat deploy --tags GmxCallback --network avalancheFuji",
     "init-vault-testnet" : "npx hardhat run tasks/vaults/InitializeTheseusVault.ts --network avalancheFuji",
-    "init-gmx-testnet" : "npx hardhat run tasks/vaults/InitializegmxCallBack.ts --network avalancheFuji && npx hardhat run tasks/vaults/InitializegmxPlugin.ts --network avalancheFuji"
+    "init-gmx-testnet" : "npx hardhat run tasks/vaults/gmx/InitializegmxCallBack.ts --network avalancheFuji && npx hardhat run tasks/vaults/gmx/InitializegmxPlugin.ts --network avalancheFuji"
   },
   "resolutions": {
     "@nomicfoundation/edr": "0.3.5",

@@ -123,7 +123,7 @@ export class ContractUtils {
             if (!updateRequired) {
                 console.log(cliYellow(`No changes detected in the values of the contract variables`));
                 for (const [key, value] of prevValues) {
-                    console.log(`${key}: ${value[0]}`);
+                    console.log(cliBlue(`${key}: ${value[0]}`));
                 }
                 return;
             }
@@ -142,7 +142,7 @@ export class ContractUtils {
 
 
     async setContractConfigValuesStruct(functionName: string, prevValuesFunctionName: string, propertyNames: string[], args: any[]) {
-        console.log(`Setting contract values for function: ${functionName}`)
+        console.log(`Setting contract values for function: ${cliYellow(functionName)} on ${cliGreen(this.contractName)} at ${cliBlue(this.network)}`)
         const contract = await this.getDeployedContract()
         if (typeof contract[functionName] !== "function") {
             console.error(`Function ${functionName} does not exist on the ${this.contractName} contract.`);
@@ -174,17 +174,17 @@ export class ContractUtils {
                 }
             }
             if (!updateRequired) {
-                console.log(`No changes detected in the values of the contract variables`);
+                console.log(cliYellow(`No changes detected in the values of the contract variables`));
                 for (const [key, value] of prevValues) {
-                    console.log(`${key}: ${value[0]}`);
+                    console.log(cliGreen(`${key}: ${value[0]}`));
                 }
                 return;
             }
             for (const [key, value] of prevValues) {
-                console.log(`Updating ${key}: from ${value[0]} to ${value[1]}`);
+                console.log(cliBlue(`Updating ${key}: from ${value[0]} to ${value[1]}`));
             }
         }
-        console.log(`Calling function: ${functionName} with args: ${args}`)
+        console.log(`Calling function: ${cliYellow(functionName)} with args: ${args}`)
         if (!await cliConfirmation('Do you want to continue?', this.getCLIConfirmation)) {
             throw new Error('User cancelled function call')
         }
@@ -195,7 +195,7 @@ export class ContractUtils {
 
 
     async setContractConfigValuesArray(functionName: string, arrayName: string, propertyNames: string[], args: any[]) {
-        console.log(`Setting contract values for function: ${functionName}`)
+        console.log(`Setting contract values for function: ${cliYellow(functionName)} on ${cliGreen(this.contractName)} at ${cliBlue(this.network)}`)
         const contract = await this.getDeployedContract()
         if (typeof contract[functionName] !== "function") {
             console.error(`Function ${functionName} does not exist on the ${this.contractName} contract.`);
@@ -233,39 +233,40 @@ export class ContractUtils {
                     }
                 }
                 if (!updateRequired) {
-                    console.log(`No changes detected in the values of the contract variables`);
+                    console.log(cliYellow(`No changes detected in the values of the contract variables`));
                     for (const [key, value] of prevValues) {
-                        console.log(`${key}: ${value[0]}`);
+                        console.log(cliGreen(`${key}: ${value[0]}`));
                     }
                     return;
                 }
                 for (const [key, value] of prevValues) {
-                    console.log(`Updating ${key}: from ${value[0]} to ${value[1]}`);
+                    console.log(cliBlue(`Updating ${key}: from ${value[0]} to ${value[1]}`));
                 }
             }
         
         }
-        console.log(`Calling function: ${functionName} with args: ${args}`)
+        console.log(`Calling function: ${cliYellow(functionName)} with args: ${args}`)
         if (!await cliConfirmation('Do you want to continue?', this.getCLIConfirmation)) {
             throw new Error('User cancelled function call')
         }
         const result = await contract[functionName](...args)
-        console.log(`Function: ${functionName} result: ${result}`)
+        console.log(`Function: ${cliYellow(functionName)} result: ${result}`)
         return result
     }
 
     async runContractFunction(functionName: string, ...args: any[]) {
+        console.log(`Running function: ${cliYellow(functionName)} on ${cliGreen(this.contractName)} at ${cliBlue(this.network)}`)
         const contract = await this.getDeployedContract()
         if (typeof contract[functionName] !== "function") {
             console.error(`Function ${functionName} does not exist on the ${this.contractName} contract.`);
             process.exit(1);
         }
-        console.log(`Calling function: ${functionName} with args: ${args}`)
+        console.log(`Calling function: ${cliYellow(functionName)} with args: ${args}`)
         if (!await cliConfirmation('Do you want to continue?', this.getCLIConfirmation)) {
             throw new Error('User cancelled function call')
         }
         const result = await contract[functionName](...args)
-        console.log(`Function: ${functionName} result: ${result}`)
+        console.log(cliBlue(`Function: ${functionName} result: ${result}`))
         return result
     }
 

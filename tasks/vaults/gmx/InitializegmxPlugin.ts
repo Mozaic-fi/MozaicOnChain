@@ -72,7 +72,7 @@ export const main = async () => {
         const vpi = data.vpi as gmxPluginInfo
         const tokenAddresses= vpi.tokens.map(token => token.address)
         const tokenDecimals = vpi.tokens.map(token => token.decimals)
-        const functionName = 'setDecimalsBatch'
+        const functionName = 'setTokenDecimalsBatch'
         const propertyStructName = 'mapping'
         const propertyValues = [tokenAddresses, tokenDecimals]
         const propertyNames = ['decimals']

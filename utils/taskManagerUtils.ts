@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment  } from 'hardhat/types';
 
 import {networkConfigs, NetworkInfo} from './networkConfigs'
-import {cliBlue, cliConfirmation, cliCyan, cliGreen, cliRed} from './cliUtils'
+import {cliBlue, cliConfirmation, cliCyan, cliGreen, cliRed, cliYellow} from './cliUtils'
 
 import * as readline from 'readline';
 
@@ -37,7 +37,7 @@ export class TaskManagerUtils {
         this.dependencies = dependencies.map(dep => [dep, '']).reduce((acc, [key, value]) => acc.set(key, value), new Map<string, string>());
         this.deploymentData = {};
         this.networkName= hre.network.name
-        console.log(cliCyan(`Task Manager initialized for contract ${contractName} on ${this.networkName}`,true));
+        console.log(cliYellow(`Task Manager initialized for contract ${contractName} on ${this.networkName}`,true));
     }
 
     async checkDependencies(): Promise<void> {
@@ -145,10 +145,10 @@ export class TaskManagerUtils {
             }
             await this.initialize();
                 for (const taskName of tasksToRun) {
-                    console.log(`\nExecuting task: ${taskName}`);
+                    console.log(cliBlue(`\nExecuting task: ${taskName}`));
                     let valuesToLog = await this.tasks.get(taskName)!(this.hardhatRuntimeEnvironment, this.contractName, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
-                    console.log(`Task ${taskName} executed with values: ${JSON.stringify(valuesToLog)}`);
-                    console.log('\n-----------------------------------\n')
+                    //console.log(`Task ${taskName} executed with values: ${JSON.stringify(valuesToLog)}`);
+                    console.log(cliBlue('\n-----------------------------------\n'))
                 }
                 this.finalize();
 
