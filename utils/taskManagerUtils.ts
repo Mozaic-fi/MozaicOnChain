@@ -37,6 +37,7 @@ export class TaskManagerUtils {
         this.dependencies = dependencies.map(dep => [dep, '']).reduce((acc, [key, value]) => acc.set(key, value), new Map<string, string>());
         this.deploymentData = {};
         this.networkName= hre.network.name
+        console.log(cliCyan(`Task Manager initialized for contract ${contractName} on ${this.networkName}`,true));
     }
 
     async checkDependencies(): Promise<void> {
