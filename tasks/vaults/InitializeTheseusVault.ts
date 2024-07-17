@@ -219,9 +219,9 @@ export const main = async () => {
     taskManager.registerTask('setVaultLockers', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vaultLockers = await cliInputList('Enter the vault lockers addresses')
         const propertyNames= ['array:vaultLockers']
-        const propertyValues = [vaultLockers]
+        const propertyValues = vaultLockers
         const functionName = 'setVaultLockers'
-        await (data.contractUtil as ContractUtils).setContractConfigValues(functionName, propertyNames, propertyValues)
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues)
         return {
             functionName,
             propertyStructName: '',
@@ -234,9 +234,9 @@ export const main = async () => {
     taskManager.registerTask('setVaultManagers', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vaultManagers = await cliInputList('Enter the vault managers addresses')
         const propertyNames= ['array:vaultManagers']
-        const propertyValues = [vaultManagers]
+        const propertyValues = vaultManagers
         const functionName = 'setVaultManagers'
-        await (data.contractUtil as ContractUtils).setContractConfigValues(functionName, propertyNames, propertyValues)
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues)
         return {
             functionName,
             propertyStructName: '',
