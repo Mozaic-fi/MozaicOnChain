@@ -6,4 +6,5 @@ export enum networkNames {
     arbitrumOne = 'arbitrumOne',
     base = 'base',
     avalancheFuji = 'avalancheFuji',
+    arbitrumTwo = 'arbitrumOne',
 }
