@@ -69,6 +69,8 @@ const avalancheFujiTokens: VaultToken[] = [
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.WETH, '0x82F0b3695Ed2324e55bbD9A9554cB4192EC3a514', '0x86d67c3D38D2bCeE722E601025C25a575021c6EA', 86400, true, true, networkNames.avalancheFuji),
 ]
 
+vaultTokens.push(...avalancheFujiTokens)
+
 export const getTokens = (network: networkNames): VaultToken[] => {
     return vaultTokens.filter(token => token.network === network)
 }

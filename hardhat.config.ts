@@ -91,7 +91,8 @@ const config: HardhatUserConfig = {
             sepolia: SEPOLIA_API_KEY!,
             arbitrumOne: ARBISCAN_API_KEY!,
             base: BASESCAN_API_KEY!,
-            avalancheFuji:'avascan'
+            avalancheFuji:'avascan',
+            avalancheFujiTestnet:'avascan'
         },
     },
     namedAccounts: {
