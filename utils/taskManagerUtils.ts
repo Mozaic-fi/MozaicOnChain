@@ -114,7 +114,7 @@ export class TaskManagerUtils {
 
         if (answer.toLowerCase() === 'all') {
             tasksToRun = taskNames;
-        } else if (answer.toLowerCase() !== 'none' || answer !== '') {
+        } else if (answer.toLowerCase() !== 'none' && answer !== '') {
             const inputs = answer.split(',').map(s => s.trim());
             for (const input of inputs) {
                 if (/^\d+$/.test(input)) {
@@ -135,6 +135,7 @@ export class TaskManagerUtils {
                 }
             }
         }
+        rl.close();
 
         if (tasksToRun.length > 0) {
             console.log(cliBlue("\nTasks to run:",true));
@@ -156,7 +157,6 @@ export class TaskManagerUtils {
             console.log("No tasks selected.");
         }
 
-        rl.close();
         console.log(cliCyan('\n===================================\n',true))
         console.log(cliCyan("Task execution completed.",true));
         console.log(cliCyan('\n===================================\n',true))

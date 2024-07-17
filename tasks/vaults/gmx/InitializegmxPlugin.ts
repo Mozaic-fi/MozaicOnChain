@@ -126,7 +126,6 @@ export const main = async () => {
             const propertyValuesInner = [pool.poolId, pool.indexToken, pool.longToken, pool.shortToken, pool.marketToken]
             await (data.contractUtil as ContractUtils).setContractConfigValuesArray(functionName, propertyStructName, propertyNames, propertyValuesInner) 
             propertyValues.push(propertyValuesInner)
-            console.log('\n-----------------------------------\n')
         })
  
         return {

@@ -44,12 +44,13 @@ export function cliSelectItem(question: string, items: any[]): Promise<number> {
     });
 
     return new Promise((resolve) => {
-        rl.question(cliBold(`${question}: `), (answer) => {
-            console.log('List of Possible Values:')
-            for (let i = 0; i < items.length; i++) {
-                console.log(`${i + 1}:\n${items[i]}`);
-                console.log('\n-----------------------------------\n')
-            }
+        console.log(cliBold(`${question}: `))
+        console.log('List of Possible Values:')
+        for (let i = 0; i < items.length; i++) {
+            console.log(cliCyan(`${i + 1}:\n${JSON.stringify(items[i], null, 2)}`));
+            console.log('\n-----------------------------------\n')
+        }
+        rl.question(`${question}: `, (answer) => {
             if(/^\d+$/.test(answer.trim())) {
                 let index = parseInt(answer.trim());
                 if(index < 0 || index >= items.length) {

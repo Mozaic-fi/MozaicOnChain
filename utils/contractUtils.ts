@@ -136,7 +136,7 @@ export class ContractUtils {
             throw new Error('User cancelled function call')
         }
         const result = await contract[functionName](...args)
-        console.log(`Function: ${functionName} result: ${result}`)
+        console.log(`Function: ${functionName} result: ${JSON.stringify(result, null, 2)}`)
         return result
     }
 
@@ -189,7 +189,7 @@ export class ContractUtils {
             throw new Error('User cancelled function call')
         }
         const result = await contract[functionName](...args)
-        console.log(`Function: ${functionName} result: ${result}`)
+        console.log(`Function: ${functionName} result: ${JSON.stringify(result, null, 2)}`)
         return result
     }
 
@@ -250,7 +250,7 @@ export class ContractUtils {
             throw new Error('User cancelled function call')
         }
         const result = await contract[functionName](...args)
-        console.log(`Function: ${cliYellow(functionName)} result: ${result}`)
+        console.log(`Function: ${cliYellow(functionName)} result: ${JSON.stringify(result, null, 2)}`)
         return result
     }
 
@@ -266,7 +266,7 @@ export class ContractUtils {
             throw new Error('User cancelled function call')
         }
         const result = await contract[functionName](...args)
-        console.log(cliBlue(`Function: ${functionName} result: ${result}`))
+        console.log(cliBlue(`Function: ${functionName} result: ${JSON.stringify(result, null, 2)}`))
         return result
     }
 
