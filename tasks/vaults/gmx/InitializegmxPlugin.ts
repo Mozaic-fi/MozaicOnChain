@@ -54,8 +54,8 @@ export const main = async () => {
 
     taskManager.registerTask('setGmxParams', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vpi = data.vpi as gmxPluginInfo
-        const propertyNames= ['uiFeeReceiver', 'callbackContract', 'callbackGasLimit', 'executionFee', 'shouldUnwrapNativeToken']
-        const propertyValues = [vpi.params.uiFeeReceiverAddress, dependencies.get(contractNames.Vaults.Theseus.GmxCallback), vpi.params.callbackGasLimit, vpi.params.executionFee, vpi.params.shouldUnwrapNativeToken]
+        const propertyNames= ['uiFeeReceiver', 'callbackContract', 'callbackGasLimit', 'executionFee', 'shouldUnwrapNativeToken', 'pnlFactorType']
+        const propertyValues = [vpi.params.uiFeeReceiverAddress, dependencies.get(contractNames.Vaults.Theseus.GmxCallback), vpi.params.callbackGasLimit, vpi.params.executionFee, vpi.params.shouldUnwrapNativeToken, vpi.params.pnlFactorType]
         const functionName = 'setGmxParams'
         const propertyStructName = 'gmxParams'
         await (data.contractUtil as ContractUtils).setContractConfigValuesStruct(functionName, propertyStructName, propertyNames, propertyValues) 
@@ -98,6 +98,22 @@ export const main = async () => {
             propertyValues
         }
     })
+
+    // taskManager.registerTask('setRewardTokens', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    //     const vpi = data.vpi as gmxPluginInfo
+    //     const rewardTokens= vpi.tokens.map(token => token.address)
+    //     const functionName = 'setRewardTokens'
+    //     const propertyStructName = 'mapping'
+    //     const propertyValues = [rewardTokens]
+    //     const propertyNames = ['rewardTokens']
+    //     await (data.contractUtil as ContractUtils).runContractFunction(functionName, rewardTokens)
+    //     return {
+    //         functionName,
+    //         propertyStructName,
+    //         propertyNames,
+    //         propertyValues
+    //     }
+    // });
 
     taskManager.registerTask('addPools', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vpi = data.vpi as gmxPluginInfo

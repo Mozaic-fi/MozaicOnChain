@@ -22,6 +22,7 @@ export type gmxParams = {
     callbackGasLimit: number
     executionFee: number
     shouldUnwrapNativeToken: boolean
+    pnlFactorType: string
 }
 
 export type gmxPool = {

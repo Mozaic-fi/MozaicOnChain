@@ -137,7 +137,9 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                                 uiFeeReceiverAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
                                 callbackGasLimit: 2000000,
                                 executionFee: 5000000000000000,
-                                shouldUnwrapNativeToken: false
+                                shouldUnwrapNativeToken: false,
+                                //keccak256(abi.encode("MAX_PNL_FACTOR_FOR_TRADERS"));
+                                pnlFactorType: '0xab15365d3aa743e766355e2557c230d8f943e195dc84d9b2b05928a07b635ee1'
                             },
                             pools: [
                                 {
