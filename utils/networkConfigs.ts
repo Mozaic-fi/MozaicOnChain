@@ -163,7 +163,9 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                                     shortToken: getToken(tokenSymbols.USDC, networkNames.avalancheFuji),
                                     marketToken: getGMXToken(networkNames.avalancheFuji, '0x79E6e0E454dE82fA98c02dB012a2A69103630B07')
                                 },
-                            ]                      
+                            ],
+                            executionDepositFee: 0,
+                            executionWithdrawFee: 0,
                         } as gmxPluginInfo
                     ],
                     [

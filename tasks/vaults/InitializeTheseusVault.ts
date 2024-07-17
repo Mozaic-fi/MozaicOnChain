@@ -27,9 +27,8 @@ export const main = async () => {
     });
 
     taskManager.registerTask('setMaster', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
-        
         const propertyNames= ['master']
-        const propertyValues = [data.vaultInfo.master]
+        const propertyValues = [data.vaultInfo.vaultMasterAddress]
         const functionName = 'setMaster'
         await (data.contractUtil as ContractUtils).setContractConfigValues(functionName, propertyNames, propertyValues)
         return {
@@ -105,9 +104,9 @@ export const main = async () => {
         const tokens = getTokens(networkConfig.networkName)
         const functionName = 'addAcceptedToken'
         const tokenIndex = await cliSelectItem('Select a token to add', tokens)   
-        const propertyNames= ['acceptedTokens']
+        const propertyNames= ['array:acceptedTokens']
         const propertyValues = [tokens[tokenIndex].address]
-        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyNames, propertyValues)
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0])
         return {
             functionName,
             propertyStructName: '',
@@ -121,9 +120,9 @@ export const main = async () => {
         const tokensList: string[] = await (data.contractUtil as ContractUtils).getArrayValues('acceptedTokens')
         const tokens = getTokens(networkConfig.networkName).filter(token=>tokensList.includes(token.address))
         const tokenIndex = await cliSelectItem('Select a token to remove', tokens)   
-        const propertyNames= ['acceptedTokens']
+        const propertyNames= ['array:acceptedTokens']
         const propertyValues = [tokensList[tokenIndex]]
-        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyNames, propertyValues)
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0])
         return {
             functionName,
             propertyStructName: '',
@@ -137,9 +136,9 @@ export const main = async () => {
         const tokens = getTokens(networkConfig.networkName)
         const functionName = 'addDepositAllowedToken'
         const tokenIndex = await cliSelectItem('Select a token to add', tokens)   
-        const propertyNames= ['depositAllowedTokens']
+        const propertyNames= ['array:depositAllowedTokens']
         const propertyValues = [tokens[tokenIndex].address]
-        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyNames, propertyValues)
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0])
         return {
             functionName,
             propertyStructName: '',
@@ -153,9 +152,9 @@ export const main = async () => {
         const tokensList: string[] = await (data.contractUtil as ContractUtils).getArrayValues('depositAllowedTokens')
         const tokens = getTokens(networkConfig.networkName).filter(token=>tokensList.includes(token.address))
         const tokenIndex = await cliSelectItem('Select a token to remove', tokens)   
-        const propertyNames= ['depositAllowedTokens']
+        const propertyNames= ['array:depositAllowedTokens']
         const propertyValues = [tokensList[tokenIndex]]
-        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyNames, propertyValues)
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0])
         return {
             functionName,
             propertyStructName: '',
@@ -177,9 +176,9 @@ export const main = async () => {
         }
         const functionName = 'addPlugin'
         const pluginIndex = await cliSelectItem('Select a plugin to add', PluginAddresses)   
-        const propertyNames= ['_pluginId', '_pluginAddress']
+        const propertyNames= ['array:plugins']
         const propertyValues = [PluginAddresses[pluginIndex].id, PluginAddresses[pluginIndex].address]
-        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyNames, propertyValues)
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0], propertyValues[1])
         return {
             functionName,
             propertyStructName: '',
@@ -193,9 +192,9 @@ export const main = async () => {
         const contractPlugins = await (data.contractUtil as ContractUtils).getArrayValues('plugins')       
         const plugins = Array.from(networkConfig.theseusVaultInfo?.vaultPlugins!).filter(entry => contractPlugins.some(p=>entry[1].pluginId == p.pluginId))
         const pluginIndex = await cliSelectItem('Select a plugin to remove', plugins)   
-        const propertyNames= ['plugins']
+        const propertyNames= ['array:plugins']
         const propertyValues = [plugins[pluginIndex][1].pluginId]
-        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyNames, propertyValues)
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0])
         return {
             functionName,
             propertyStructName: '',
@@ -219,7 +218,7 @@ export const main = async () => {
 
     taskManager.registerTask('setVaultLockers', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vaultLockers = await cliInputList('Enter the vault lockers addresses')
-        const propertyNames= ['vaultLockers']
+        const propertyNames= ['array:vaultLockers']
         const propertyValues = [vaultLockers]
         const functionName = 'setVaultLockers'
         await (data.contractUtil as ContractUtils).setContractConfigValues(functionName, propertyNames, propertyValues)
@@ -234,7 +233,7 @@ export const main = async () => {
     
     taskManager.registerTask('setVaultManagers', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vaultManagers = await cliInputList('Enter the vault managers addresses')
-        const propertyNames= ['vaultManagers']
+        const propertyNames= ['array:vaultManagers']
         const propertyValues = [vaultManagers]
         const functionName = 'setVaultManagers'
         await (data.contractUtil as ContractUtils).setContractConfigValues(functionName, propertyNames, propertyValues)
