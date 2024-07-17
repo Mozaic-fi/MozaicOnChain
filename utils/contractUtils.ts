@@ -1,7 +1,7 @@
 import { networkConfigs, NetworkInfo } from "./networkConfigs";
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
 
-import {cliConfirmation} from './cliUtils'
+import {cliBlue, cliConfirmation, cliCyan, cliGreen, cliRed, cliYellow} from './cliUtils'
 
 export class ContractUtils {
     private hre: HardhatRuntimeEnvironment;
@@ -23,7 +23,7 @@ export class ContractUtils {
 
     async deployContract() {
         if(this._contractAddress !== '') {
-            console.log(`Contract already deployed: ${this.contractName}, network: ${this.network}, address: ${this._contractAddress}`)
+            console.log(cliRed(`Contract already deployed: ${this.contractName}, network: ${this.network}, address: ${this._contractAddress}`))
             return this._contractAddress;
         }
         const { getNamedAccounts, deployments } = this.hre;
@@ -31,7 +31,7 @@ export class ContractUtils {
         const { deploy } = deployments
         const { deployer } = await getNamedAccounts()
 
-        console.log(`Deploying contract: ${this.contractName}, network: ${this.network} with args: ${this.constructorArgs}`)
+        console.log(`Deploying contract: ${cliGreen(this.contractName)}, network: ${cliBlue(this.network)} with args: ${this.constructorArgs}`)
         if (!await cliConfirmation('Do you want to continue?', this.getCLIConfirmation)) {
             throw new Error('User cancelled deployment')
         }
@@ -43,7 +43,7 @@ export class ContractUtils {
             skipIfAlreadyDeployed: false,
         })
         this._contractAddress = address; 
-        console.log(`Deployed contract: ${this.contractName}, network: ${this.network}, address: ${address}`)
+        console.log(`Deployed contract: ${cliGreen(this.contractName)}, network: ${cliBlue(this.network)}, address: ${cliCyan(address)}`)
         return address;
     }
 
@@ -52,7 +52,7 @@ export class ContractUtils {
             console.error('Contract not deployed yet')
             process.exit(1)
         }
-        console.log(`Verifying contract: ${this._contractAddress}`)
+        console.log(`Verifying contract: ${cliCyan(this._contractAddress)}`)
         if (!await cliConfirmation('Do you want to continue?', this.getCLIConfirmation)) {
             throw new Error('User cancelled verification')
         }
@@ -60,12 +60,12 @@ export class ContractUtils {
             address: this._contractAddress,
             constructorArguments: this.constructorArgs,
         })
-        console.log(`Contract verified: ${this._contractAddress}`)
+        console.log(cliGreen(`Contract verified: ${this._contractAddress}`))
     }
 
     async deployAndVerifyContract() {
         if(this._contractAddress !== '') {
-            console.log(`Contract already deployed: ${this.contractName}, network: ${this.network}, address: ${this._contractAddress}`)
+            console.log(cliRed(`Contract already deployed: ${this.contractName}, network: ${this.network}, address: ${this._contractAddress}`))
             return this._contractAddress;
         }
         await this.deployContract()
@@ -90,10 +90,10 @@ export class ContractUtils {
     }
 
     async setContractConfigValues(functionName: string, prevValuesFunctionNames: string[], args: any[]) {
-        console.log(`Setting contract values for function: ${functionName} on ${this.contractName} at ${this.network}`)
+        console.log(`Setting contract values for function: ${cliYellow(functionName)} on ${cliGreen(this.contractName)} at ${cliBlue(this.network)}`)
         const contract = await this.getDeployedContract()
         if (typeof contract[functionName] !== "function") {
-            console.error(`Function ${functionName} does not exist on the ${this.contractName} contract.`);
+            console.error(`Function ${cliYellow(functionName)} does not exist on the ${cliGreen(this.contractName)} contract.`);
             process.exit(1);
         }
 
@@ -121,14 +121,14 @@ export class ContractUtils {
                 }
             }
             if (!updateRequired) {
-                console.log(`No changes detected in the values of the contract variables`);
+                console.log(cliYellow(`No changes detected in the values of the contract variables`));
                 for (const [key, value] of prevValues) {
                     console.log(`${key}: ${value[0]}`);
                 }
                 return;
             }
             for (const [key, value] of prevValues) {
-                console.log(`Updating ${key}: from ${value[0]} to ${value[1]}`);
+                console.log(cliGreen(`Updating ${key}: from ${value[0]} to ${value[1]}`));
             }
         }
         console.log(`Calling function: ${functionName} with args: ${args}`)

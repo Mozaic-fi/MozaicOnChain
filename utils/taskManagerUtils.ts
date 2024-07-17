@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment  } from 'hardhat/types';
 
 import {networkConfigs, NetworkInfo} from './networkConfigs'
-import {cliConfirmation} from './cliUtils'
+import {cliBlue, cliConfirmation, cliCyan, cliGreen, cliRed} from './cliUtils'
 
 import * as readline from 'readline';
 
@@ -88,7 +88,7 @@ export class TaskManagerUtils {
         if (this.finalizeCallback) {
             await this.finalizeCallback(this.hardhatRuntimeEnvironment, this.contractName,this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
         }
-        console.log("Task execution completed.");
+        console.log(cliCyan("Task execution completed.",true));
     }
 
     async run(): Promise<void> {
@@ -100,7 +100,7 @@ export class TaskManagerUtils {
 
         const taskNames = Array.from(this.tasks.keys());
 
-        console.log("Available tasks:");
+        console.log(cliGreen("Available tasks:", true));
         taskNames.forEach((name, index) => {
             console.log(`${index + 1}. ${name}`);
         });
@@ -121,14 +121,14 @@ export class TaskManagerUtils {
                     if (index >= 0 && index < taskNames.length) {
                         tasksToRun.push(taskNames[index]);
                     } else {
-                        console.log(`Invalid task number: ${input}`);
+                        console.log(cliRed(`Invalid task number: ${input}`));
                         rl.close();
                         return;
                     }
                 } else if (this.tasks.has(input)) {
                     tasksToRun.push(input);
                 } else {
-                    console.log(`Invalid task name: ${input}`);
+                    console.log(cliRed(`Invalid task name: ${input}`));
                     rl.close();
                     return;
                 }
@@ -136,7 +136,7 @@ export class TaskManagerUtils {
         }
 
         if (tasksToRun.length > 0) {
-            console.log("\nTasks to run:");
+            console.log(cliBlue("\nTasks to run:",true));
             tasksToRun.forEach(task => console.log(`- ${task}`));
 
             if (!await cliConfirmation('Do you want to continue?', true)) {
@@ -156,8 +156,8 @@ export class TaskManagerUtils {
         }
 
         rl.close();
-        console.log('\n===================================\n')
-        console.log("Task execution completed.");
-        console.log('\n===================================\n')
+        console.log(cliCyan('\n===================================\n',true))
+        console.log(cliCyan("Task execution completed.",true));
+        console.log(cliCyan('\n===================================\n',true))
     }
 }

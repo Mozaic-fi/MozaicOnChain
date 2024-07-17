@@ -10,7 +10,7 @@ export function cliConfirmation(question: string, active: boolean): Promise<bool
     });
 
     return new Promise((resolve) => {
-        rl.question(`${question} (Y/n): `, (answer) => {
+        rl.question(cliBold(`${question} (Y/n): `), (answer) => {
             rl.close();
             const trimmedAnswer = answer.trim().toLowerCase();
             resolve(trimmedAnswer === 'y' || trimmedAnswer === '');
@@ -25,7 +25,7 @@ export function cliQuestionNumber(question: string): Promise<number> {
     });
 
     return new Promise((resolve) => {
-        rl.question(`${question}: `, (answer) => {
+        rl.question(cliBold(`${question}: `), (answer) => {
             if(/^\d+$/.test(answer.trim())) {
                 resolve(parseInt(answer.trim()));
             }
@@ -44,7 +44,7 @@ export function cliSelectItem(question: string, items: any[]): Promise<number> {
     });
 
     return new Promise((resolve) => {
-        rl.question(`${question}: `, (answer) => {
+        rl.question(cliBold(`${question}: `), (answer) => {
             console.log('List of Possible Values:')
             for (let i = 0; i < items.length; i++) {
                 console.log(`${i + 1}:\n${items[i]}`);
@@ -72,7 +72,7 @@ export function cliInputList(question: string): Promise<string[]> {
     });
 
     return new Promise((resolve) => {
-        rl.question(`${question} (Press enter twice to submit): `, async(answer) => {
+        rl.question(cliBold(`${question} (Press enter twice to submit): `), async(answer) => {
             const values: string[] = [];
             let trimmedAnswer = answer.trim();
             while (trimmedAnswer !== '') {
@@ -83,4 +83,41 @@ export function cliInputList(question: string): Promise<string[]> {
             resolve(values);
         });
     });
+}
+
+const reset = "\x1b[0m";
+const boldFlag = "\x1b[1m";
+const red = "\x1b[31m";
+const green = "\x1b[32m";
+const blue = "\x1b[34m";
+const yellow = "\x1b[33m";
+const cyan = "\x1b[36m";
+const magenta = "\x1b[35m";
+
+export function cliBold(text: string): string {
+    return boldFlag + text + reset;
+}
+
+export function cliRed(text: string, bold: boolean = true): string {
+    return red + text + reset;
+}
+
+export function cliGreen(text: string, bold: boolean= true): string {
+    return green + text + reset;
+}
+
+export function cliBlue(text: string, bold: boolean= true): string {
+    return blue + text + reset;
+}
+
+export function cliYellow(text: string, bold: boolean= true): string {
+    return yellow + text + reset;
+}
+
+export function cliCyan(text: string, bold: boolean= true): string {
+    return cyan + text + reset;
+}
+
+export function cliMagenta(text: string, bold: boolean= true): string {
+    return magenta + text + reset;
 }
