@@ -115,26 +115,26 @@ export const main = async () => {
     //     }
     // });
 
-    taskManager.registerTask('addPools', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
-        const vpi = data.vpi as gmxPluginInfo
-        const functionName = 'addPool'
-        const propertyStructName = 'pools'
-        let propertyNames = ['poolId', 'indexToken', 'longToken', 'shortToken', 'marketToken']
-        let propertyValues: any[][] = []
-        vpi.pools.forEach(async(pool) => {
-            console.log(`Adding pool ${pool.poolId}`)
-            const propertyValuesInner = [pool.poolId, pool.indexToken, pool.longToken, pool.shortToken, pool.marketToken]
-            await (data.contractUtil as ContractUtils).setContractConfigValuesArray(functionName, propertyStructName, propertyNames, propertyValuesInner) 
-            propertyValues.push(propertyValuesInner)
-        })
+    // taskManager.registerTask('addPools', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    //     const vpi = data.vpi as gmxPluginInfo
+    //     const functionName = 'addPool'
+    //     const propertyStructName = 'pools'
+    //     let propertyNames = ['poolId', 'indexToken', 'longToken', 'shortToken', 'marketToken']
+    //     let propertyValues: any[][] = []
+    //     vpi.pools.forEach(async(pool) => {
+    //         console.log(`Adding pool ${pool.poolId}`)
+    //         const propertyValuesInner = [pool.poolId, pool.indexToken.address, pool.longToken.address, pool.shortToken.address, pool.marketToken.address]
+    //         await (data.contractUtil as ContractUtils).setContractConfigValuesArray(functionName, propertyStructName, propertyNames, propertyValuesInner) 
+    //         propertyValues.push(propertyValuesInner)
+    //     })
  
-        return {
-            functionName,
-            propertyStructName,
-            propertyNames,
-            propertyValues
-        }
-    })
+    //     return {
+    //         functionName,
+    //         propertyStructName,
+    //         propertyNames,
+    //         propertyValues
+    //     }
+    // })
 
     taskManager.registerTask('addPool (Single Pool)', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vpi = data.vpi as gmxPluginInfo
@@ -145,7 +145,7 @@ export const main = async () => {
 
         let cliQuestionNumberResponse = await cliSelectItem('Enter the poolId of the pool you want to add', vpi.pools)
         const pool = vpi.pools[cliQuestionNumberResponse]
-        const propertyValues = [pool.poolId, pool.indexToken, pool.longToken, pool.shortToken, pool.marketToken]
+        const propertyValues = [pool.poolId, pool.indexToken.address, pool.longToken.address, pool.shortToken.address, pool.marketToken.address]
         await (data.contractUtil as ContractUtils).setContractConfigValuesArray(functionName, propertyStructName, propertyNames, propertyValues) 
         return {
             functionName,

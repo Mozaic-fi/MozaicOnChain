@@ -56,7 +56,7 @@ export function cliSelectItem(question: string, items: any[]): Promise<number> {
                 if(index < 0 || index >= items.length) {
                     rl.write("Invalid input\n");
                 }
-                resolve(index);
+                resolve(index - 1);
             }
             else{
                 rl.write("Invalid input\n");

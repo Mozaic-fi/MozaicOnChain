@@ -157,7 +157,7 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                                     marketToken: getGMXToken(networkNames.avalancheFuji, '0xbf338a6C595f06B7Cfff2FA8c958d49201466374')
                                 },
                                 {
-                                    poolId: 2,
+                                    poolId: 3,
                                     indexToken: getToken(tokenSymbols.WBTC, networkNames.avalancheFuji),
                                     longToken: getToken(tokenSymbols.WBTC, networkNames.avalancheFuji),
                                     shortToken: getToken(tokenSymbols.USDC, networkNames.avalancheFuji),

@@ -212,12 +212,12 @@ export class ContractUtils {
                 console.error(`Function ${arrayName} does not exist on the ${this.contractName} contract.`);
                 process.exit(1);
             }
-            const arrayLength = await contract[arrayName].length;
-            if(arrayLength !== 0) {
+            const arrayValues = await this.getArrayValues(arrayName)
+            if(arrayValues.length !== 0) {
 
                 let prevValues = new Map<string, any[]>();
-                for (let i = 0; i < arrayLength; i++) {
-                    let prevValueInArray = await contract[arrayName](i);
+                for (let i = 0; i < arrayValues.length; i++) {
+                    let prevValueInArray = arrayValues[i]
                     if(prevValueInArray[propertyNames[0]] === args[0]) {
                         for (let j = 0; j < propertyNames.length; j++) {
                             prevValues.set(propertyNames[j], [prevValueInArray[propertyNames[j]], args[j]]);  
@@ -232,6 +232,7 @@ export class ContractUtils {
                         break;
                     }
                 }
+                if(prevValues.size === 0)  updateRequired = true;
                 if (!updateRequired) {
                     console.log(cliYellow(`No changes detected in the values of the contract variables`));
                     for (const [key, value] of prevValues) {
@@ -276,10 +277,16 @@ export class ContractUtils {
             console.error(`Function ${arrayName} does not exist on the ${this.contractName} contract.`);
             process.exit(1);
         }
-        const arrayLength = await contract[arrayName].length;
         let values = []
-        for (let i = 0; i < arrayLength; i++) {
-            values.push(await contract[arrayName](i));
+        let i = 0;
+        while (true) {
+            try {
+                const value = await contract[arrayName](i);
+                values.push(value);
+                i++;
+            } catch (error) {
+                break;
+            }
         }
         return values;
     }
