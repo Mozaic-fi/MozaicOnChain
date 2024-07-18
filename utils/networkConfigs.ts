@@ -41,6 +41,7 @@ export type NetworkInfo = {
 }
 
 export const networkConfigs = new Map<string, NetworkInfo>([
+    //testnet
     [
         networkNames.arbitrumSepolia,
         {
@@ -185,6 +186,30 @@ export const networkConfigs = new Map<string, NetworkInfo>([
             
         },
     ],
+    //VNet
+    [
+        networkNames.arbitrumTwo,
+        {
+            networkName: networkNames.arbitrumTwo,
+            chainId: 4216099,
+            layerZeroInfo: {
+                layerZeroEndpointV2: '',
+                layerZeroEIDV2: 0,
+            },
+            tokensInfo: {
+                treasuryAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
+                firstDeployment: true,
+                requireAdapter: true,
+                mozTokenContractAddress:'0x20547341e58fb558637fa15379c92e11f7b7f710',
+                xMozTokenContractAddress:'0x288734c9d9db21C5660B6b893F513cb04B6cD2d6',
+                mozStakingContractAddress:'0xe08eFb59e053a586415272c15cDF62758c698739',
+                multiSigOwnerAddress: '0xcba641A83D03b979df63b1E5849e0dE0F1831357',
+                version: 1
+            },
+            testNet: false,
+        }
+    ],
+    //Mainnet
     [
         networkNames.arbitrumOne,
         {
@@ -205,7 +230,7 @@ export const networkConfigs = new Map<string, NetworkInfo>([
                 version: 1
             },
             testNet: false,
-        },
+        }
     ],
     [
         networkNames.base,
