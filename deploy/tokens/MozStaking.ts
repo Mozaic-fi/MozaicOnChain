@@ -10,8 +10,6 @@ const deploy: DeployFunction = async (hre) => {
 
     let networkConfig = networkConfigs.get(hre.network.name)
 
-    console.log(hre.network.name)
-    console.log(networkConfig)
     const constructorArgs = [networkConfig?.tokensInfo?.treasuryAddress!]
     const deployer = new ContractUtils(hre, contractName, constructorArgs)
 
