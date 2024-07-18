@@ -33,7 +33,8 @@ export class ContractUtils {
 
         console.log(`Deploying contract: ${cliGreen(this.contractName)}, network: ${cliBlue(this.network)} with args: ${this.constructorArgs}`)
         if (!await cliConfirmation('Do you want to continue?', this.getCLIConfirmation)) {
-            throw new Error('User cancelled deployment')
+            console.error('User cancelled deployment')
+            process.exit(1)
         }
 
         const { address } = await deploy(this.contractName, {
@@ -54,7 +55,8 @@ export class ContractUtils {
         }
         console.log(`Verifying contract: ${cliCyan(this._contractAddress)}`)
         if (!await cliConfirmation('Do you want to continue?', this.getCLIConfirmation)) {
-            throw new Error('User cancelled verification')
+            console.error('User cancelled verification')
+            process.exit(1)
         }
         await this.hre.run('verify:verify', {
             address: this._contractAddress,
@@ -133,7 +135,8 @@ export class ContractUtils {
         }
         console.log(`Calling function: ${functionName} with args: ${args}`)
         if (!await cliConfirmation('Do you want to continue?', this.getCLIConfirmation)) {
-            throw new Error('User cancelled function call')
+            console.error('User cancelled function call')
+            process.exit(1);
         }
         const result = await contract[functionName](...args)
         console.log(`Function: ${functionName} result: ${JSON.stringify(result, null, 2)}`)
@@ -186,7 +189,8 @@ export class ContractUtils {
         }
         console.log(`Calling function: ${cliYellow(functionName)} with args: ${args}`)
         if (!await cliConfirmation('Do you want to continue?', this.getCLIConfirmation)) {
-            throw new Error('User cancelled function call')
+            console.error('User cancelled function call')
+            process.exit(1);
         }
         const result = await contract[functionName](...args)
         console.log(`Function: ${functionName} result: ${JSON.stringify(result, null, 2)}`)
@@ -248,7 +252,8 @@ export class ContractUtils {
         }
         console.log(`Calling function: ${cliYellow(functionName)} with args: ${args}`)
         if (!await cliConfirmation('Do you want to continue?', this.getCLIConfirmation)) {
-            throw new Error('User cancelled function call')
+            console.error('User cancelled function call')
+            process.exit(1);
         }
         const result = await contract[functionName](...args)
         console.log(`Function: ${cliYellow(functionName)} result: ${JSON.stringify(result, null, 2)}`)
@@ -264,7 +269,8 @@ export class ContractUtils {
         }
         console.log(`Calling function: ${cliYellow(functionName)} with args: ${args}`)
         if (!await cliConfirmation('Do you want to continue?', this.getCLIConfirmation)) {
-            throw new Error('User cancelled function call')
+            console.error('User cancelled function call')
+            process.exit(1);
         }
         const result = await contract[functionName](...args)
         console.log(cliBlue(`Function: ${functionName} result: ${JSON.stringify(result, null, 2)}`))

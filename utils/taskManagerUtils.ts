@@ -142,7 +142,8 @@ export class TaskManagerUtils {
             tasksToRun.forEach(task => console.log(`- ${task}`));
 
             if (!await cliConfirmation('Do you want to continue?', true)) {
-                throw new Error('User cancelled function call')
+                console.error('User cancelled function call')
+                process.exit(1);
             }
             await this.initialize();
                 for (const taskName of tasksToRun) {
