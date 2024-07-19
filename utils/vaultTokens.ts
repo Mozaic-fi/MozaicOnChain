@@ -46,6 +46,17 @@ export class VaultToken {
         newToken.network = network
         return newToken
     }
+
+    public static fromVaultToken2(token: VaultToken, network: networkNames) : VaultToken{
+        const newToken = new VaultToken(token.name, token.symbol, token.decimals, token.synthetic)
+        newToken.address = token.address
+        newToken.priceFeedAddress = token.priceFeedAddress
+        newToken.heartBeatDuration = token.heartBeatDuration
+        newToken.acceptedInVault = token.acceptedInVault
+        newToken.depositAllowed = token.depositAllowed
+        newToken.network = network
+        return newToken
+    }
 }
 
 const baseTokens: VaultToken[] =Array.from(new Set<VaultToken>([
@@ -124,6 +135,14 @@ const arbitrumOneTokens: VaultToken[] = [
 ]
 
 vaultTokens.push(...arbitrumOneTokens)
+
+const arbitrumTwoTokens: VaultToken[] = []
+for (let i =0; i< arbitrumOneTokens.length; i++){
+    arbitrumTwoTokens.push(VaultToken.fromVaultToken2(arbitrumOneTokens[i], networkNames.arbitrumTwo))
+}
+
+vaultTokens.push(...arbitrumOneTokens)
+
 
 const avalancheFujiTokens: VaultToken[] = [
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.USDC, '0x3eBDeaA0DB3FfDe96E7a0DBBAFEC961FC50F725F', '0x97FE42a7E96640D932bbc0e1580c73E705A8EB73', 86400, true, true, networkNames.avalancheFuji),

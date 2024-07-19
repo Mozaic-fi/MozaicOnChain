@@ -103,7 +103,7 @@ export const main = async () => {
     taskManager.registerTask('addAcceptedToken', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const tokens = getTokens(networkConfig.networkName)
         const functionName = 'addAcceptedToken'
-        const tokenIndex = await cliSelectItem('Select a token to add', tokens)   
+        const tokenIndex = await cliSelectItem('Select a token to add', tokens.map(token=>[token.symbol, token.address]), true)   
         const propertyNames= ['array:acceptedTokens']
         const propertyValues = [tokens[tokenIndex].address]
         await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0])
@@ -119,7 +119,7 @@ export const main = async () => {
         const functionName = 'removeAcceptedToken'
         const tokensList: string[] = await (data.contractUtil as ContractUtils).getArrayValues('acceptedTokens')
         const tokens = getTokens(networkConfig.networkName).filter(token=>tokensList.includes(token.address))
-        const tokenIndex = await cliSelectItem('Select a token to remove', tokens)   
+        const tokenIndex = await cliSelectItem('Select a token to remove', tokens.map(token=>[token.symbol, token.address]), true)   
         const propertyNames= ['array:acceptedTokens']
         const propertyValues = [tokensList[tokenIndex]]
         await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0])
@@ -135,7 +135,7 @@ export const main = async () => {
     taskManager.registerTask('addDepositAllowedToken', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const tokens = getTokens(networkConfig.networkName)
         const functionName = 'addDepositAllowedToken'
-        const tokenIndex = await cliSelectItem('Select a token to add', tokens)   
+        const tokenIndex = await cliSelectItem('Select a token to add', tokens.map(token=>[token.symbol, token.address]), true)   
         const propertyNames= ['array:depositAllowedTokens']
         const propertyValues = [tokens[tokenIndex].address]
         await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0])
@@ -151,7 +151,7 @@ export const main = async () => {
         const functionName = 'removeDepositAllowedToken'
         const tokensList: string[] = await (data.contractUtil as ContractUtils).getArrayValues('depositAllowedTokens')
         const tokens = getTokens(networkConfig.networkName).filter(token=>tokensList.includes(token.address))
-        const tokenIndex = await cliSelectItem('Select a token to remove', tokens)   
+        const tokenIndex = await cliSelectItem('Select a token to remove', tokens.map(token=>[token.symbol, token.address]), true)   
         const propertyNames= ['array:depositAllowedTokens']
         const propertyValues = [tokensList[tokenIndex]]
         await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0])
