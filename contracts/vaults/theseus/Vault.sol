@@ -29,9 +29,6 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
     // A constant representing the maximum fee percentage allowed (1000 basis points or 10% in this case).
     uint256 public constant MAX_FEE = 1e3;
 
-    // The Address of lifi contract
-    address public constant LIFI_CONTRACT = 0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE;
-
     // Struct defining the properties of a Plugin.
     struct Plugin {
         address pluginAddress;  // Address of the plugin contract.
@@ -41,6 +38,9 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
     /* ========== STATE VARIABLES ========== */
     // Stores the address of the master contract.
     address public master;
+
+    // Stores the address of the contract admin.
+    address public admin;
 
     // Stores the address of the treasury, which is payable for receiving funds.
     address payable public treasury;
@@ -99,6 +99,7 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
     event RemovePlugin(uint8 _pluginId);
     event Execute(uint8 _pluginId, IPlugin.ActionType _actionType, bytes _payload);
     event MasterUpdated(address _oldMaster, address _newMaster);
+    event AdminUpdated(address _oldAdmin, address _newAdmin);
     event TokenPriceConsumerUpdated(address _oldTokenPriceConsumer, address _newTokenPriceConsumer);
     event SetTreasury(address payable treasury);
     event SetProtocolFeePercentage(uint256 _protocolFeePercentage);
@@ -124,6 +125,12 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
         require(msg.sender == master, "Vault: caller must be master");
         _;
     }
+
+    modifier onlyAdmin() {
+        require(msg.sender == admin, "Vault: caller must be admin");
+        _;
+    }
+
 
     // Modifier allowing only the vault lockers to execute the function.
     modifier onlyVaultLockers() {
@@ -153,14 +160,16 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
 
     /* ========== CONFIGURATION ========== */
     // Constructor for the Mozaic Theseus LPToken contract, inheriting from ERC20.
-    constructor(address _master, address _tokenPriceConsumer, address payable _treasury) ERC20("Mozaic Theseus LP", "MOZ-THE-LP") Ownable(msg.sender){
+    constructor(address _master,address _admin, address _tokenPriceConsumer, address payable _treasury) ERC20("Mozaic Theseus LP", "MOZ-THE-LP") Ownable(msg.sender){
         require(_master != address(0), "Vault: Invalid Address");
+        require(_admin != address(0), "Vault: Invalid Address");
         require(_tokenPriceConsumer != address(0), "Vault: Invalid Address");
         require(_treasury != address(0), "Vault: Invalid Address");
 
         master = _master;
         tokenPriceConsumer = _tokenPriceConsumer;
         treasury = _treasury;
+        admin = _admin;
     }
 
     // Allows the owner to set a new master address for the Vault.
@@ -176,6 +185,21 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
 
         // Emit an event to log the master address update.
         emit MasterUpdated(_oldMaster, _newMaster);
+    }
+
+    // Allows the owner to set a new admin address for the Vault.
+    function setAdmin(address _newAdmin) external onlyOwner {
+        // Ensure that the new admin address is valid.
+        require(_newAdmin != address(0), "Vault: Invalid Address");
+
+        // Store the current admin address before updating.
+        address _oldAdmin = admin;
+
+        // Update the admin address to the new value.
+        admin = _newAdmin;
+
+        // Emit an event to log the admin address update.
+        emit MasterUpdated(_oldAdmin, _newAdmin);
     }
 
     // Allows the owner to set the address of the token price consumer contract.
@@ -206,16 +230,15 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
     }
 
     // Allows the master contract to select a plugin and pool.
-    function selectPluginAndPool(uint8 _pluginId, uint8 _poolId) onlyMaster public {
+    function selectPluginAndPool(uint8 _pluginId, uint8 _poolId) onlyAdmin public {
         // Set the selectedPluginId and selectedPoolId to the provided values.
         selectedPluginId = _pluginId;
         selectedPoolId = _poolId;
         emit SelectPluginAndPool(_pluginId, _poolId);
     }
 
-
     // Sets the execution fees for deposit and withdrawal transactions.
-    function setExecutionFee(uint256 _depositMinExecFee, uint256 _withdrawMinExecFee) public onlyMaster {
+    function setExecutionFee(uint256 _depositMinExecFee, uint256 _withdrawMinExecFee) public onlyAdmin {
         // Set the deposit minimum execution fee
         depositMinExecFee = _depositMinExecFee;
 
@@ -553,7 +576,7 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
     }
 
     // Allows the master contract to approve tokens for a specified plugin based on the provided payload.
-    function approveTokens(uint8 _pluginId, address[] memory _tokens, uint256[] memory _amounts) external onlyMaster nonReentrant {
+    function approveTokens(uint8 _pluginId, address[] memory _tokens, uint256[] memory _amounts) external onlyAdmin nonReentrant {
         // Ensure that the specified plugin exists.
         require(pluginIdToIndex[_pluginId] != 0, "Plugin with this ID does not exist");
 
@@ -643,25 +666,7 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
         // Revert if the Ether transfer to the plugin fails
         require(success, "Vault: Failed to send Ether");
     }
-
-    // function bridgeViaLifi(
-    //     address _srcToken,
-    //     uint256 _amount,
-    //     uint256 _value,
-    //     bytes calldata _data
-    // ) external onlyMaster nonReentrant {
-    //     require(
-    //         address(LIFI_CONTRACT) != address(0),
-    //         "Lifi: zero address"
-    //     );
-    //     bool isNative = (_srcToken == address(0));
-    //     if (!isNative) {
-    //         IERC20(_srcToken).safeApprove(address(LIFI_CONTRACT), 0);
-    //         IERC20(_srcToken).safeApprove(address(LIFI_CONTRACT), _amount);
-    //     }
-    //     (bool success,) = LIFI_CONTRACT.call{value: _value}(_data);
-    //     require(success, "Lifi: call failed");
-    // }
+ 
 
     /* ========== VIEW FUNCTIONS ========== */
 

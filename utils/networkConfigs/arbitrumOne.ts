@@ -68,6 +68,7 @@ export const arbitrumOneNetworkConfig: NetworkInfo = {
         treasuryAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
         multiSigOwnerAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
         vaultMasterAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
+        vaultAdminAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
         protocolFeePercentage: 1000,
         version: 1,
         vaultPlugins: new Map<string, vaultPlugin>([

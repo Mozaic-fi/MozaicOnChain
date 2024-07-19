@@ -291,7 +291,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     // Function allowing the vault to execute different actions based on the specified action type.
     function execute(ActionType _actionType, bytes calldata _payload) external payable onlyVault nonReentrant {
         // Determine the action type and execute the corresponding logic.
-        if (_actionType == ActionType. Stake) {
+        if (_actionType == ActionType.Stake) {
             // Execute stake action.
             stake(_payload);
         } else if (_actionType == ActionType.Unstake) {
