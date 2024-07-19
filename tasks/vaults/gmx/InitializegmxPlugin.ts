@@ -1,7 +1,7 @@
 import { ethers  } from 'hardhat'
 import {networkConfigs} from '../../../utils/networkConfigs'
 import { contractNames } from '../../../utils/names/contractNames'
-import {cliSelectItem} from '../../../utils/cliUtils'
+import {cliSelectItem, cliSelectItems} from '../../../utils/cliUtils'
 import { pluginNames } from '../../../utils/names/pluginNames'
 import { gmxPluginInfo } from '../../../utils/vaultPlugins/gmxVaultPlugins'
 import { ContractUtils } from '../../../utils/contractUtils'
@@ -115,26 +115,29 @@ export const main = async () => {
     //     }
     // });
 
-    // taskManager.registerTask('addPools', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
-    //     const vpi = data.vpi as gmxPluginInfo
-    //     const functionName = 'addPool'
-    //     const propertyStructName = 'pools'
-    //     let propertyNames = ['poolId', 'indexToken', 'longToken', 'shortToken', 'marketToken']
-    //     let propertyValues: any[][] = []
-    //     vpi.pools.forEach(async(pool) => {
-    //         console.log(`Adding pool ${pool.poolId}`)
-    //         const propertyValuesInner = [pool.poolId, pool.indexToken.address, pool.longToken.address, pool.shortToken.address, pool.marketToken.address]
-    //         await (data.contractUtil as ContractUtils).setContractConfigValuesArray(functionName, propertyStructName, propertyNames, propertyValuesInner) 
-    //         propertyValues.push(propertyValuesInner)
-    //     })
+    taskManager.registerTask('addPools', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+        const vpi = data.vpi as gmxPluginInfo
+        const functionName = 'addPool'
+        const propertyStructName = 'pools'
+        let propertyNames = ['poolId', 'indexToken', 'longToken', 'shortToken', 'marketToken']
+        let propertyValues: any[][] = []
+        let cliQuestionNumberResponses = await cliSelectItems('Enter the poolId of the pools you want to add', vpi.pools.map(pool => [pool.poolId, pool.indexToken.symbol, pool.longToken.symbol, pool.shortToken.symbol, pool.marketToken.address]), true)
+        for (let pindex in cliQuestionNumberResponses)
+        {
+            const pool = vpi.pools[pindex]
+            console.log(`Adding pool ${[pool.poolId, pool.indexToken.symbol, pool.longToken.symbol, pool.shortToken.symbol, pool.marketToken.address]}`)
+            const propertyValuesInner = [pool.poolId, pool.indexToken.address, pool.longToken.address, pool.shortToken.address, pool.marketToken.address]
+            await (data.contractUtil as ContractUtils).setContractConfigValuesArray(functionName, propertyStructName, propertyNames, propertyValuesInner) 
+            propertyValues.push(propertyValuesInner)
+        }
  
-    //     return {
-    //         functionName,
-    //         propertyStructName,
-    //         propertyNames,
-    //         propertyValues
-    //     }
-    // })
+        return {
+            functionName,
+            propertyStructName,
+            propertyNames,
+            propertyValues
+        }
+    })
 
     taskManager.registerTask('addPool (Single Pool)', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vpi = data.vpi as gmxPluginInfo
@@ -143,7 +146,7 @@ export const main = async () => {
         const propertyStructName = 'pools'
         const propertyNames = ['poolId', 'indexToken', 'longToken', 'shortToken', 'marketToken']
 
-        let cliQuestionNumberResponse = await cliSelectItem('Enter the poolId of the pool you want to add', vpi.pools)
+        let cliQuestionNumberResponse = await cliSelectItem('Enter the poolId of the pool you want to add', vpi.pools.map(pool => [pool.poolId, pool.indexToken.symbol, pool.longToken.symbol, pool.shortToken.symbol, pool.marketToken.address]),true)
         const pool = vpi.pools[cliQuestionNumberResponse]
         const propertyValues = [pool.poolId, pool.indexToken.address, pool.longToken.address, pool.shortToken.address, pool.marketToken.address]
         await (data.contractUtil as ContractUtils).setContractConfigValuesArray(functionName, propertyStructName, propertyNames, propertyValues) 

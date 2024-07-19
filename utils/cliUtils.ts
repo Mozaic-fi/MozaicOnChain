@@ -37,7 +37,7 @@ export function cliQuestionNumber(question: string): Promise<number> {
     });
 }
 
-export function cliSelectItem(question: string, items: any[]): Promise<number> {
+export function cliSelectItem(question: string, items: any[], noJson: boolean= false): Promise<number> {
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -47,7 +47,7 @@ export function cliSelectItem(question: string, items: any[]): Promise<number> {
         console.log(cliBold(`${question}: `))
         console.log('List of Possible Values:')
         for (let i = 0; i < items.length; i++) {
-            console.log(cliCyan(`${i + 1}:\n${JSON.stringify(items[i], null, 2)}`));
+            console.log(cliCyan(`${i + 1}:\n${noJson? items[i]: JSON.stringify(items[i], null, 2)}`));
             console.log('\n-----------------------------------\n')
         }
         rl.question(`${question}: `, (answer) => {
@@ -55,12 +55,39 @@ export function cliSelectItem(question: string, items: any[]): Promise<number> {
                 let index = parseInt(answer.trim());
                 if(index < 0 || index >= items.length) {
                     rl.write("Invalid input\n");
-                }
+                    resolve(-1);
+                }else {
                 resolve(index - 1);
+                }
             }
             else{
                 rl.write("Invalid input\n");
             }
+            rl.close();
+        });
+    });
+}
+
+export function cliSelectItems(question: string, items: any[], noJson: boolean= false): Promise<number[]> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise((resolve) => {
+        console.log(cliBold(`${question}: (please enter comma separated):`))
+        console.log('List of Possible Values:')
+        for (let i = 0; i < items.length; i++) {
+            console.log(cliCyan(`${i + 1}:\n${noJson? items[i]: JSON.stringify(items[i], null, 2)}`));
+            console.log('\n-----------------------------------\n')
+        }
+        rl.question(`${question}: `, (answer) => {
+            const indexes = answer.split(',').map(s => Number(s.trim()) - 1);
+            if(indexes.every(index => index >= 0 && index < items.length)) 
+            {
+                resolve(indexes);
+            }
+            resolve([]);          
             rl.close();
         });
     });
