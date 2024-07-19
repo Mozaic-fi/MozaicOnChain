@@ -238,7 +238,7 @@ export const main = async () => {
         }
     });
 
-    await taskManager.run()
+    await taskManager.runInteractive()
 }
 
 main()

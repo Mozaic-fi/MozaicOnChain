@@ -37,7 +37,7 @@ async function main() {
         }
     });
 
-    await taskManager.run()
+    await taskManager.runInteractive()
 }
 
 main()
