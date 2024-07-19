@@ -1,3 +1,4 @@
+import { get } from "http";
 
 export enum networkNames {
     arbitrumSepolia = 'arbitrumSepolia',
@@ -7,4 +8,8 @@ export enum networkNames {
     base = 'base',
     avalancheFuji = 'avalancheFuji',
     arbitrumTwo = 'arbitrumTwo',
+}
+
+export const getNetworkName = (networkName: string): networkNames => {
+    return networkNames[networkName as keyof typeof networkNames];
 }

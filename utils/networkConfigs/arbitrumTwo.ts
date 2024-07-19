@@ -12,6 +12,9 @@ import {arbitrumOneNetworkConfig} from './arbitrumOne'
 export const arbitrumTwoNetworkConfig: NetworkInfo =  {
     networkName: networkNames.arbitrumTwo,
     layerZeroInfo: arbitrumOneNetworkConfig.layerZeroInfo,
-    tokensInfo: arbitrumOneNetworkConfig.tokensInfo,
+    tokensInfo: {
+        ...arbitrumOneNetworkConfig.tokensInfo!,
+        treasuryAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde'
+    },
     testNet: true
 };

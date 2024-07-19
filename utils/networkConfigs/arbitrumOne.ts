@@ -4,9 +4,10 @@ import { contractNames } from '../names/contractNames'
 import { pluginNames } from '../names/pluginNames' 
 import { tokenSymbols } from '../names/tokenSymbols'
 import { vaultPlugin } from '../vaultPlugins/baseVaultPlugins'
-import { gmxPluginInfo } from '../vaultPlugins/gmxVaultPlugins'
+import { gmxPluginInfo, getGMXHandlerInfo, getGMXVaultInfo } from '../vaultPlugins/gmxVaultPlugins'
 import { mockPluginInfo } from '../vaultPlugins/mockVaultPlugins'
 import { getTokens, getToken, getGMXToken } from '../vaultTokens'
+import { get } from 'http'
 
 export const arbitrumOneNetworkConfig: NetworkInfo = {
     networkName: networkNames.arbitrumOne,
@@ -23,6 +24,39 @@ export const arbitrumOneNetworkConfig: NetworkInfo = {
         mozStakingContractAddress:'0xe08eFb59e053a586415272c15cDF62758c698739',
         multiSigOwnerAddress: '0xcba641A83D03b979df63b1E5849e0dE0F1831357',
         version: 1
+    },
+    theseusVaultInfo:{
+        name: 'theseusVault',
+        //TODO: update addresses
+        treasuryAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
+        multiSigOwnerAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
+        vaultMasterAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
+        protocolFeePercentage: 1000,
+        version: 1,
+        vaultPlugins: new Map<string, vaultPlugin>([
+            [
+                pluginNames.gmx.name,
+                {
+                    pluginId: pluginNames.gmx.id,
+                    pluginName: pluginNames.gmx.name,
+                    pluginContractName: contractNames.Vaults.Theseus.GmxPlugin,
+                    tokens: getTokens(networkNames.arbitrumOne),
+                    handlerInfo: getGMXHandlerInfo(networkNames.arbitrumOne),
+                    vaultInfo: getGMXVaultInfo(networkNames.arbitrumOne),
+                    params:{
+                        uiFeeReceiverAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
+                        callbackGasLimit: 2000000,
+                        executionFee: 5000000000000000,
+                        shouldUnwrapNativeToken: false,
+                        //keccak256(abi.encode("MAX_PNL_FACTOR_FOR_TRADERS"));
+                        pnlFactorType: '0xab15365d3aa743e766355e2557c230d8f943e195dc84d9b2b05928a07b635ee1'
+                    },
+                    pools: [],
+                    executionDepositFee: 0,
+                    executionWithdrawFee: 0,
+                } as gmxPluginInfo
+            ]
+        ])
     },
     testNet: false,
 };

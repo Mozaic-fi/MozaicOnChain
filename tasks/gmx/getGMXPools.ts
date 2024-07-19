@@ -1,11 +1,17 @@
 import { GmxUtils } from '../../utils/gmxUtils';
-import { cliConfirmation } from '../../utils/cliUtils';
 
 import hre from 'hardhat';
 
 async function main() {
-    const tokens = (await new GmxUtils(hre.network.name).getPools());
-    console.log(tokens);
+
+    const pools = (await new GmxUtils(hre.network.name).getPools()).map(pool => {
+        pool.indexToken.address,
+        pool.longToken.address,
+        pool.shortToken.address,
+        pool.marketToken.address    
+    });
+    
+    console.log(pools);
 }
 
 main()
