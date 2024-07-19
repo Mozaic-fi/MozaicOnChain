@@ -71,7 +71,7 @@ export class ContractUtils {
             return this._contractAddress;
         }
         await this.deployContract()
-        await this.verifyContract()
+        if(this.networkConfig.autoVerify) await this.verifyContract()
     }
 
     public get contractAddress(): string {

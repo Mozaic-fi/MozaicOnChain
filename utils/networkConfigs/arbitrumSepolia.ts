@@ -25,4 +25,5 @@ export const arbitrumSepoliaNetworkConfig: NetworkInfo = {
         version: 1
     },
     testNet: true,
+    autoVerify: true,
 };

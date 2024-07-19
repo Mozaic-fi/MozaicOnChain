@@ -22,4 +22,5 @@ export const baseSepoliaNetworkConfig: NetworkInfo = {
         version:1
     },
     testNet: true,
+    autoVerify: true,
 };

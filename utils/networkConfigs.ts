@@ -39,7 +39,8 @@ export type NetworkInfo = {
     layerZeroInfo?: LZInfo
     tokensInfo?: TokensInfo
     theseusVaultInfo?: VaultInfo
-    testNet: boolean
+    testNet: boolean,
+    autoVerify:boolean
 }
 
 export const networkConfigs = new Map<string, NetworkInfo>([

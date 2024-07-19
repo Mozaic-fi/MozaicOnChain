@@ -22,4 +22,5 @@ export const baseNetworkConfig: NetworkInfo = {
         version: 1
     },
     testNet: false,
+    autoVerify: true,
 };

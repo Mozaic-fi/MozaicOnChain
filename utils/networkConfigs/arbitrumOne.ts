@@ -98,4 +98,5 @@ export const arbitrumOneNetworkConfig: NetworkInfo = {
         ])
     },
     testNet: false,
+    autoVerify: true,
 };

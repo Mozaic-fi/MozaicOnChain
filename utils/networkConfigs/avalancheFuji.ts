@@ -76,5 +76,6 @@ export const avalancheFujiNetworkConfig: NetworkInfo =  {
         version:1
     },
     testNet: true,
+    autoVerify: true,
     
 };
