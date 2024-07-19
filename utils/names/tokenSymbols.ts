@@ -1,8 +1,10 @@
 export enum tokenSymbols {
+    None = 'None',
     USDT = 'USDT',
     USDC = 'USDC',
     USDCe = 'USDC.e',
     DAI = 'DAI',
+    BTC = 'BTC',
     WBTC= 'WBTC',
     WETH = 'WETH',
     ETH = 'ETH',
@@ -16,5 +18,9 @@ export enum tokenSymbols {
     OP = 'OP',
     AVAX = 'AVAX',
     WAVAX = 'WAVAX',
+    GMToken = 'GM',
     GMX = 'GMX',
+    DOGE = 'DOGE',
+    XRP = 'XRP',
+    PEPE = 'PEPE'
 }

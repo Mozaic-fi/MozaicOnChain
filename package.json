@@ -30,7 +30,7 @@
     "test-lztransfer-arbitrumSepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network arbitrumSepolia",
     "test-lztransfer-baseSepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network baseSepolia",
     "test-lztransfer-sepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network sepolia",
-    "test-gmx": "npx hardhat run tasks/test.ts --network avalancheFuji",
+    "test-gmx": "npx hardhat run tasks/gmx/getGMXPools.ts --network arbitrumOne",
     "deploy-TokenPriceConsumer-testnet" : "npx hardhat deploy --tags TokenPriceConsumer --network avalancheFuji",
     "deploy-vault-testnet" : "npx hardhat deploy --tags Vault --network avalancheFuji",
     "deploy-vault-gmx-testnet" : "npx hardhat deploy --tags GmxPlugin --network avalancheFuji && npx hardhat deploy --tags GmxCallback --network avalancheFuji",
