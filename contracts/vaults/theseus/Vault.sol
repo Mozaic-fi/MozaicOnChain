@@ -576,7 +576,7 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
     }
 
     // Allows the master contract to approve tokens for a specified plugin based on the provided payload.
-    function approveTokens(uint8 _pluginId, address[] memory _tokens, uint256[] memory _amounts) external onlyAdmin nonReentrant {
+    function approveTokens(uint8 _pluginId, address[] memory _tokens, uint256[] memory _amounts) external onlyMaster nonReentrant {
         // Ensure that the specified plugin exists.
         require(pluginIdToIndex[_pluginId] != 0, "Plugin with this ID does not exist");
 
