@@ -1,7 +1,7 @@
 import { ethers  } from 'hardhat'
 import {networkConfigs} from '../../../utils/networkConfigs'
 import { contractNames } from '../../../utils/names/contractNames'
-import {cliConfirmation} from '../../../utils/cliUtils'
+import {cliConfirmation, cliCyan} from '../../../utils/cliUtils'
 import { pluginNames } from '../../../utils/names/pluginNames'
 import { gmxPluginInfo } from '../../../utils/vaultPlugins/gmxVaultPlugins'
 import { ContractUtils } from '../../../utils/contractUtils'
@@ -38,6 +38,21 @@ export const main = async () => {
             propertyNames,
             propertyValues
         }
+    });
+
+    taskManager.registerTask('getContractBasicStorage', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+        const depositHandler = await (data.contractUtil as ContractUtils).getVariableValues('depositHandler')
+        console.log(`Selected Pool Id: ${cliCyan(depositHandler)}`)
+
+        const withdrawalHandler = await (data.contractUtil as ContractUtils).getVariableValues('withdrawalHandler')
+        console.log(`Selected Pool Id: ${cliCyan(withdrawalHandler)}`)
+
+        const orderHandler = await (data.contractUtil as ContractUtils).getVariableValues('orderHandler')
+        console.log(`Selected Pool Id: ${cliCyan(orderHandler)}`)
+
+        const config = await (data.contractUtil as ContractUtils).getVariableValues('config')
+        console.log(`Selected Pool Id: ${cliCyan(config)}`)
+        
     });
 
     await taskManager.run()

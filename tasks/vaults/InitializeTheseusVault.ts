@@ -92,7 +92,7 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('readContractBasicStorage', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('getContractBasicStorage', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const master = await (data.contractUtil as ContractUtils).getVariableValues('master')
         console.log(`Master: ${cliCyan(master)}`)
 
