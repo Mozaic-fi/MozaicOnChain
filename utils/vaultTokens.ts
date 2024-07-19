@@ -49,7 +49,8 @@ export class VaultToken {
 }
 
 const baseTokens: VaultToken[] =Array.from(new Set<VaultToken>([
-    new VaultToken('Tether USD', tokenSymbols.USDT, 6)
+    new VaultToken('ZERO Address', tokenSymbols.ZERO, 0)
+    , new VaultToken('Tether USD', tokenSymbols.USDT, 6)
     , new VaultToken('USD Coin', tokenSymbols.USDC, 6)
     , new VaultToken('Bridged USDC', tokenSymbols.USDCe, 6)
     , new VaultToken('Dai Stablecoin', tokenSymbols.DAI, 18)
@@ -71,7 +72,10 @@ const baseTokens: VaultToken[] =Array.from(new Set<VaultToken>([
     , new VaultToken('Pepe', tokenSymbols.PEPE, 18)
 ]))
 
-const vaultTokens: VaultToken[] = []
+const vaultTokens: VaultToken[] = [
+    VaultToken.fromVaultToken(baseTokens,tokenSymbols.ZERO, '0x0000000000000000000000000000000000000000', '', 0, false, false, networkNames.arbitrumOne),
+    VaultToken.fromVaultToken(baseTokens,tokenSymbols.ZERO, '0x0000000000000000000000000000000000000000', '', 0, false, false, networkNames.avalancheFuji),
+]
 
 const arbitrumOneTokens: VaultToken[] = [
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.BTC, '0x47904963fc8b2340414262125aF798B9655E58Cd', '0x6ce185860a4963106506C203335A2910413708e9', 86400, true, true, networkNames.arbitrumOne),
@@ -121,11 +125,6 @@ const arbitrumOneTokens: VaultToken[] = [
 
 vaultTokens.push(...arbitrumOneTokens)
 
-const arbitrumSepoliaTokens: VaultToken[] = [
-    VaultToken.fromVaultToken(baseTokens,tokenSymbols.USDC, '0xf3C3351D6Bd0098EEb33ca8f830FAf2a141Ea2E1', '0x0153002d20B96532C639313c2d54c3dA09109309', 86400, true, true, networkNames.arbitrumSepolia)
-]
-vaultTokens.push(...arbitrumSepoliaTokens)
-
 const avalancheFujiTokens: VaultToken[] = [
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.USDC, '0x3eBDeaA0DB3FfDe96E7a0DBBAFEC961FC50F725F', '0x97FE42a7E96640D932bbc0e1580c73E705A8EB73', 86400, true, true, networkNames.avalancheFuji),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.USDT, '0x50df4892Bd13f01E4e1Cd077ff394A8fa1A3fD7c', '0x7898AcCC83587C3C55116c5230C17a6Cd9C71bad', 86400, true, true, networkNames.avalancheFuji),
@@ -159,4 +158,3 @@ export const getTokenFromAddress = (network: networkNames, address: string) : Va
     else return token
 
 }
-

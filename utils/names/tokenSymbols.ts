@@ -1,5 +1,6 @@
 export enum tokenSymbols {
     None = 'None',
+    ZERO = 'ZERO',
     USDT = 'USDT',
     USDC = 'USDC',
     USDCe = 'USDC.e',
