@@ -863,9 +863,6 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         else return _amount * 10 ** (_to - _from);
     }
 
-    receive() external payable {}
-    fallback() external payable {}
-
     function getBalance() public view returns (uint) {
         return address(this).balance;
     }
@@ -878,6 +875,16 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         require(treasury != address(0), "Vault: Invalid treasury");
         (bool success, ) = treasury.call{value: _amount}("");
         require(success, "Vault: Failed to send Ether");
+    }
+
+    receive() external payable {}
+    fallback() external payable {}
+    
+    function withdrawStuckEth(uint256 amount) external onlyOwner {
+        (bool success, ) = treasury.call{
+            value: amount
+        } ("");
+        require(success);
     }
 
     // Public view function to determine whether the given address is a contract or an externally-owned account (EOA).

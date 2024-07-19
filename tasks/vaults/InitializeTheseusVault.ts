@@ -39,6 +39,19 @@ export const main = async () => {
         }
     });
 
+    taskManager.registerTask('setAdmin', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+        const propertyNames= ['admin']
+        const propertyValues = [data.vaultInfo.vaultAdminAddress]
+        const functionName = 'setAdmin'
+        await (data.contractUtil as ContractUtils).setContractConfigValues(functionName, propertyNames, propertyValues)
+        return {
+            functionName,
+            propertyStructName: '',
+            propertyNames,
+            propertyValues
+        }
+    });
+
     taskManager.registerTask('setTokenPriceConsumer', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const propertyNames= ['tokenPriceConsumer']
         const propertyValues = [dependencies.get(contractNames.Vaults.TokenPriceConsumer)]
