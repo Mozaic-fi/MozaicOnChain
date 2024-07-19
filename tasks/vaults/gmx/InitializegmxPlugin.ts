@@ -113,8 +113,8 @@ export const main = async () => {
 
     taskManager.registerTask('setTokenDecimals', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vpi = data.vpi as gmxPluginInfo
-        const tokenAddresses= vpi.tokens.map(token => token.address)
-        const tokenDecimals = vpi.tokens.map(token => token.decimals)
+        const tokenAddresses= getTokens(networkConfig.networkName).map(token => token.address)
+        const tokenDecimals = getTokens(networkConfig.networkName).map(token => token.decimals)
         const functionName = 'setTokenDecimalsBatch'
         const propertyStructName = 'mapping'
         const propertyValues = [tokenAddresses, tokenDecimals]

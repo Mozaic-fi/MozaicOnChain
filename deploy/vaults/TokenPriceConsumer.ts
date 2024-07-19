@@ -5,6 +5,7 @@ import {ContractUtils} from '../../utils/contractUtils'
 import { contractNames } from '../../utils/names/contractNames'
 
 import { type DeployFunction } from 'hardhat-deploy/types'
+import { getTokens } from '../../utils/vaultTokens'
 
 const contractName = contractNames.Vaults.TokenPriceConsumer
 
@@ -12,7 +13,7 @@ const deploy: DeployFunction = async (hre) => {
 
     let networkConfig = networkConfigs.get(hre.network.name)
 
-    let tokensData = networkConfig?.theseusVaultInfo?.vaultPlugins.get(pluginNames.gmx.name)?.tokens
+    let tokensData = getTokens(networkConfig?.networkName!)
         ?.map(token => 
         ({
             address: token.address,

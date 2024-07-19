@@ -78,7 +78,6 @@ export const arbitrumOneNetworkConfig: NetworkInfo = {
                     pluginId: pluginNames.gmx.id,
                     pluginName: pluginNames.gmx.name,
                     pluginContractName: contractNames.Vaults.Theseus.GmxPlugin,
-                    tokens: getTokens(networkNames.arbitrumOne),
                     handlerInfo: getGMXHandlerInfo(networkNames.arbitrumOne),
                     vaultInfo: getGMXVaultInfo(networkNames.arbitrumOne),
                     params:{

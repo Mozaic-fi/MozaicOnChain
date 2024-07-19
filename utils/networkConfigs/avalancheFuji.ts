@@ -25,7 +25,6 @@ export const avalancheFujiNetworkConfig: NetworkInfo =  {
                     pluginId: pluginNames.gmx.id,
                     pluginName: pluginNames.gmx.name,
                     pluginContractName: contractNames.Vaults.Theseus.GmxPlugin,
-                    tokens: getTokens(networkNames.avalancheFuji),
                     handlerInfo: getGMXHandlerInfo(networkNames.avalancheFuji),
                     vaultInfo: getGMXVaultInfo(networkNames.avalancheFuji),
                     params:{
@@ -69,7 +68,6 @@ export const avalancheFujiNetworkConfig: NetworkInfo =  {
                     pluginId: -1,
                     pluginName: 'mock',
                     pluginContractName: 'mock',
-                    tokens: [],
                     mockAddress: '0x'
                 } as mockPluginInfo
             ]
