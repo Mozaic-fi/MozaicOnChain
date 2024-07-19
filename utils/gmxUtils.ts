@@ -29,6 +29,7 @@ export class GmxUtils {
     private networkName: networkNames;   
 
     constructor(networkName: string) {
+        if(networkName == networkNames.arbitrumTwo) networkName = networkNames.arbitrumOne;
         this.networkName = getNetworkName(networkName);
         this.deploymentPath = path.join(process.cwd(), 'deployments', 'gmx','v2.1',networkName);
     }
