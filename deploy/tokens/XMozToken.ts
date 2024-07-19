@@ -1,17 +1,19 @@
 import {networkConfigs} from '../../utils/networkConfigs'
-import {DeploymentUtils} from '../../utils/deploymentUtils'
+import {ContractUtils} from '../../utils/contractUtils'
+import { contractNames } from '../../utils/names/contractNames'
+
 
 import { type DeployFunction } from 'hardhat-deploy/types'
 
-const contractName = 'XMozToken'
+const contractName = contractNames.Tokens.XMozToken
 
 const deploy: DeployFunction = async (hre) => {
 
-    const mozStakingDeployment = await hre.deployments.get('MozStaking')
+    const mozStakingDeployment = await hre.deployments.get(contractNames.Tokens.MozStaking)
     
     const constructorArgs = [mozStakingDeployment.address]
     
-    const deployer = new DeploymentUtils(hre, contractName, constructorArgs)
+    const deployer = new ContractUtils(hre, contractName, constructorArgs)
     await deployer.deployAndVerifyContract()
 }
 

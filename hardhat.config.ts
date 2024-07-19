@@ -64,6 +64,12 @@ const config: HardhatUserConfig = {
             chainId: 11155111,
             accounts: accounts,
         },
+        avalancheFuji:{
+            eid: EndpointId.AVALANCHE_V2_TESTNET,
+            url: `https://avalanche-fuji-c-chain-rpc.publicnode.com`,
+            chainId: 43113,
+            accounts: accounts,
+        },
         //Mainnet
         arbitrumOne: {
             eid: EndpointId.ARBITRUM_V2_MAINNET,
@@ -85,6 +91,8 @@ const config: HardhatUserConfig = {
             sepolia: SEPOLIA_API_KEY!,
             arbitrumOne: ARBISCAN_API_KEY!,
             base: BASESCAN_API_KEY!,
+            avalancheFuji:'avascan',
+            avalancheFujiTestnet:'avascan'
         },
     },
     namedAccounts: {

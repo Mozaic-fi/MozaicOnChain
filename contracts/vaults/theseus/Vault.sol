@@ -153,7 +153,14 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
 
     /* ========== CONFIGURATION ========== */
     // Constructor for the Mozaic Theseus LPToken contract, inheriting from ERC20.
-    constructor() ERC20("Mozaic Theseus LP", "MOZ-THE-LP") Ownable(msg.sender){
+    constructor(address _master, address _tokenPriceConsumer, address payable _treasury) ERC20("Mozaic Theseus LP", "MOZ-THE-LP") Ownable(msg.sender){
+        require(_master != address(0), "Vault: Invalid Address");
+        require(_tokenPriceConsumer != address(0), "Vault: Invalid Address");
+        require(_treasury != address(0), "Vault: Invalid Address");
+
+        master = _master;
+        tokenPriceConsumer = _tokenPriceConsumer;
+        treasury = _treasury;
     }
 
     // Allows the owner to set a new master address for the Vault.

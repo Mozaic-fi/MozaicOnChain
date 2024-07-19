@@ -3,6 +3,8 @@ import { expect } from 'chai'
 import { Contract, ContractFactory } from 'ethers'
 import { deployments, ethers } from 'hardhat'
 import {NetworkInfo, networkConfigs} from '../../../utils/networkConfigs'
+import { networkNames } from '../../../utils/names/networkNames'
+import { contractNames } from '../../../utils/names/contractNames'
 
 import { Options } from '@layerzerolabs/lz-v2-utilities'
 import { Deployment } from 'hardhat-deploy/types'
@@ -24,10 +26,10 @@ describe('MozTransfer Test', function () {
     before(async function () {
         sourceNetwork = networkConfigs.get(hre.network.name)!
 
-        contractName = sourceNetwork.requireAdapter ? 'MozTokenAdapter' : 'MozToken';
+        contractName = sourceNetwork.tokensInfo?.requireAdapter ? contractNames.Tokens.MozTokenAdapter : contractNames.Tokens.MozToken;
         tokenDeployment = await hre.deployments.get(contractName)
 
-        tokenAddress = sourceNetwork.requireAdapter? sourceNetwork.mozTokenContractAddress! : tokenDeployment.address
+        tokenAddress = sourceNetwork.tokensInfo?.requireAdapter? sourceNetwork.tokensInfo?.mozTokenContractAddress! : tokenDeployment.address
 
         const signers = await ethers.getSigners()
         
@@ -40,8 +42,8 @@ describe('MozTransfer Test', function () {
         destinationNetwork = getDestinationNetwork(hre.network.name)
 
         token = await ethers.getContractAt(contractName, tokenDeployment.address, signer)
-        if(sourceNetwork.requireAdapter){
-            erc20 = await ethers.getContractAt('MozToken', tokenAddress, signer)
+        if(sourceNetwork.tokensInfo?.requireAdapter){
+            erc20 = await ethers.getContractAt(contractNames.Tokens.MozToken, tokenAddress, signer)
         }
     })
 
@@ -57,7 +59,7 @@ describe('MozTransfer Test', function () {
         const options = Options.newOptions().addExecutorLzReceiveOption(200000, 0).toHex().toString()
 
         const sendParam = [
-            destinationNetwork.layerZeroEIDV2,
+            destinationNetwork.layerZeroInfo?.layerZeroEIDV2,
             ethers.utils.zeroPad(signer.address, 32),
             tokensToSend,
             tokensToSend,
@@ -66,7 +68,7 @@ describe('MozTransfer Test', function () {
             '0x',
         ]
 
-        if(sourceNetwork.requireAdapter){
+        if(sourceNetwork.tokensInfo?.requireAdapter){
             console.log(`Approving ${tokensToSend} tokens to be sent from ${sourceNetwork.networkName} to ${destinationNetwork.networkName}`)
             await erc20.approve(tokenDeployment.address, tokensToSend)
         }
@@ -85,12 +87,12 @@ describe('MozTransfer Test', function () {
 
 const getDestinationNetwork = (networkName: string) : NetworkInfo =>{
     switch(networkName){
-        case 'arbitrumSepolia':
-            return networkConfigs.get('sepolia')!
-        case 'sepolia':
-            return networkConfigs.get('baseSepolia')!
-        case 'baseSepolia':
-                return networkConfigs.get('arbitrumSepolia')!
+        case networkNames.arbitrumSepolia:
+            return networkConfigs.get(networkNames.sepolia)!
+        case networkNames.sepolia:
+            return networkConfigs.get(networkNames.baseSepolia)!
+        case networkNames.baseSepolia:
+                return networkConfigs.get(networkNames.arbitrumSepolia)!
         default:
             throw new Error(`Destination network not found for ${networkName}`)
     }
