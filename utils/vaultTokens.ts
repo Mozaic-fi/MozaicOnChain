@@ -141,7 +141,7 @@ for (let i =0; i< arbitrumOneTokens.length; i++){
     arbitrumTwoTokens.push(VaultToken.fromVaultToken2(arbitrumOneTokens[i], networkNames.arbitrumTwo))
 }
 
-vaultTokens.push(...arbitrumOneTokens)
+vaultTokens.push(...arbitrumTwoTokens)
 
 
 const avalancheFujiTokens: VaultToken[] = [

@@ -42,16 +42,16 @@ export const main = async () => {
 
     taskManager.registerTask('getContractBasicStorage', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const depositHandler = await (data.contractUtil as ContractUtils).getVariableValues('depositHandler')
-        console.log(`Selected Pool Id: ${cliCyan(depositHandler)}`)
+        console.log(`depositHandler address: ${cliCyan(depositHandler)}`)
 
         const withdrawalHandler = await (data.contractUtil as ContractUtils).getVariableValues('withdrawalHandler')
-        console.log(`Selected Pool Id: ${cliCyan(withdrawalHandler)}`)
+        console.log(`withdrawalHandler address: ${cliCyan(withdrawalHandler)}`)
 
         const orderHandler = await (data.contractUtil as ContractUtils).getVariableValues('orderHandler')
-        console.log(`Selected Pool Id: ${cliCyan(orderHandler)}`)
+        console.log(`orderHandler address: ${cliCyan(orderHandler)}`)
 
         const config = await (data.contractUtil as ContractUtils).getVariableValues('config')
-        console.log(`Selected Pool Id: ${cliCyan(config)}`)
+        console.log(`config: ${cliCyan(config)}`)
         
     });
 

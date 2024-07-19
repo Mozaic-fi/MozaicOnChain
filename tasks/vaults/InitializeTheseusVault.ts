@@ -112,7 +112,7 @@ export const main = async () => {
         console.log(`Withdraw Min Exec Fee: ${cliCyan(withdrawMinExecFee)}`)
 
         const protocolFeePercentage = await (data.contractUtil as ContractUtils).getVariableValues('protocolFeePercentage')
-        console.log(`Protocol Fee Percentage: ${cliCyan(protocolFeePercentage)}`)
+        console.log(`protocol Fee Percentage: ${cliCyan(protocolFeePercentage)}`)
 
         const selectedPluginId = await (data.contractUtil as ContractUtils).getVariableValues('selectedPluginId')
         console.log(`Selected Plugin Id: ${cliCyan(selectedPluginId)}`)
@@ -121,7 +121,7 @@ export const main = async () => {
         console.log(`Selected Pool Id: ${cliCyan(selectedPoolId)}`)
 
         const protocolFeeInVault = await (data.contractUtil as ContractUtils).getVariableValues('protocolFeeInVault')
-        console.log(`Selected Pool Id: ${cliRed(protocolFeeInVault)}`)
+        console.log(`protocol Fee In Vault: ${cliRed(protocolFeeInVault)}`)
 
     });
 

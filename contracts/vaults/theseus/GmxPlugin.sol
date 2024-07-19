@@ -90,6 +90,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     address public tokenPriceConsumer;
 
     address[] public rewardTokens;
+    
     mapping(address => uint8) public tokenDecimalList;
 
     /* ========== EVENTS ========== */
