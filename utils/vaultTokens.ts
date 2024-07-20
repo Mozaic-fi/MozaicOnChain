@@ -158,8 +158,10 @@ const avalancheFujiTokens: VaultToken[] = [
 
 vaultTokens.push(...avalancheFujiTokens)
 
-export const getTokens = (network: networkNames): VaultToken[] => {
-    return vaultTokens.filter(token => token.network === network)
+export const getTokens = (network: networkNames, includeGm: boolean=false): VaultToken[] => {
+    const tokens= vaultTokens.filter(token => token.network === network)
+    if(includeGm) return tokens
+    return tokens.filter(token => token.symbol !== tokenSymbols.GMToken)
 }
 export const getToken = (symbol: tokenSymbols, network: networkNames): VaultToken => {
     return vaultTokens.find(token => token.symbol === symbol && token.network === network)!

@@ -130,10 +130,13 @@ export const main = async () => {
     taskManager.registerTask('setRewardTokens', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const tokens = getTokens(networkConfig.networkName)
         const functionName = 'setRewardTokens'
-        const tokenIndex = await cliSelectItems('Select a tokens to add', tokens.map(token=>[token.symbol, token.address]), true)   
+        const tokenIndex = await cliSelectItems('Select a tokens to add', tokens.map(token=>[token.symbol, token.address]), true)  
+        if(tokenIndex.length === 0){
+            return
+        }
         const propertyNames= ['array:setRewardTokens']
         const propertyValues = [tokenIndex.map(index=>tokens[index].address)]
-        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues)
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, ...propertyValues)
         return {
             functionName,
             propertyStructName: 'mapping',
@@ -158,7 +161,11 @@ export const main = async () => {
         let propertyNames = ['poolId', 'indexToken', 'longToken', 'shortToken', 'marketToken']
         let propertyValues: any[][] = []
         let cliQuestionNumberResponses = await cliSelectItems('Enter the poolId of the pools you want to add', vpi.pools.map(pool => [pool.poolId, pool.indexToken.symbol, pool.longToken.symbol, pool.shortToken.symbol, pool.marketToken.address]), true)
-        for (let pindex in cliQuestionNumberResponses)
+        if(cliQuestionNumberResponses.length === 0){
+            return
+        }
+        
+        for (let pindex of cliQuestionNumberResponses)
         {
             const pool = vpi.pools[pindex]
             console.log(`Adding pool ${[pool.poolId, pool.indexToken.symbol, pool.longToken.symbol, pool.shortToken.symbol, pool.marketToken.address]}`)

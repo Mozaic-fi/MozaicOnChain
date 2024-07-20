@@ -175,6 +175,7 @@ export class TaskManagerUtils {
             }
             else{
                 let valuesToLog = await this.tasks.get(taskNames[index])!(this.hardhatRuntimeEnvironment, this.contractName, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
+                console.log(cliBlue('\n-----------------------------------\n'))
             }           
         }
         await this.finalize();

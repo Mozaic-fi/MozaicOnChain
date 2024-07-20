@@ -53,11 +53,12 @@ export function cliSelectItem(question: string, items: any[], noJson: boolean= f
         rl.question(`${question}: `, (answer) => {
             if(/^\d+$/.test(answer.trim())) {
                 let index = parseInt(answer.trim());
-                if(index < 0 || index >= items.length) {
+                if(index >= 0 && index <= items.length) {
+                    resolve(index -1);
+                }
+                else {
                     rl.write("Invalid input\n");
                     resolve(-1);
-                }else {
-                resolve(index - 1);
                 }
             }
             else{
@@ -78,8 +79,8 @@ export function cliSelectItems(question: string, items: any[], noJson: boolean= 
         console.log(cliBold(`${question}: (please enter comma separated):`))
         console.log('List of Possible Values:')
         for (let i = 0; i < items.length; i++) {
-            console.log(cliCyan(`${i + 1}:\n${noJson? items[i]: JSON.stringify(items[i], null, 2)}`));
-            console.log('\n-----------------------------------\n')
+            console.log(cliCyan(`${i + 1}:${noJson? items[i]: '\n'+JSON.stringify(items[i], null, 2)}`));
+            if(!noJson)console.log('\n-----------------------------------\n')
         }
         rl.question(`${question}: `, (answer) => {
             const indexes = answer.split(',').map(s => Number(s.trim()) - 1);
