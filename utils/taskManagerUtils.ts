@@ -89,7 +89,9 @@ export class TaskManagerUtils {
         if (this.finalizeCallback) {
             await this.finalizeCallback(this.hardhatRuntimeEnvironment, this.contractName,this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
         }
+        console.log(cliCyan('\n===================================\n',true))
         console.log(cliCyan("Task execution completed.",true));
+        console.log(cliCyan('\n===================================\n',true))
     }
 
     async run(): Promise<void> {
@@ -157,10 +159,6 @@ export class TaskManagerUtils {
         } else {
             console.log("No tasks selected.");
         }
-
-        console.log(cliCyan('\n===================================\n',true))
-        console.log(cliCyan("Task execution completed.",true));
-        console.log(cliCyan('\n===================================\n',true))
     }
     
     async runInteractive(): Promise<void> {
@@ -170,7 +168,7 @@ export class TaskManagerUtils {
 
         await this.initialize();
         while (true) {
-            const index = await cliSelectItem('Select a task to run (or type "exit" to finish): ', taskNames);
+            const index = await cliSelectItem('Select a task to run (or type "0" to finish)', taskNames, true);
     
             if(index === -1){
                 break;
@@ -180,10 +178,6 @@ export class TaskManagerUtils {
             }           
         }
         await this.finalize();
-
-        console.log(cliCyan('\n===================================\n',true))
-        console.log(cliCyan("Task execution completed.",true));
-        console.log(cliCyan('\n===================================\n',true))
     }
     
     

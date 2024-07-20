@@ -19,7 +19,6 @@ export const main = async () => {
     })
     
     taskManager.registerFinalizeCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
-        console.log(`Finalizing ${contractName} on ${hre.network.name}`)
     });
 
     taskManager.registerTask('setHandlers', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {

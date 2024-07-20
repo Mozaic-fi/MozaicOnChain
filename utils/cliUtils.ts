@@ -47,8 +47,8 @@ export function cliSelectItem(question: string, items: any[], noJson: boolean= f
         console.log(cliBold(`${question}: `))
         console.log('List of Possible Values:')
         for (let i = 0; i < items.length; i++) {
-            console.log(cliCyan(`${i + 1}:\n${noJson? items[i]: JSON.stringify(items[i], null, 2)}`));
-            console.log('\n-----------------------------------\n')
+            console.log(cliCyan(`${i + 1}:${noJson? items[i]: '\n'+JSON.stringify(items[i], null, 2)}`));
+            if(!noJson) console.log('\n-----------------------------------\n')
         }
         rl.question(`${question}: `, (answer) => {
             if(/^\d+$/.test(answer.trim())) {
