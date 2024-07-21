@@ -23,5 +23,6 @@ export enum tokenSymbols {
     GMX = 'GMX',
     DOGE = 'DOGE',
     XRP = 'XRP',
-    PEPE = 'PEPE'
+    PEPE = 'PEPE',
+    LTC = 'LTC'
 }

@@ -81,6 +81,7 @@ const baseTokens: VaultToken[] =Array.from(new Set<VaultToken>([
     , new VaultToken('Optimism', tokenSymbols.OP, 18)
     , new VaultToken('GMX', tokenSymbols.GMX, 18)
     , new VaultToken('Pepe', tokenSymbols.PEPE, 18)
+    , new VaultToken('LTC', tokenSymbols.LTC, 8, true)
 ]))
 
 const vaultTokens: VaultToken[] = [
@@ -108,6 +109,7 @@ const arbitrumOneTokens: VaultToken[] = [
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.OP, '0xaC800FD6159c2a2CB8fC31EF74621eB430287a5A', '0x205aaD468a11fd5D34fA7211bC6Bad5b3deB9b98', 86400, true, true, networkNames.arbitrumOne),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.GMX, '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a', '0xDB98056FecFff59D032aB628337A4887110df3dB', 86400, true, true, networkNames.arbitrumOne),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.PEPE, '0x25d887Ce7a35172C62FeBFD67a1856F20FaEbB00', '0x02DEd5a7EDDA750E3Eb240b54437a54d57b74dBE', 3600, true, true, networkNames.arbitrumOne),
+    VaultToken.fromVaultToken(baseTokens,tokenSymbols.LTC, '0xB46A094Bc4B0adBD801E14b9DB95e05E28962764', '0x5698690a7B7B84F6aa985ef7690A8A7288FBc9c8', 86400, true, true, networkNames.arbitrumOne),
     //GM market tokens
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.GMToken,'0x47c031236e19d024b42f8AE6780E44A573170703','',0,false,false,networkNames.arbitrumOne),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.GMToken,'0x70d95587d40A2caf56bd97485aB3Eec10Bee6336','',0,false,false,networkNames.arbitrumOne),
