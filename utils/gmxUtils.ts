@@ -21,7 +21,8 @@ export enum gmxContracts {
     withdrawalHandler = 'WithdrawalHandler',
     withdrawalVault = 'WithdrawalVault',
     exchangeRouter = 'ExchangeRouter',
-    router = 'Router'
+    router = 'Router',
+    marketToken = '../MarketToken'
 }
 
 export class GmxUtils {
@@ -44,6 +45,9 @@ export class GmxUtils {
         return this.loadDeploymentInfo(contractName).address;
     }
 
+    getContractAbi(contractName: gmxContracts): any[] {
+        return this.loadDeploymentInfo(contractName).abi;
+    }
     async callContractFunction(
         contractName: gmxContracts, 
         functionName: string, 
