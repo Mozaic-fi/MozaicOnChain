@@ -286,6 +286,35 @@ export const main = async () => {
         }
     })
 
+    taskManager.registerTask('selectPluginAndPool', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+        const plugins = networkConfig.theseusVaultInfo?.vaultPlugins!
+        let PluginAddresses = []
+        for (let plugin of plugins.values()) {
+            const pluginDeployment = dependencies.get(plugin.pluginContractName)
+            PluginAddresses.push({
+                name: plugin.pluginName,
+                address: pluginDeployment,
+                id: plugin.pluginId
+            })
+        }
+        const pluginIndex = await cliSelectItem('Select a plugin to add', PluginAddresses)  
+        
+        const vpi = data.vpi as gmxPluginInfo
+        let cliQuestionNumberResponse = await cliSelectItem('Enter the poolId of the pool you want to add', vpi.pools.map(pool => [pool.poolId, pool.indexToken.symbol, pool.longToken.symbol, pool.shortToken.symbol, pool.marketToken.address]),true)
+        const pool = vpi.pools[cliQuestionNumberResponse]
+
+        const propertyNames= ['selectedPluginId', 'selectedPoolId']
+        const propertyValues = [PluginAddresses[pluginIndex].id,pool.poolId ]
+        const functionName = 'selectPluginAndPool'
+        await (data.contractUtil as ContractUtils).setContractConfigValues(functionName, propertyNames, propertyValues)
+        return {
+            functionName,
+            propertyStructName: '',
+            propertyNames,
+            propertyValues
+        }
+    });
+
     taskManager.registerTask('getPlugins', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const contractPlugins = await (data.contractUtil as ContractUtils).getArrayValues('plugins')
         const plugins = Array.from(networkConfig.theseusVaultInfo?.vaultPlugins!).filter(entry => contractPlugins.some(p=>entry[1].pluginId == p.pluginId))
