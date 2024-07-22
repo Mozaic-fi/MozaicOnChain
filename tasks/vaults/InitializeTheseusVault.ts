@@ -327,6 +327,19 @@ export const main = async () => {
         }
     });
 
+    taskManager.registerTask('setVaultLocker as GMXCallBack', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+        const propertyNames= ['array:vaultLockers']
+        const propertyValues = [dependencies.get(contractNames.Vaults.Theseus.GmxCallback)]
+        const functionName = 'setVaultLockers'
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues)
+        return {
+            functionName,
+            propertyStructName: '',
+            propertyNames,
+            propertyValues
+        }
+    });
+
     taskManager.registerTask('getVaultLockers', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vaultLockers = await (data.contractUtil as ContractUtils).getArrayValues('vaultLockers')
         console.log(cliBold('Vault Lockers:'))
@@ -346,6 +359,19 @@ export const main = async () => {
         const vaultManagers = await cliInputList('Enter the vault managers addresses')
         const propertyNames= ['array:vaultManagers']
         const propertyValues = vaultManagers
+        const functionName = 'setVaultManagers'
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues)
+        return {
+            functionName,
+            propertyStructName: '',
+            propertyNames,
+            propertyValues
+        }
+    });
+
+    taskManager.registerTask('setVaultManager as GMXCallBack', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+        const propertyNames= ['array:vaultManagers']
+        const propertyValues = [dependencies.get(contractNames.Vaults.Theseus.GmxCallback)]
         const functionName = 'setVaultManagers'
         await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues)
         return {
