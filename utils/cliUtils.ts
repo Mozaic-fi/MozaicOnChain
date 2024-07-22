@@ -114,6 +114,26 @@ export function cliInputList(question: string): Promise<string[]> {
     });
 }
 
+export function cliRead(question: string): Promise<number> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise((resolve) => {
+        rl.question(cliBold(cliRed(question)), (answer) => {
+            rl.close();
+            const trimmedAnswer = answer.trim().toLowerCase();
+            if(/^\d+$/.test(trimmedAnswer)){
+                let index = parseInt(trimmedAnswer);
+                resolve(index);
+            }else{
+                resolve(-1);
+            }
+        });
+    });
+}
+
 const reset = "\x1b[0m";
 const boldFlag = "\x1b[1m";
 const red = "\x1b[31m";

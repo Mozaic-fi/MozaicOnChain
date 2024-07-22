@@ -9,6 +9,7 @@
     "compile:forge": "forge build",
     "compile:hardhat": "hardhat compile",
     "build": "yarn run clean && npx tsc --noEmit && yarn run compile:hardhat",
+    "start": "ts-node utils/mainTaskrunner.ts",
     "lint": "$npm_execpath run lint:js && $npm_execpath run lint:sol",
     "lint:fix": "eslint --fix '**/*.{js,ts,json}' && prettier --write . && solhint 'contracts/**/*.sol' --fix --noPrompt",
     "lint:js": "eslint '**/*.{js,ts,json}' && prettier --check .",
@@ -34,7 +35,7 @@
     "deploy-vault-testnet" : "npx hardhat deploy --tags GmxCallback --network avalancheFuji",
     "init-vault-testnet" : "npx hardhat run tasks/vaults/InitializeTheseusVault.ts --network avalancheFuji",
     "init-gmx-testnet" : "npx hardhat run tasks/vaults/gmx/InitializegmxCallBack.ts --network avalancheFuji && npx hardhat run tasks/vaults/gmx/InitializegmxPlugin.ts --network avalancheFuji",
-    "vault-gmx-test-testnet": "npx hardhat test test/hardhat/vaults/TheseusVaultGMX.test.ts --network avalancheFuji",
+    "test-vault-gmx-testnet": "npx hardhat test test/hardhat/vaults/TheseusVaultGMX.test.ts --network avalancheFuji",
     "deploy-vault-vnet" : "npx hardhat deploy --tags GmxCallback --network arbitrumTwo",
     "init-vault-vnet" : "npx hardhat run tasks/vaults/InitializeTheseusVault.ts --network arbitrumTwo",
     "init-gmx-vnet" : "npx hardhat run tasks/vaults/gmx/InitializegmxCallBack.ts --network arbitrumTwo && npx hardhat run tasks/vaults/gmx/InitializegmxPlugin.ts --network arbitrumTwo"

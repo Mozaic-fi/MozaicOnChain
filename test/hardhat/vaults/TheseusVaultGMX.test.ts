@@ -2,7 +2,7 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
 import { Contract } from 'ethers'
 
-import hre from 'hardhat'
+import hre, { ethers } from 'hardhat'
 import { ContractUtils } from '../../../utils/contractUtils'
 import { GmxUtils } from '../../../utils/gmxUtils'
 import { NetworkInfo, networkConfigs } from '../../../utils/networkConfigs'
@@ -30,6 +30,7 @@ describe('TheseusVault Test', () => {
   let WBTCContract: Contract
   let WETHPool: gmxPool
   let WBTCPool: gmxPool
+  let tokenPriceConsumer: ContractUtils
 
   before(async () => { 
     network = networkConfigs.get(hre.network.name)!
@@ -39,6 +40,7 @@ describe('TheseusVault Test', () => {
     vault = await ContractUtils.createFromDeployment(hre, contractNames.Vaults.Theseus.Vault)
     gmxPlugin = await ContractUtils.createFromDeployment(hre, contractNames.Vaults.Theseus.GmxPlugin)
     gmxCallBack = await ContractUtils.createFromDeployment(hre, contractNames.Vaults.Theseus.GmxCallback)
+    tokenPriceConsumer = await ContractUtils.createFromDeployment(hre, contractNames.Vaults.TokenPriceConsumer)
     gmxUtils = new GmxUtils(network.networkName)
     WETHToken = getToken(tokenSymbols.WETH,network.networkName)
     WETHContract = await hre.ethers.getContractAt(erc20ABI,WETHToken.address)
@@ -46,21 +48,21 @@ describe('TheseusVault Test', () => {
     USDCContract = await hre.ethers.getContractAt(erc20ABI,USDCToken.address)
     WBTCToken = getToken(tokenSymbols.WBTC,network.networkName)
     WBTCContract = await hre.ethers.getContractAt(erc20ABI,WBTCToken.address)
-    WETHPool = {
-        poolId: 2,
-        indexToken: getToken(tokenSymbols.WETH,network.networkName),
-        longToken: getToken(tokenSymbols.WETH,network.networkName),
-        shortToken: getToken(tokenSymbols.USDC,network.networkName),
-        marketToken: getTokenFromAddress(network.networkName,'0xbf338a6C595f06B7Cfff2FA8c958d49201466374')
-    }
+    // WETHPool = {
+    //     poolId: 2,
+    //     indexToken: getToken(tokenSymbols.WETH,network.networkName),
+    //     longToken: getToken(tokenSymbols.WETH,network.networkName),
+    //     shortToken: getToken(tokenSymbols.USDC,network.networkName),
+    //     marketToken: getTokenFromAddress(network.networkName,'0xbf338a6C595f06B7Cfff2FA8c958d49201466374')
+    // }
 
-    WBTCPool = {
-        poolId: 3,
-        indexToken: getToken(tokenSymbols.WBTC,network.networkName),
-        longToken: getToken(tokenSymbols.WBTC,network.networkName),
-        shortToken: getToken(tokenSymbols.USDC,network.networkName),
-        marketToken: getTokenFromAddress(network.networkName,'0x79E6e0E454dE82fA98c02dB012a2A69103630B07')
-      }
+    // WBTCPool = {
+    //     poolId: 3,
+    //     indexToken: getToken(tokenSymbols.WBTC,network.networkName),
+    //     longToken: getToken(tokenSymbols.WBTC,network.networkName),
+    //     shortToken: getToken(tokenSymbols.USDC,network.networkName),
+    //     marketToken: getTokenFromAddress(network.networkName,'0x79E6e0E454dE82fA98c02dB012a2A69103630B07')
+    //   }
       
   }) 
 
@@ -71,6 +73,26 @@ describe('TheseusVault Test', () => {
     expect(usdcBalance).to.be.gt(0)
     const wbtcBalance = Number(await WBTCContract.balanceOf(user.address))
     expect(wbtcBalance).to.be.gt(0)
+  })
+
+  it('user should be able to deposit USDT', async () => { 
+    const amountUSDC = ethers.utils.parseUnits('100', USDCToken.decimals)
+    await USDCContract.approve(vault.contractAddress, amountUSDC)
+    expect(amountUSDC.eq(await USDCContract.allowance(user.address, vault.contractAddress))).to.be.equal(true)
+    const vaultContract = await  vault.getDeployedContract()
+    const minGMAmount = ethers.utils.parseEther("100");
+    const payload = ethers.utils.defaultAbiCoder.encode(['uint256'], [minGMAmount]);
+    expect(await vaultContract.getVaultStatus()).to.be.equal(true);
+    expect(await vaultContract.isDepositAllowedToken(USDCToken.address)).to.be.equal(true);
+    //await vaultContract.addDepositRequest(USDCToken.address, amountUSDC, user.address, payload, {value: 1} )
+
+    // const contractTokenBalance = await USDCContract.balanceOf(vault.contractAddress);
+    // expect(contractTokenBalance).to.equal(amountUSDC);
+
+    let lpTokenBalance = await vaultContract.balanceOf(user.address);
+    const expectedLP = await vaultContract.convertAssetToLP(await vaultContract.calculateTokenValueInUsd(USDCToken.address, amountUSDC))
+    // expect(lpTokenBalance).to.be.equal(expectedLP);
+
   })
 
 
