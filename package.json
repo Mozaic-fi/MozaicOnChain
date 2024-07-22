@@ -36,6 +36,7 @@
     "deploy-vault-gmx-testnet" : "npx hardhat deploy --tags GmxPlugin --network avalancheFuji && npx hardhat deploy --tags GmxCallback --network avalancheFuji",
     "init-vault-testnet" : "npx hardhat run tasks/vaults/InitializeTheseusVault.ts --network avalancheFuji",
     "init-gmx-testnet" : "npx hardhat run tasks/vaults/gmx/InitializegmxCallBack.ts --network avalancheFuji && npx hardhat run tasks/vaults/gmx/InitializegmxPlugin.ts --network avalancheFuji",
+    "vault-gmx-test-testnet": "npx hardhat test test/hardhat/vaults/TheseusVaultGMX.test.ts --network avalancheFuji",
     "deploy-TokenPriceConsumer-vnet" : "npx hardhat deploy --tags TokenPriceConsumer --network arbitrumTwo",
     "deploy-vault-vnet" : "npx hardhat deploy --tags GmxCallback --network arbitrumTwo",
     "init-vault-vnet" : "npx hardhat run tasks/vaults/InitializeTheseusVault.ts --network arbitrumTwo",
