@@ -7,6 +7,7 @@ enum TaskType {
   Deploy = 'deploy',
   Test = 'test',
   Yarn = 'yarn',
+  managedTask = 'selectNetwork'
 }
 
 type Task = {
@@ -73,8 +74,10 @@ class TaskRunner {
     }
   }
 
-  private async chooseTask(): Promise<Task | null> {
+  private async chooseTask(network: string): Promise<Task | null> {
+    console.log(`Selected network: ${cliCyan(network)}`);
     console.log('Available tasks:');
+    console.log(cliRed('0. Clear'))
     this.tasks.forEach((task, index) => {
         switch (task.type) {
             case TaskType.Config:
@@ -93,18 +96,23 @@ class TaskRunner {
                 break;
         }
     });
-    console.log(`${this.tasks.length + 1}. Exit`);
+    console.log(`${this.tasks.length + 1}. change network`);
+    console.log(`${this.tasks.length + 2}. Exit`);
 
     const choice = await this.askQuestion('Choose a task to run (enter the number): ');
     const index = choice - 1;
 
     if (index >= 0 && index < this.tasks.length) {
       return this.tasks[index];
-    } else if (index === this.tasks.length || index === -1) {
+    } else if (index === this.tasks.length) {
+      return { type: TaskType.managedTask, name: 'change network', command: '' };
+    } else if (index === this.tasks.length + 1) {
       return null;
+    } else if (index === -1) {
+      return { type: TaskType.Yarn, name: 'clear', command: 'clear' }; 
     } else {
       console.log('Invalid choice. Please try again.');
-      return this.chooseTask();
+      return this.chooseTask(network);
     }
   }
 
@@ -131,17 +139,18 @@ class TaskRunner {
       return;
     }
 
-    const selectedNetwork = await this.chooseNetwork();
-    console.log(`Selected network: ${selectedNetwork}`);
+    let selectedNetwork = await this.chooseNetwork();
 
     let selectedTask: Task | null;
     do {
-      selectedTask = await this.chooseTask();
+      selectedTask = await this.chooseTask(selectedNetwork);
       if (selectedTask) {
         console.log(`Running task: ${selectedTask.name}`);
         if(selectedTask.type === TaskType.Yarn) {
             await this.runCommand(selectedTask.command);
-        }else {
+        } else if (selectedTask.type === TaskType.managedTask) {
+          selectedNetwork = await this.chooseNetwork();
+        } else {
             await this.runCommand(selectedTask.command + ` --network ${selectedNetwork}`);
         }
       }
