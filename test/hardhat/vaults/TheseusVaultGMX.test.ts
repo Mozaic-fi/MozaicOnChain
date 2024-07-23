@@ -88,7 +88,7 @@ describe('TheseusVault Test', () => {
     const payload = ethers.utils.defaultAbiCoder.encode(['uint256'], [minGMAmount]);
     expect(await vaultContract.getVaultStatus()).to.be.equal(true);
     expect(await vaultContract.isDepositAllowedToken(USDCToken.address)).to.be.equal(true);
-    const tx = await vaultContract.addDepositRequest(USDCToken.address, amountUSDC, user.address, payload, {value: 1, gasLimit: 5000000} )
+    const tx = await vaultContract.addDepositRequest(USDCToken.address, amountUSDC, user.address, payload, {value: 1000000000000000, gasLimit: 5000000} )
 
     console.log(tx)
     // const contractTokenBalance = await USDCContract.balanceOf(vault.contractAddress);
