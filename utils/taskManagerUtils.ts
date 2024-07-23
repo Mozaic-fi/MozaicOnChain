@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment  } from 'hardhat/types';
 
 import {networkConfigs, NetworkInfo} from './networkConfigs'
-import {cliBlue, cliConfirmation, cliCyan, cliGreen, cliRed, cliYellow} from './cliUtils'
+import {cliBlue, cliConfirmation, cliCyan, cliGreen, cliRed, cliSelectItem, cliYellow} from './cliUtils'
 
 import * as readline from 'readline';
 
@@ -89,7 +89,9 @@ export class TaskManagerUtils {
         if (this.finalizeCallback) {
             await this.finalizeCallback(this.hardhatRuntimeEnvironment, this.contractName,this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
         }
+        console.log(cliCyan('\n===================================\n',true))
         console.log(cliCyan("Task execution completed.",true));
+        console.log(cliCyan('\n===================================\n',true))
     }
 
     async run(): Promise<void> {
@@ -152,14 +154,32 @@ export class TaskManagerUtils {
                     //console.log(`Task ${taskName} executed with values: ${JSON.stringify(valuesToLog)}`);
                     console.log(cliBlue('\n-----------------------------------\n'))
                 }
-                this.finalize();
+            await this.finalize();
 
         } else {
             console.log("No tasks selected.");
         }
-
-        console.log(cliCyan('\n===================================\n',true))
-        console.log(cliCyan("Task execution completed.",true));
-        console.log(cliCyan('\n===================================\n',true))
     }
+    
+    async runInteractive(): Promise<void> {
+        await this.checkDependencies();
+
+        const taskNames = Array.from(this.tasks.keys());
+
+        await this.initialize();
+        while (true) {
+            const index = await cliSelectItem('Select a task to run (or type "0" to finish)', taskNames, true);
+    
+            if(index === -1){
+                break;
+            }
+            else{
+                let valuesToLog = await this.tasks.get(taskNames[index])!(this.hardhatRuntimeEnvironment, this.contractName, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
+                console.log(cliBlue('\n-----------------------------------\n'))
+            }           
+        }
+        await this.finalize();
+    }
+    
+    
 }

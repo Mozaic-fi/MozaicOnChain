@@ -2,7 +2,9 @@ import { ethers } from 'hardhat';
 import fs from 'fs';
 import path from 'path';
 
+import { getTokenFromAddress } from './vaultTokens';
 import { gmxPool } from './vaultPlugins/gmxVaultPlugins';
+import {getNetworkName, networkNames} from './names/networkNames'
 
 interface DeploymentInfo {
     address: string;
@@ -12,14 +14,24 @@ interface DeploymentInfo {
 export enum gmxContracts {
     dataStore = 'DataStore',
     reader = 'Reader',
+    depositHandler = 'DepositHandler',
+    depositVault = 'DepositVault',
+    orderHandler = 'OrderHandler',
+    orderVault = 'OrderVault',
+    withdrawalHandler = 'WithdrawalHandler',
+    withdrawalVault = 'WithdrawalVault',
+    exchangeRouter = 'ExchangeRouter',
+    router = 'Router',
+    marketToken = '../MarketToken'
 }
 
 export class GmxUtils {
-    private networkName: string;
     private deploymentPath: string;
+    private networkName: networkNames;   
 
     constructor(networkName: string) {
-        this.networkName = networkName;
+        if(networkName == networkNames.arbitrumTwo) networkName = networkNames.arbitrumOne;
+        this.networkName = getNetworkName(networkName);
         this.deploymentPath = path.join(process.cwd(), 'deployments', 'gmx','v2.1',networkName);
     }
 
@@ -29,6 +41,13 @@ export class GmxUtils {
         return JSON.parse(fileContent) as DeploymentInfo;
     }
 
+    getContractAddress(contractName: gmxContracts): string {
+        return this.loadDeploymentInfo(contractName).address;
+    }
+
+    getContractAbi(contractName: gmxContracts): any[] {
+        return this.loadDeploymentInfo(contractName).abi;
+    }
     async callContractFunction(
         contractName: gmxContracts, 
         functionName: string, 
@@ -51,10 +70,10 @@ export class GmxUtils {
         for (const market of markets) {
             pools.push({
                 poolId: -1,
-                indexToken: market.indexToken,
-                longToken: market.longToken,
-                shortToken: market.shortToken,
-                marketToken: market.marketToken,
+                indexToken: getTokenFromAddress(this.networkName ,market.indexToken),
+                longToken: getTokenFromAddress(this.networkName ,market.longToken),
+                shortToken: getTokenFromAddress(this.networkName ,market.shortToken),
+                marketToken: getTokenFromAddress(this.networkName ,market.marketToken),
             })
         }
         return pools;

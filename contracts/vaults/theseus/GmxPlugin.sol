@@ -11,11 +11,11 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 
 import "../../interfaces/vaults/IPlugin.sol";
-import "../../interfaces/gmx/IGMXExchangeRouter.sol";
-import "../../interfaces/gmx/IGMXDataStore.sol";
-import "../../interfaces/gmx/IGMXReader.sol";
-import "../../interfaces/gmx/IGMXMarket.sol";
-import "../../interfaces/gmx/IGMXCallbackContract.sol";
+import "../../interfaces/gmx/IExchangeRouter.sol";
+import "../../interfaces/gmx/IDataStore.sol";
+import "../../interfaces/gmx/IReader.sol";
+import "../../interfaces/gmx/IMarket.sol";
+import "../../interfaces/gmx/ICallbackContract.sol";
 
 import "../TokenPriceConsumer.sol";
 
@@ -90,6 +90,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     address public tokenPriceConsumer;
 
     address[] public rewardTokens;
+    
     mapping(address => uint8) public tokenDecimalList;
 
     /* ========== EVENTS ========== */
@@ -291,7 +292,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     // Function allowing the vault to execute different actions based on the specified action type.
     function execute(ActionType _actionType, bytes calldata _payload) external payable onlyVault nonReentrant {
         // Determine the action type and execute the corresponding logic.
-        if (_actionType == ActionType. Stake) {
+        if (_actionType == ActionType.Stake) {
             // Execute stake action.
             stake(_payload);
         } else if (_actionType == ActionType.Unstake) {
@@ -531,7 +532,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     // Decodes the payload and executes createGMOrder function.
     function createOrder(bytes calldata _payload) internal {
         // Decode payload
-        IGMXExchangeRouter.CreateOrderParams memory orderParams = abi.decode(_payload, (IGMXExchangeRouter.CreateOrderParams));
+        IExchangeRouter.CreateOrderParams memory orderParams = abi.decode(_payload, (IExchangeRouter.CreateOrderParams));
 
         // Execute createGMOrder function
         createGMOrder(orderParams);
@@ -573,7 +574,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     function buyGMToken(uint8 _poolId, uint256 _longTokenAmount, uint256 _shortTokenAmount, uint256 _minGmAmount) internal {
         // Retrieve pool configuration
         PoolConfig memory pool = pools[getPoolIndexById(_poolId)];
-        IGMXExchangeRouter _exchangeRouter = IGMXExchangeRouter(routerConfig.exchangeRouter);
+        IExchangeRouter _exchangeRouter = IExchangeRouter(routerConfig.exchangeRouter);
 
         // Prepare swap paths and other variables
         address longToken = pool.longToken;
@@ -584,7 +585,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         uint256 executionFee = gmxParams.executionFee;
 
         // Prepare CreateDepositParams
-        IGMXExchangeRouter.CreateDepositParams memory params = IGMXExchangeRouter.CreateDepositParams(
+        IExchangeRouter.CreateDepositParams memory params = IExchangeRouter.CreateDepositParams(
             address(this),                     // receiver
             gmxParams.callbackContract,        // callbackContract
             gmxParams.uiFeeReceiver,           // uiFeeReceiver
@@ -619,7 +620,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
 
         // Execute multicall with optional value (executionFee)
         bytes[] memory results = _exchangeRouter.multicall{value: executionFee}(multicallArgs);
-        IGMXCallbackContract(gmxParams.callbackContract).addKey(bytes32(results[3]), IGMXCallbackContract.State.Deposit);
+        ICallbackContract(gmxParams.callbackContract).addKey(bytes32(results[3]), ICallbackContract.State.Deposit);
     }
 
     // Internal function to sell GM tokens in a specified pool.
@@ -627,8 +628,8 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         // Retrieve pool configuration
         PoolConfig memory pool = pools[getPoolIndexById(_poolId)];
 
-        // Cast exchangeRouter to IGMXExchangeRouter
-        IGMXExchangeRouter _exchangeRouter = IGMXExchangeRouter(routerConfig.exchangeRouter);
+        // Cast exchangeRouter to IExchangeRouter
+        IExchangeRouter _exchangeRouter = IExchangeRouter(routerConfig.exchangeRouter);
 
         // Define swap paths
         address[] memory longTokenSwapPath;
@@ -639,7 +640,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         require(balance >= marketAmount && marketAmount > 0, "GMX: Insufficient market token balance");
 
         // Create parameters for the external contract call
-        IGMXExchangeRouter.CreateWithdrawalParams memory params = IGMXExchangeRouter.CreateWithdrawalParams(
+        IExchangeRouter.CreateWithdrawalParams memory params = IExchangeRouter.CreateWithdrawalParams(
             receiver,                          // receiver
             gmxParams.callbackContract,        // callbackContract
             gmxParams.uiFeeReceiver,           // uiFeeReceiver
@@ -667,19 +668,19 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         // Execute multicall with optional value (executionFee)
         bytes[] memory results = _exchangeRouter.multicall{value: gmxParams.executionFee}(multicallArgs);
     
-        IGMXCallbackContract(gmxParams.callbackContract).addKey(bytes32(results[2]), IGMXCallbackContract.State.Withdrawal);
-        IGMXCallbackContract(gmxParams.callbackContract).addWithdrawalData(bytes32(results[2]), lpAmount, receiver);
+        ICallbackContract(gmxParams.callbackContract).addKey(bytes32(results[2]), ICallbackContract.State.Withdrawal);
+        ICallbackContract(gmxParams.callbackContract).addWithdrawalData(bytes32(results[2]), lpAmount, receiver);
     }
 
     // Create Gmx order with the gmx order params
-    function createGMOrder(IGMXExchangeRouter.CreateOrderParams memory _params) internal {
+    function createGMOrder(IExchangeRouter.CreateOrderParams memory _params) internal {
         require(_params.addresses.receiver == localVault, "Invalid receiver");
 
         _params.addresses.callbackContract = gmxParams.callbackContract;
         _params.numbers.callbackGasLimit = gmxParams.callbackGasLimit;
         
-        // Cast exchangeRouter to IGMXExchangeRouter
-        IGMXExchangeRouter _exchangeRouter = IGMXExchangeRouter(routerConfig.exchangeRouter);
+        // Cast exchangeRouter to IExchangeRouter
+        IExchangeRouter _exchangeRouter = IExchangeRouter(routerConfig.exchangeRouter);
 
         // Extract values from _params to improve readability
         address initialCollateralToken = _params.addresses.initialCollateralToken;
@@ -687,10 +688,10 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         uint256 executionFee = _params.numbers.executionFee;
 
         if (
-            _params.orderType == IGMXExchangeRouter.OrderType.MarketSwap ||
-            _params.orderType == IGMXExchangeRouter.OrderType.LimitSwap ||
-            _params.orderType == IGMXExchangeRouter.OrderType.MarketIncrease ||
-            _params.orderType == IGMXExchangeRouter.OrderType.LimitIncrease
+            _params.orderType == IExchangeRouter.OrderType.MarketSwap ||
+            _params.orderType == IExchangeRouter.OrderType.LimitSwap ||
+            _params.orderType == IExchangeRouter.OrderType.MarketIncrease ||
+            _params.orderType == IExchangeRouter.OrderType.LimitIncrease
         ) {
 
             // Transfer initialCollateralToken from localVault to contract
@@ -709,13 +710,13 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         // Create the order using the external exchange router
         bytes32 orderKey = _exchangeRouter.createOrder(_params);
         
-        IGMXCallbackContract(gmxParams.callbackContract).addKey(orderKey, IGMXCallbackContract.State.Order);
+        ICallbackContract(gmxParams.callbackContract).addKey(orderKey, ICallbackContract.State.Order);
     }
 
     // Cancels a deposit operation identified by the specified key using the configured exchange router.
     function cancelDeposit(bytes32 key) internal {
         // Get the exchange router from the configuration
-        IGMXExchangeRouter _exchangeRouter = IGMXExchangeRouter(routerConfig.exchangeRouter);
+        IExchangeRouter _exchangeRouter = IExchangeRouter(routerConfig.exchangeRouter);
         
         // Call the exchange router to cancel the deposit with the specified key
         _exchangeRouter.cancelDeposit(key);
@@ -724,7 +725,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     // Cancels a withdrawal operation identified by the specified key using the configured exchange router.
     function cancelWithdrawal(bytes32 key) internal {
         // Get the exchange router from the configuration
-        IGMXExchangeRouter _exchangeRouter = IGMXExchangeRouter(routerConfig.exchangeRouter);
+        IExchangeRouter _exchangeRouter = IExchangeRouter(routerConfig.exchangeRouter);
         
         // Call the exchange router to cancel the withdrawal with the specified key
         _exchangeRouter.cancelWithdrawal(key);
@@ -733,7 +734,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     // Cancels an order identified by the specified key using the configured exchange router.
     function cancelOrder(bytes32 key) internal {
         // Get the exchange router from the configuration
-        IGMXExchangeRouter _exchangeRouter = IGMXExchangeRouter(routerConfig.exchangeRouter);
+        IExchangeRouter _exchangeRouter = IExchangeRouter(routerConfig.exchangeRouter);
         
         // Call the exchange router to cancel the order with the specified key
         _exchangeRouter.cancelOrder(key);
@@ -746,14 +747,14 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         // Retrieve pool configuration
         PoolConfig memory _pool = pools[getPoolIndexById(_poolId)];
 
-        // Cast exchangeRouter to IGMXExchangeRouter for interacting with the external contract
-        IGMXExchangeRouter exchangeRouterInstance = IGMXExchangeRouter(routerConfig.exchangeRouter);
+        // Cast exchangeRouter to IExchangeRouter for interacting with the external contract
+        IExchangeRouter exchangeRouterInstance = IExchangeRouter(routerConfig.exchangeRouter);
 
         // Retrieve dataStore from the exchangeRouter
-        IGMXDataStore dataStore = exchangeRouterInstance.dataStore();
+        IDataStore dataStore = exchangeRouterInstance.dataStore();
 
         // Define market properties for the external contract call
-        IGMXMarket.Props memory marketProps = IGMXMarket.Props(
+        IMarket.Props memory marketProps = IMarket.Props(
             _pool.marketToken,
             _pool.indexToken,
             _pool.longToken,
@@ -770,7 +771,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         bool maximize = _maximize;
 
         // Call the external contract to get the market token price
-        (int256 marketTokenPrice, ) = IGMXReader(routerConfig.reader).getMarketTokenPrice(
+        (int256 marketTokenPrice, ) = IReader(routerConfig.reader).getMarketTokenPrice(
             dataStore,
             marketProps,
             indexTokenPrice,
@@ -863,9 +864,6 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         else return _amount * 10 ** (_to - _from);
     }
 
-    receive() external payable {}
-    fallback() external payable {}
-
     function getBalance() public view returns (uint) {
         return address(this).balance;
     }
@@ -878,6 +876,16 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         require(treasury != address(0), "Vault: Invalid treasury");
         (bool success, ) = treasury.call{value: _amount}("");
         require(success, "Vault: Failed to send Ether");
+    }
+
+    receive() external payable {}
+    fallback() external payable {}
+    
+    function withdrawStuckEth(uint256 amount) external onlyOwner {
+        (bool success, ) = treasury.call{
+            value: amount
+        } ("");
+        require(success);
     }
 
     // Public view function to determine whether the given address is a contract or an externally-owned account (EOA).

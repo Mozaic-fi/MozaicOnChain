@@ -70,6 +70,13 @@ const config: HardhatUserConfig = {
             chainId: 43113,
             accounts: accounts,
         },
+        //VNet
+        arbitrumTwo: {
+            eid: EndpointId.ARBITRUM_V2_MAINNET,
+            url: `https://virtual.arbitrum.rpc.tenderly.co/${process.env.TENDERLY_API_KEY}`,
+            chainId: 4216099,
+            accounts: accounts,
+        },
         //Mainnet
         arbitrumOne: {
             eid: EndpointId.ARBITRUM_V2_MAINNET,

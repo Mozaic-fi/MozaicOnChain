@@ -21,6 +21,11 @@ export class ContractUtils {
         this._contractAddress = contractAddress;
     }
 
+    static async createFromDeployment(hre: HardhatRuntimeEnvironment, contractName: string, getCLIConfirmation: boolean = false) {
+        let deployment = await hre.deployments.get(contractName)
+        return new ContractUtils(hre, contractName, [], getCLIConfirmation, deployment.address)
+    }
+
     async deployContract() {
         if(this._contractAddress !== '') {
             console.log(cliRed(`Contract already deployed: ${this.contractName}, network: ${this.network}, address: ${this._contractAddress}`))
@@ -71,7 +76,7 @@ export class ContractUtils {
             return this._contractAddress;
         }
         await this.deployContract()
-        await this.verifyContract()
+        if(this.networkConfig.autoVerify) await this.verifyContract()
     }
 
     public get contractAddress(): string {
@@ -274,6 +279,15 @@ export class ContractUtils {
         }
         const result = await contract[functionName](...args)
         console.log(cliBlue(`Function: ${functionName} result: ${JSON.stringify(result, null, 2)}`))
+        return result
+    }
+
+    async callContractFunction(functionName: string, ...args: any[]) {
+        const contract = await this.getDeployedContract()
+        if (typeof contract[functionName] !== "function") {
+            return undefined
+        }
+        const result = await contract[functionName](...args)
         return result
     }
 

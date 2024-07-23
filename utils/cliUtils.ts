@@ -37,7 +37,7 @@ export function cliQuestionNumber(question: string): Promise<number> {
     });
 }
 
-export function cliSelectItem(question: string, items: any[]): Promise<number> {
+export function cliSelectItem(question: string, items: any[], noJson: boolean= false): Promise<number> {
     const rl = readline.createInterface({
         input: process.stdin,
         output: process.stdout
@@ -47,20 +47,48 @@ export function cliSelectItem(question: string, items: any[]): Promise<number> {
         console.log(cliBold(`${question}: `))
         console.log('List of Possible Values:')
         for (let i = 0; i < items.length; i++) {
-            console.log(cliCyan(`${i + 1}:\n${JSON.stringify(items[i], null, 2)}`));
-            console.log('\n-----------------------------------\n')
+            console.log(cliCyan(`${i + 1}:${noJson? items[i]: '\n'+JSON.stringify(items[i], null, 2)}`));
+            if(!noJson) console.log('\n-----------------------------------\n')
         }
         rl.question(`${question}: `, (answer) => {
             if(/^\d+$/.test(answer.trim())) {
                 let index = parseInt(answer.trim());
-                if(index < 0 || index >= items.length) {
-                    rl.write("Invalid input\n");
+                if(index >= 0 && index <= items.length) {
+                    resolve(index -1);
                 }
-                resolve(index - 1);
+                else {
+                    rl.write("Invalid input\n");
+                    resolve(-1);
+                }
             }
             else{
                 rl.write("Invalid input\n");
             }
+            rl.close();
+        });
+    });
+}
+
+export function cliSelectItems(question: string, items: any[], noJson: boolean= false): Promise<number[]> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise((resolve) => {
+        console.log(cliBold(`${question}: (please enter comma separated):`))
+        console.log('List of Possible Values:')
+        for (let i = 0; i < items.length; i++) {
+            console.log(cliCyan(`${i + 1}:${noJson? items[i]: '\n'+JSON.stringify(items[i], null, 2)}`));
+            if(!noJson)console.log('\n-----------------------------------\n')
+        }
+        rl.question(`${question}: `, (answer) => {
+            const indexes = answer.split(',').map(s => Number(s.trim()) - 1);
+            if(indexes.every(index => index >= 0 && index < items.length)) 
+            {
+                resolve(indexes);
+            }
+            resolve([]);          
             rl.close();
         });
     });
@@ -82,6 +110,26 @@ export function cliInputList(question: string): Promise<string[]> {
             }
             rl.close();
             resolve(values);
+        });
+    });
+}
+
+export function cliRead(question: string): Promise<number> {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+
+    return new Promise((resolve) => {
+        rl.question(cliBold(cliRed(question)), (answer) => {
+            rl.close();
+            const trimmedAnswer = answer.trim().toLowerCase();
+            if(/^\d+$/.test(trimmedAnswer)){
+                let index = parseInt(trimmedAnswer);
+                resolve(index);
+            }else{
+                resolve(-1);
+            }
         });
     });
 }

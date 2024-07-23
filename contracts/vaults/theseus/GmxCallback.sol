@@ -6,7 +6,7 @@ import "../../interfaces/gmx/IDepositCallbackReceiver.sol";
 import "../../interfaces/gmx/IWithdrawalCallbackReceiver.sol";
 import "../../interfaces/gmx/IOrderCallbackReceiver.sol";
 import "../../interfaces/gmx/IGMXPlugin.sol";
-import "../../interfaces/gmx/IGMXCallbackContract.sol";
+import "../../interfaces/gmx/ICallbackContract.sol";
 import "../../interfaces/vaults/IVault.sol";
 import "../../interfaces/vaults/IVaultLocker.sol";
 
@@ -15,7 +15,7 @@ import "../../interfaces/vaults/IVaultLocker.sol";
  * @title GmxCallback
  * @dev Contract handling callbacks for deposit, withdrawal, and order execution/cancellation.
  */
-contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackReceiver, IOrderCallbackReceiver, IGMXCallbackContract, IVaultLocker {
+contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackReceiver, IOrderCallbackReceiver, ICallbackContract, IVaultLocker {
     // Structure to hold the withdrawal information associated with a key
     struct WithdrawalInfo {
         uint256 lpAmount;

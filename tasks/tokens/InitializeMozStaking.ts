@@ -16,7 +16,6 @@ async function main() {
     })
 
     taskManager.registerFinalizeCallback(async( hre, contractName, signer, contractAddress, networkConfig, dependencies, data) => {
-        console.log(`Finalizing ${contractAddress} on ${hre.network.name}`)
     });
 
     taskManager.registerTask('initialize-contract', async( hre, contractName, signer, contractAddress, networkConfig, dependencies, data) => {
@@ -37,7 +36,7 @@ async function main() {
         }
     });
 
-    await taskManager.run()
+    await taskManager.runInteractive()
 }
 
 main()

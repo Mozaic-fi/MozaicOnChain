@@ -9,6 +9,7 @@
     "compile:forge": "forge build",
     "compile:hardhat": "hardhat compile",
     "build": "yarn run clean && npx tsc --noEmit && yarn run compile:hardhat",
+    "start": "ts-node utils/mainTaskrunner.ts",
     "lint": "$npm_execpath run lint:js && $npm_execpath run lint:sol",
     "lint:fix": "eslint --fix '**/*.{js,ts,json}' && prettier --write . && solhint 'contracts/**/*.sol' --fix --noPrompt",
     "lint:js": "eslint '**/*.{js,ts,json}' && prettier --check .",
@@ -30,12 +31,14 @@
     "test-lztransfer-arbitrumSepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network arbitrumSepolia",
     "test-lztransfer-baseSepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network baseSepolia",
     "test-lztransfer-sepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network sepolia",
-    "test-gmx": "npx hardhat run tasks/test.ts --network avalancheFuji",
-    "deploy-TokenPriceConsumer-testnet" : "npx hardhat deploy --tags TokenPriceConsumer --network avalancheFuji",
-    "deploy-vault-testnet" : "npx hardhat deploy --tags Vault --network avalancheFuji",
-    "deploy-vault-gmx-testnet" : "npx hardhat deploy --tags GmxPlugin --network avalancheFuji && npx hardhat deploy --tags GmxCallback --network avalancheFuji",
+    "test-gmx": "npx hardhat run tasks/gmx/getGMXPools.ts --network arbitrumTwo",
+    "deploy-vault-testnet" : "npx hardhat deploy --tags GmxCallback --network avalancheFuji",
     "init-vault-testnet" : "npx hardhat run tasks/vaults/InitializeTheseusVault.ts --network avalancheFuji",
-    "init-gmx-testnet" : "npx hardhat run tasks/vaults/gmx/InitializegmxCallBack.ts --network avalancheFuji && npx hardhat run tasks/vaults/gmx/InitializegmxPlugin.ts --network avalancheFuji"
+    "init-gmx-testnet" : "npx hardhat run tasks/vaults/gmx/InitializegmxCallBack.ts --network avalancheFuji && npx hardhat run tasks/vaults/gmx/InitializegmxPlugin.ts --network avalancheFuji",
+    "test-vault-gmx-testnet": "npx hardhat test test/hardhat/vaults/TheseusVaultGMX.test.ts --network avalancheFuji",
+    "deploy-vault-vnet" : "npx hardhat deploy --tags GmxCallback --network arbitrumTwo",
+    "init-vault-vnet" : "npx hardhat run tasks/vaults/InitializeTheseusVault.ts --network arbitrumTwo",
+    "init-gmx-vnet" : "npx hardhat run tasks/vaults/gmx/InitializegmxCallBack.ts --network arbitrumTwo && npx hardhat run tasks/vaults/gmx/InitializegmxPlugin.ts --network arbitrumTwo"
   },
   "resolutions": {
     "@nomicfoundation/edr": "0.3.5",
