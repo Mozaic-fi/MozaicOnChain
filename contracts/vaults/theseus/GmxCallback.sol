@@ -5,8 +5,8 @@ import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
 import "../../interfaces/gmx/IDepositCallbackReceiver.sol";
 import "../../interfaces/gmx/IWithdrawalCallbackReceiver.sol";
 import "../../interfaces/gmx/IOrderCallbackReceiver.sol";
-import "../../interfaces/gmx/IGMXPlugin.sol";
-import "../../interfaces/gmx/IGMXCallbackContract.sol";
+import "../../interfaces/gmx/IPlugin.sol";
+import "../../interfaces/gmx/ICallbackContract.sol";
 import "../../interfaces/vaults/IVault.sol";
 import "../../interfaces/vaults/IVaultLocker.sol";
 
@@ -15,7 +15,7 @@ import "../../interfaces/vaults/IVaultLocker.sol";
  * @title GmxCallback
  * @dev Contract handling callbacks for deposit, withdrawal, and order execution/cancellation.
  */
-contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackReceiver, IOrderCallbackReceiver, IGMXCallbackContract, IVaultLocker {
+contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackReceiver, IOrderCallbackReceiver, ICallbackContract, IVaultLocker {
     // Structure to hold the withdrawal information associated with a key
     struct WithdrawalInfo {
         uint256 lpAmount;
@@ -244,7 +244,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
      */
     function afterDepositExecution(bytes32 key, Deposit.Props memory deposit, EventUtils.EventLogData memory eventData) external onlyHandler(State.Deposit) {
         removeKey(key, State.Deposit);
-        IGMXPlugin(config.gmxPlugin).transferAllTokensToVault();
+        IPlugin(config.gmxPlugin).transferAllTokensToVault();
         
         emit AfterDepositExecution(key);
     }
@@ -257,7 +257,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
      */
     function afterDepositCancellation(bytes32 key, Deposit.Props memory deposit, EventUtils.EventLogData memory eventData) external onlyHandler(State.Deposit) {
         removeKey(key, State.Deposit);
-        IGMXPlugin(config.gmxPlugin).transferAllTokensToVault();
+        IPlugin(config.gmxPlugin).transferAllTokensToVault();
         
         emit AfterDepositCancellation(key);
     }
@@ -275,7 +275,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
             IVault(config.vault).burnLP(info.lpAmount);
         }
         delete withdrawalData[key];
-        IGMXPlugin(config.gmxPlugin).transferAllTokensToVault();
+        IPlugin(config.gmxPlugin).transferAllTokensToVault();
         
         emit AfterWithdrawalExecution(key);
     }
@@ -293,7 +293,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
             IVault(config.vault).transferLP(info.receiver, info.lpAmount);
         }
         delete withdrawalData[key];
-        IGMXPlugin(config.gmxPlugin).transferAllTokensToVault();
+        IPlugin(config.gmxPlugin).transferAllTokensToVault();
 
         emit AfterWithdrawalCancellation(key);
     }
@@ -306,7 +306,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
      */
     function afterOrderExecution(bytes32 key, Order.Props memory order, EventUtils.EventLogData memory eventData) external onlyHandler(State.Order) {
         removeKey(key, State.Order);
-        IGMXPlugin(config.gmxPlugin).transferAllTokensToVault();
+        IPlugin(config.gmxPlugin).transferAllTokensToVault();
 
         emit AfterOrderExecution(key);
     }
@@ -319,7 +319,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
      */
     function afterOrderCancellation(bytes32 key, Order.Props memory order, EventUtils.EventLogData memory eventData) external onlyHandler(State.Order) {
         removeKey(key, State.Order);
-        IGMXPlugin(config.gmxPlugin).transferAllTokensToVault();
+        IPlugin(config.gmxPlugin).transferAllTokensToVault();
 
         emit AfterOrderCancellation(key);
     }
@@ -331,7 +331,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
      * @param eventData Additional event data.
      */
     function afterOrderFrozen(bytes32 key, Order.Props memory order, EventUtils.EventLogData memory eventData) external onlyHandler(State.Order) {
-        IGMXPlugin(config.gmxPlugin).transferAllTokensToVault();
+        IPlugin(config.gmxPlugin).transferAllTokensToVault();
 
         emit AfterOrderFrozen(key);
     }

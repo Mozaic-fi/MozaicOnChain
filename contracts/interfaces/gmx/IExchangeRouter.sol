@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.18;
 
-import "./IGMXDataStore.sol"; // Import the DataStore contract
+import "./IDataStore.sol"; // Import the DataStore contract
 
-interface IGMXExchangeRouter {
+interface IExchangeRouter {
     
-    function dataStore() external view returns (IGMXDataStore);
+    function dataStore() external view returns (IDataStore);
     /**
      * @dev Receives and executes a batch of function calls on this contract.
      */

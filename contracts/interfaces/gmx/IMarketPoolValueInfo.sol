@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.18;
 
-interface IGMXMarketPoolValueInfo {
+interface IMarketPoolValueInfo {
     struct Props {
         int256 poolValue;
         int256 longPnl;

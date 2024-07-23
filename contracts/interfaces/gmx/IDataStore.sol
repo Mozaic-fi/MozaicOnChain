@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: BUSL-1.1
 pragma solidity ^0.8.18;
 
-interface IGMXDataStore {
+interface IDataStore {
     function getUint(bytes32 key) external view returns (uint256);
     function setUint(bytes32 key, uint256 value) external returns (uint256);
     function removeUint(bytes32 key) external;
