@@ -45,29 +45,21 @@ describe('TheseusVault Test', () => {
     USDCToken = getToken(tokenSymbols.USDC,network.networkName)
     USDCContract = await hre.ethers.getContractAt(erc20ABI,USDCToken.address)
     
-    WETHPool = {
-        poolId: 2,
-        indexToken: getToken(tokenSymbols.WETH,network.networkName),
-        longToken: getToken(tokenSymbols.WETH,network.networkName),
-        shortToken: getToken(tokenSymbols.USDC,network.networkName),
-        marketToken: getTokenFromAddress(network.networkName,'0xbf338a6C595f06B7Cfff2FA8c958d49201466374')
-    }
-
     // WETHPool = {
     //     poolId: 2,
     //     indexToken: getToken(tokenSymbols.WETH,network.networkName),
     //     longToken: getToken(tokenSymbols.WETH,network.networkName),
     //     shortToken: getToken(tokenSymbols.USDC,network.networkName),
-    //     marketToken: getTokenFromAddress(network.networkName,'0x70d95587d40A2caf56bd97485aB3Eec10Bee6336')
+    //     marketToken: getTokenFromAddress(network.networkName,'0xbf338a6C595f06B7Cfff2FA8c958d49201466374')
     // }
 
-    // WBTCPool = {
-    //     poolId: 3,
-    //     indexToken: getToken(tokenSymbols.WBTC,network.networkName),
-    //     longToken: getToken(tokenSymbols.WBTC,network.networkName),
-    //     shortToken: getToken(tokenSymbols.USDC,network.networkName),
-    //     marketToken: getTokenFromAddress(network.networkName,'0x79E6e0E454dE82fA98c02dB012a2A69103630B07')
-    //   }
+    WETHPool = {
+        poolId: 2,
+        indexToken: getToken(tokenSymbols.WETH,network.networkName),
+        longToken: getToken(tokenSymbols.WETH,network.networkName),
+        shortToken: getToken(tokenSymbols.USDC,network.networkName),
+        marketToken: getTokenFromAddress(network.networkName,'0x70d95587d40A2caf56bd97485aB3Eec10Bee6336')
+    }
 
       
   }) 
@@ -84,11 +76,11 @@ describe('TheseusVault Test', () => {
     await USDCContract.approve(vault.contractAddress, amountUSDC)
     expect(amountUSDC.eq(await USDCContract.allowance(user.address, vault.contractAddress))).to.be.equal(true)
     const vaultContract = await  vault.getDeployedContract()
-    const minGMAmount = ethers.utils.parseEther("100");
+    const minGMAmount = ethers.utils.parseEther("0");
     const payload = ethers.utils.defaultAbiCoder.encode(['uint256'], [minGMAmount]);
     expect(await vaultContract.getVaultStatus()).to.be.equal(true);
     expect(await vaultContract.isDepositAllowedToken(USDCToken.address)).to.be.equal(true);
-    const tx = await vaultContract.addDepositRequest(USDCToken.address, amountUSDC, user.address, payload, {value: 1000000000000000, gasLimit: 5000000} )
+    const tx = await vaultContract.addDepositRequest(USDCToken.address, amountUSDC, user.address, payload, {value: 10000000000000, gasLimit: 5000000} )
 
     console.log(tx)
     // const contractTokenBalance = await USDCContract.balanceOf(vault.contractAddress);
@@ -97,7 +89,7 @@ describe('TheseusVault Test', () => {
     let lpTokenBalance = await vaultContract.balanceOf(user.address);
     console.log(lpTokenBalance)
     let usdAmount = await vaultContract.calculateTokenValueInUsd(USDCToken.address, amountUSDC)
-    //const expectedLP = await vaultContract.convertAssetToLP(usdAmount)
+    const expectedLP = await vaultContract.convertAssetToLP(usdAmount)
     // expect(lpTokenBalance).to.be.equal(expectedLP);
 
   })
