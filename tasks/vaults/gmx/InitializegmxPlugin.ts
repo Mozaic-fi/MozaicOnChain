@@ -56,7 +56,8 @@ export const main = async () => {
     taskManager.registerTask('setGmxParams', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vpi = data.vpi as gmxPluginInfo
         const propertyNames= ['uiFeeReceiver', 'callbackContract', 'callbackGasLimit', 'executionFee', 'shouldUnwrapNativeToken', 'pnlFactorType']
-        const propertyValues = [vpi.params.uiFeeReceiverAddress, dependencies.get(contractNames.Vaults.Theseus.GmxCallback), vpi.params.callbackGasLimit, vpi.params.executionFee, vpi.params.shouldUnwrapNativeToken, vpi.params.pnlFactorType]
+        const executionFee = ethers.utils.parseEther(vpi.params.executionFee)
+        const propertyValues = [vpi.params.uiFeeReceiverAddress, dependencies.get(contractNames.Vaults.Theseus.GmxCallback), vpi.params.callbackGasLimit, executionFee, vpi.params.shouldUnwrapNativeToken, vpi.params.pnlFactorType]
         const functionName = 'setGmxParams'
         const propertyStructName = 'gmxParams'
         await (data.contractUtil as ContractUtils).setContractConfigValuesStruct(functionName, propertyStructName, propertyNames, propertyValues) 

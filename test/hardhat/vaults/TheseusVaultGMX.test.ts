@@ -1,6 +1,6 @@
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
-import { Contract } from 'ethers'
+import { BigNumber, Contract } from 'ethers'
 
 import hre, { ethers } from 'hardhat'
 import { ContractUtils } from '../../../utils/contractUtils'
@@ -29,6 +29,10 @@ describe('TheseusVault Test', () => {
   let WETHPool: gmxPool
   let WBTCPool: gmxPool
   let tokenPriceConsumer: ContractUtils
+  let ethAmount01: BigNumber
+  let ethAmount1: BigNumber
+  let ethAmount05: BigNumber
+  let ethAmount001: BigNumber
 
   before(async () => { 
     network = networkConfigs.get(hre.network.name)!
@@ -44,22 +48,28 @@ describe('TheseusVault Test', () => {
     WETHContract = await hre.ethers.getContractAt(erc20ABI,WETHToken.address)
     USDCToken = getToken(tokenSymbols.USDC,network.networkName)
     USDCContract = await hre.ethers.getContractAt(erc20ABI,USDCToken.address)
-    
-    // WETHPool = {
-    //     poolId: 2,
-    //     indexToken: getToken(tokenSymbols.WETH,network.networkName),
-    //     longToken: getToken(tokenSymbols.WETH,network.networkName),
-    //     shortToken: getToken(tokenSymbols.USDC,network.networkName),
-    //     marketToken: getTokenFromAddress(network.networkName,'0xbf338a6C595f06B7Cfff2FA8c958d49201466374')
-    // }
+    ethAmount01 = ethers.utils.parseEther('0.1'); // 0.1 Ether
+    ethAmount1 = ethers.utils.parseEther('1'); // 1 Ether
+    ethAmount05 = ethers.utils.parseEther('0.5'); // 0.5 Ether
+    ethAmount001 = ethers.utils.parseEther('0.001'); // 0.001 Ether
 
+    //fuji
     WETHPool = {
         poolId: 2,
         indexToken: getToken(tokenSymbols.WETH,network.networkName),
         longToken: getToken(tokenSymbols.WETH,network.networkName),
         shortToken: getToken(tokenSymbols.USDC,network.networkName),
-        marketToken: getTokenFromAddress(network.networkName,'0x70d95587d40A2caf56bd97485aB3Eec10Bee6336')
+        marketToken: getTokenFromAddress(network.networkName,'0xbf338a6C595f06B7Cfff2FA8c958d49201466374')
     }
+
+    //arbi
+    // WETHPool = {
+    //     poolId: 2,
+    //     indexToken: getToken(tokenSymbols.WETH,network.networkName),
+    //     longToken: getToken(tokenSymbols.WETH,network.networkName),
+    //     shortToken: getToken(tokenSymbols.USDC,network.networkName),
+    //     marketToken: getTokenFromAddress(network.networkName,'0x70d95587d40A2caf56bd97485aB3Eec10Bee6336')
+    // }
 
       
   }) 
@@ -72,25 +82,34 @@ describe('TheseusVault Test', () => {
   })
 
   it('user should be able to deposit USDT', async () => { 
+    if((await ethers.provider.getBalance(gmxPlugin.contractAddress)).lt(ethAmount05)){
+      console.log('funding the gmx plugin')
+      await owner.sendTransaction({
+          to: gmxPlugin.contractAddress,
+          value: ethAmount05,
+      });
+    }
+
     const amountUSDC = ethers.utils.parseUnits('100', USDCToken.decimals)
     await USDCContract.approve(vault.contractAddress, amountUSDC)
-    expect(amountUSDC.eq(await USDCContract.allowance(user.address, vault.contractAddress))).to.be.equal(true)
+    expect(amountUSDC.eq(await USDCContract.allowance(user.address, vault.contractAddress)), 'token approval failed').to.be.equal(true)
     const vaultContract = await  vault.getDeployedContract()
     const minGMAmount = ethers.utils.parseEther("0");
     const payload = ethers.utils.defaultAbiCoder.encode(['uint256'], [minGMAmount]);
-    expect(await vaultContract.getVaultStatus()).to.be.equal(true);
-    expect(await vaultContract.isDepositAllowedToken(USDCToken.address)).to.be.equal(true);
-    const tx = await vaultContract.addDepositRequest(USDCToken.address, amountUSDC, user.address, payload, {value: 10000000000000, gasLimit: 5000000} )
+    expect(await vaultContract.getVaultStatus(), 'vault closed').to.be.equal(true);
+    expect(await vaultContract.isDepositAllowedToken(USDCToken.address), 'cant deposit this token').to.be.equal(true);
+    let lpTokenBalanceBefore = await vaultContract.balanceOf(user.address);
+    const tx = await vaultContract.addDepositRequest(USDCToken.address, amountUSDC, user.address, payload, {value: ethAmount001, gasLimit: 5000000} )
 
-    console.log(tx)
-    // const contractTokenBalance = await USDCContract.balanceOf(vault.contractAddress);
-    // expect(contractTokenBalance).to.equal(amountUSDC);
+    console.log('tx hash:',tx.hash)
 
-    let lpTokenBalance = await vaultContract.balanceOf(user.address);
-    console.log(lpTokenBalance)
+    let lpTokenBalanceAfter = await vaultContract.balanceOf(user.address);
+    let lpTokenBalance = lpTokenBalanceAfter.sub(lpTokenBalanceBefore)
+    console.log('calling calculateTokenValueInUsd')
     let usdAmount = await vaultContract.calculateTokenValueInUsd(USDCToken.address, amountUSDC)
+    console.log('calling convertAssetToLP')
     const expectedLP = await vaultContract.convertAssetToLP(usdAmount)
-    // expect(lpTokenBalance).to.be.equal(expectedLP);
+    expect(lpTokenBalance, 'wrong LP amount').to.be.equal(expectedLP);
 
   })
 

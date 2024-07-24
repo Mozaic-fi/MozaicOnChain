@@ -22,7 +22,7 @@ export type gmxPluginVaultInfo = {
 export type gmxParams = {
     uiFeeReceiverAddress: string
     callbackGasLimit: number
-    executionFee: number
+    executionFee: string
     shouldUnwrapNativeToken: boolean
     pnlFactorType: string
 }

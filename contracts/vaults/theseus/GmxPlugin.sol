@@ -880,13 +880,6 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
 
     receive() external payable {}
     fallback() external payable {}
-    
-    function withdrawStuckEth(uint256 amount) external onlyOwner {
-        (bool success, ) = treasury.call{
-            value: amount
-        } ("");
-        require(success);
-    }
 
     // Public view function to determine whether the given address is a contract or an externally-owned account (EOA).
     // It uses the assembly block to efficiently check the size of the code at the specified address.
