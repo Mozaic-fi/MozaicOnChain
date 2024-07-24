@@ -28,7 +28,7 @@ export class ContractUtils {
 
     async deployContract() {
         if(this._contractAddress !== '') {
-            console.log(cliRed(`Contract already deployed: ${this.contractName}, network: ${this.network}, address: ${this._contractAddress}`))
+            console.log(`Contract already deployed: ${cliGreen(this.contractName, true)}, network: ${cliBlue(this.network, true)}, address: ${this._contractAddress}`)
             return this._contractAddress;
         }
         const { getNamedAccounts, deployments } = this.hre;
@@ -72,7 +72,7 @@ export class ContractUtils {
 
     async deployAndVerifyContract() {
         if(this._contractAddress !== '') {
-            console.log(cliRed(`Contract already deployed: ${this.contractName}, network: ${this.network}, address: ${this._contractAddress}`))
+            console.log(`Contract already deployed: ${cliGreen(this.contractName, true)}, network: ${cliBlue(this.network, true)}, address: ${this._contractAddress}`)
             return this._contractAddress;
         }
         await this.deployContract()
@@ -189,7 +189,7 @@ export class ContractUtils {
                 return;
             }
             for (const [key, value] of prevValues) {
-                console.log(cliBlue(`Updating ${key}: from ${value[0]} to ${value[1]}`));
+                console.log(cliBlue(`Updating ${key}: from ${value[0]} to ${value[1]}`, false));
             }
         }
         console.log(`Calling function: ${cliYellow(functionName)} with args: ${args}`)
@@ -250,7 +250,7 @@ export class ContractUtils {
                     return;
                 }
                 for (const [key, value] of prevValues) {
-                    console.log(cliBlue(`Updating ${key}: from ${value[0]} to ${value[1]}`));
+                    console.log(cliBlue(`Updating ${key}: from ${value[0]} to ${value[1]}`, false));
                 }
             }
         
@@ -278,7 +278,7 @@ export class ContractUtils {
             process.exit(1);
         }
         const result = await contract[functionName](...args)
-        console.log(cliBlue(`Function: ${functionName} result: ${JSON.stringify(result, null, 2)}`))
+        console.log(cliBlue(`Function: ${functionName} result: ${JSON.stringify(result, null, 2)}`, false))
         return result
     }
 

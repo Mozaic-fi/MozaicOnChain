@@ -25,9 +25,9 @@ class TaskRunner {
       this.networks.push(networkName as networkNames);
     }
     this.addTask(TaskType.Deploy, 'Deploy Vault', 'GmxCallback');
-    this.addTask(TaskType.Config, 'Initialize Vault', 'tasks/vaults/InitializeTheseusVault.ts');
-    this.addTask(TaskType.Config, 'Initialize GMX Plugin', 'tasks/vaults/gmx/InitializegmxPlugin.ts');
-    this.addTask(TaskType.Config, 'Initialize GMX CallBack', 'tasks/vaults/gmx/InitializegmxCallBack.ts');
+    this.addTask(TaskType.Config, 'Configure GMX CallBack', 'tasks/vaults/gmx/InitializegmxCallBack.ts');
+    this.addTask(TaskType.Config, 'Configure GMX Plugin', 'tasks/vaults/gmx/InitializegmxPlugin.ts');
+    this.addTask(TaskType.Config, 'Configure Vault', 'tasks/vaults/InitializeTheseusVault.ts');
     this.addTask(TaskType.Config, 'Test GMX', 'tasks/gmx/getGMXPools.ts');
     this.addTask(TaskType.Test, 'Test Vault', 'test/hardhat/vaults/TheseusVaultGMX.test.ts');
   }
@@ -77,20 +77,20 @@ class TaskRunner {
   private async chooseTask(network: string): Promise<Task | null> {
     console.log(`Selected network: ${cliCyan(network)}`);
     console.log('Available tasks:');
-    console.log(cliRed('0. Clear'))
+    console.log(cliRed('0. Clear', false))
     this.tasks.forEach((task, index) => {
         switch (task.type) {
             case TaskType.Config:
-                console.log(cliGreen(`${index + 1}. ${task.name}`));
+                console.log(cliGreen(`${index + 1}. ${task.name}`, false));
                 break;
             case TaskType.Deploy:
-                console.log(cliYellow(`${index + 1}. ${task.name}`));
+                console.log(cliYellow(`${index + 1}. ${task.name}`, false));
                 break;
             case TaskType.Test:
-                console.log(cliCyan(`${index + 1}. ${task.name}`));
+                console.log(cliCyan(`${index + 1}. ${task.name}`, false));
                 break;
             case TaskType.Yarn:
-                console.log(cliRed(`${index + 1}. ${task.name}`));
+                console.log(cliRed(`${index + 1}. ${task.name}`, false));
                 break;
             default:
                 break;

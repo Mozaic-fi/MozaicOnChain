@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment  } from 'hardhat/types';
 
 import {networkConfigs, NetworkInfo} from './networkConfigs'
-import {cliBlue, cliConfirmation, cliCyan, cliGreen, cliRed, cliSelectItem, cliYellow} from './cliUtils'
+import {cliBlue, cliConfirmation, cliCyan, cliGreen, cliMagenta, cliRed, cliSelectItem, cliYellow} from './cliUtils'
 
 import * as readline from 'readline';
 
@@ -44,7 +44,7 @@ export class TaskManagerUtils {
         try{
             this.mainContractDeploymentAddress = (await this.deploymentExtension.get(this.contractName)).address          
         } catch (error) {
-            console.log(`Contract ${this.contractName} not found in deployments on ${this.networkName}`);
+            console.log(`Contract ${cliGreen(this.contractName, true)} not found in deployments on ${cliCyan(this.networkName, true)}`);
             throw error;
         }
         for (const [contractName, deploymentName] of this.dependencies) {
@@ -52,14 +52,14 @@ export class TaskManagerUtils {
                 const deployment = await this.deploymentExtension.get(contractName);
                 this.dependencies.set(contractName, deployment.address);
             } catch (error) {
-                console.log(`Contract ${contractName} not found in deployments on ${this.networkName}`);
+                console.log(`Contract ${cliGreen(contractName, true)} not found in deployments on ${cliCyan(this.networkName, true)}`);
                 throw error;
             }  
         }
-        console.log(`Contract ${this.contractName} found at ${this.mainContractDeploymentAddress} on ${this.networkName}`);
-        console.log(`Dependencies on ${this.networkName}:`);
+        console.log(`Contract ${cliGreen(this.contractName, true)} found at ${cliCyan(this.mainContractDeploymentAddress, true)} on ${cliMagenta(this.networkName, true)}`);
+        console.log(`Dependencies on ${cliMagenta(this.networkName, true)}:`);
         this.dependencies.forEach((address, name) => {
-            console.log(`- ${name} found at ${address}`);
+            console.log(`- ${cliGreen(name, true)} found at ${cliCyan(address, true)}`);
         });
     }
 

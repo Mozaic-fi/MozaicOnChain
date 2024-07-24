@@ -47,7 +47,8 @@ export function cliSelectItem(question: string, items: any[], noJson: boolean= f
         console.log(cliBold(`${question}: `))
         console.log('List of Possible Values:')
         for (let i = 0; i < items.length; i++) {
-            console.log(cliCyan(`${i + 1}:${noJson? items[i]: '\n'+JSON.stringify(items[i], null, 2)}`));
+            let textColor: (text:string, bold?: boolean)=> string = i % 2 === 0 ? cliCyan : cliMagenta;
+            console.log(textColor(`${i + 1}:${noJson? items[i]: '\n'+JSON.stringify(items[i], null, 2)}`, false));
             if(!noJson) console.log('\n-----------------------------------\n')
         }
         rl.question(`${question}: `, (answer) => {
@@ -79,7 +80,8 @@ export function cliSelectItems(question: string, items: any[], noJson: boolean= 
         console.log(cliBold(`${question}: (please enter comma separated):`))
         console.log('List of Possible Values:')
         for (let i = 0; i < items.length; i++) {
-            console.log(cliCyan(`${i + 1}:${noJson? items[i]: '\n'+JSON.stringify(items[i], null, 2)}`));
+            let textColor: (text:string, bold?: boolean)=> string = i % 2 === 0 ? cliCyan : cliMagenta;
+            console.log(textColor(`${i + 1}:${noJson? items[i]: '\n'+JSON.stringify(items[i], null, 2)}`, false));
             if(!noJson)console.log('\n-----------------------------------\n')
         }
         rl.question(`${question}: `, (answer) => {
@@ -121,7 +123,7 @@ export function cliRead(question: string): Promise<number> {
     });
 
     return new Promise((resolve) => {
-        rl.question(cliBold(cliRed(question)), (answer) => {
+        rl.question(cliRed(question), (answer) => {
             rl.close();
             const trimmedAnswer = answer.trim().toLowerCase();
             if(/^\d+$/.test(trimmedAnswer)){
@@ -148,25 +150,31 @@ export function cliBold(text: string): string {
 }
 
 export function cliRed(text: string, bold: boolean = true): string {
+    if(bold) return cliBold(cliRed(text, false));
     return red + text + reset;
 }
 
 export function cliGreen(text: string, bold: boolean= true): string {
+    if(bold) return cliBold(cliGreen(text, false));
     return green + text + reset;
 }
 
 export function cliBlue(text: string, bold: boolean= true): string {
+    if(bold) return cliBold(cliBlue(text, false));
     return blue + text + reset;
 }
 
 export function cliYellow(text: string, bold: boolean= true): string {
+    if(bold) return cliBold(cliYellow(text, false));
     return yellow + text + reset;
 }
 
 export function cliCyan(text: string, bold: boolean= true): string {
+    if(bold) return cliBold(cliCyan(text, false));
     return cyan + text + reset;
 }
 
 export function cliMagenta(text: string, bold: boolean= true): string {
+    if(bold) return cliBold(cliMagenta(text, false));
     return magenta + text + reset;
 }
