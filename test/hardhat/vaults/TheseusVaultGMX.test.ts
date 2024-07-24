@@ -11,6 +11,7 @@ import { getToken, VaultToken, getTokenFromAddress } from '../../../utils/vaultT
 import { tokenSymbols } from '../../../utils/names/tokenSymbols'
 import { erc20ABI } from '../../../utils/erc20ABI'
 import { gmxPool } from '../../../utils/vaultPlugins/gmxVaultPlugins'
+import { networkNames } from '../../../utils/names/networkNames'
 
 describe('TheseusVault Test', () => {
 
@@ -53,23 +54,15 @@ describe('TheseusVault Test', () => {
     ethAmount05 = ethers.utils.parseEther('0.5'); // 0.5 Ether
     ethAmount001 = ethers.utils.parseEther('0.001'); // 0.001 Ether
 
-    //fuji
+    //fuji or arbi
+    let gmxaddress= network.networkName===networkNames.avalancheFuji?'0xbf338a6C595f06B7Cfff2FA8c958d49201466374':'0x70d95587d40A2caf56bd97485aB3Eec10Bee6336'
     WETHPool = {
         poolId: 2,
         indexToken: getToken(tokenSymbols.WETH,network.networkName),
         longToken: getToken(tokenSymbols.WETH,network.networkName),
         shortToken: getToken(tokenSymbols.USDC,network.networkName),
-        marketToken: getTokenFromAddress(network.networkName,'0xbf338a6C595f06B7Cfff2FA8c958d49201466374')
+        marketToken: getTokenFromAddress(network.networkName,gmxaddress)
     }
-
-    //arbi
-    // WETHPool = {
-    //     poolId: 2,
-    //     indexToken: getToken(tokenSymbols.WETH,network.networkName),
-    //     longToken: getToken(tokenSymbols.WETH,network.networkName),
-    //     shortToken: getToken(tokenSymbols.USDC,network.networkName),
-    //     marketToken: getTokenFromAddress(network.networkName,'0x70d95587d40A2caf56bd97485aB3Eec10Bee6336')
-    // }
 
       
   }) 
@@ -102,7 +95,9 @@ describe('TheseusVault Test', () => {
     const tx = await vaultContract.addDepositRequest(USDCToken.address, amountUSDC, user.address, payload, {value: ethAmount001, gasLimit: 5000000} )
 
     console.log('tx hash:',tx.hash)
-
+    console.log('waiting for 10 seconds')
+    await sleep(10000)
+    console.log('calling balanceOf')
     let lpTokenBalanceAfter = await vaultContract.balanceOf(user.address);
     let lpTokenBalance = lpTokenBalanceAfter.sub(lpTokenBalanceBefore)
     console.log('calling calculateTokenValueInUsd')
@@ -115,3 +110,7 @@ describe('TheseusVault Test', () => {
 
 
 })
+
+function sleep(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
