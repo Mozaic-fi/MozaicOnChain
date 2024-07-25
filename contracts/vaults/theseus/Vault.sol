@@ -8,13 +8,14 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
 
 
 import "../../interfaces/vaults/IPlugin.sol";
 import "../../interfaces/vaults/IVaultLocker.sol";
 import "../TokenPriceConsumer.sol";
 
-contract Vault is Ownable, ERC20, ReentrancyGuard {
+contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     // Constant representing the number of decimals for the MOZAIC token.
@@ -391,7 +392,7 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
     /* ========== USER FUNCTIONS ========== */
     
     // Allows users to initiate a deposit request by converting tokens to LP tokens and staking them into the selected pool.
-    function addDepositRequest(address _token, uint256 _tokenAmount, address _receiver, bytes memory _payload) external payable nonReentrant {
+    function addDepositRequest(address _token, uint256 _tokenAmount, address _receiver, bytes memory _payload) external payable nonReentrant whenNotPaused {
         require(getVaultStatus() == true, "Vault: Vault is locked");
 
         require(msg.value >= depositMinExecFee, "Vault: Insufficient execution fee");
@@ -466,7 +467,7 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
     }
 
     // Function to add a withdrawal request for a specified LP token amount from a selected pool using a specified plugin.
-    function addWithdrawalRequest(uint256 _lpAmount, uint8 _pluginId, uint8 _poolId, address _receiver, bytes memory payload) external payable {
+    function addWithdrawalRequest(uint256 _lpAmount, uint8 _pluginId, uint8 _poolId, address _receiver, bytes memory payload) external payable whenNotPaused nonReentrant{
         // Ensure that the vault is not locked before processing withdrawal requests.
         require(getVaultStatus() == true, "Vault: Vault is locked");
 
@@ -543,7 +544,7 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
     /* ========== MASTER FUNCTIONS ========== */
     
     // Allows the master contract to execute actions on a specified plugin.
-    function execute(uint8 _pluginId, IPlugin.ActionType _actionType, bytes memory _payload) public onlyMaster nonReentrant {
+    function execute(uint8 _pluginId, IPlugin.ActionType _actionType, bytes memory _payload) public onlyMaster nonReentrant whenNotPaused{
         // Ensure that the specified plugin exists.
         require(pluginIdToIndex[_pluginId] != 0, "Plugin with this ID does not exist");
 
@@ -576,7 +577,7 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
     }
 
     // Allows the master contract to approve tokens for a specified plugin based on the provided payload.
-    function approveTokens(uint8 _pluginId, address[] memory _tokens, uint256[] memory _amounts) external onlyMaster nonReentrant {
+    function approveTokens(uint8 _pluginId, address[] memory _tokens, uint256[] memory _amounts) external onlyMaster nonReentrant whenNotPaused {
         // Ensure that the specified plugin exists.
         require(pluginIdToIndex[_pluginId] != 0, "Plugin with this ID does not exist");
 
@@ -628,7 +629,7 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
     }
 
     // Withdraws protocol fees stored in the vault for a specific token.
-    function withdrawProtocolFee(address _token) external onlyMaster nonReentrant {
+    function withdrawProtocolFee(address _token) external onlyMaster nonReentrant whenNotPaused {
         require(isAcceptedToken(_token), "Vault: Invalid token");
 
         // Calculate the token amount from the protocol fee in the vault
@@ -653,7 +654,7 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
     }
 
     // Transfers the execution fee to the specified plugin.
-    function transferExecutionFee(uint8 _pluginId, uint256 _amount) external onlyMaster nonReentrant {
+    function transferExecutionFee(uint8 _pluginId, uint256 _amount) external onlyMaster nonReentrant whenNotPaused {
         // Retrieve information about the specified plugin
         Plugin memory plugin = getPlugin(_pluginId);
         
@@ -885,5 +886,23 @@ contract Vault is Ownable, ERC20, ReentrancyGuard {
     
     function getBalance() public view returns (uint) {
         return address(this).balance;
+    }
+
+    /* ========== Pausable ========== */
+    function pause() public onlyOwner {
+        _pause();
+    }
+
+    function unpause() public onlyOwner {
+        _unpause();
+    }
+
+    // The following functions are overrides required by Solidity.
+
+    function _update(address from, address to, uint256 value)
+        internal
+        override(ERC20, ERC20Pausable)
+    {
+        super._update(from, to, value);
     }
 }
