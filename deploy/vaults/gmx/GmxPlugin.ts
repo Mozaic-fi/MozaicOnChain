@@ -15,7 +15,7 @@ const deploy: DeployFunction = async (hre) => {
     const theseusVaultDeploymentAddress = (await hre.deployments.get(contractNames.Vaults.Theseus.Vault)).address
 
     const constructorArgs = [theseusVaultDeploymentAddress]
-    const deployer = new ContractUtils(hre, contractName, constructorArgs)
+    const deployer = new ContractUtils(hre, contractName, constructorArgs, false)
 
     await deployer.deployAndVerifyContract()   
 }

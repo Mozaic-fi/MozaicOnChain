@@ -16,14 +16,14 @@ export const main = async () => {
     const taskManager = new TaskManagerUtils(hre, contractName, [])
     taskManager.registerInitCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         console.log(`Initializing ${contractName} on ${hre.network.name}`)
-        data.contractUtil = new ContractUtils(hre, contractName, [], true, contractAddress)
+        data.contractUtil = new ContractUtils(hre, contractName, [], false, contractAddress)
     
     })
     
     taskManager.registerFinalizeCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
     });
 
-    taskManager.registerTask('setHandlers', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setHandlers',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vaultInfo = networkConfig?.theseusVaultInfo?.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
         const propertyNames = ['depositHandler', 'withdrawalHandler' , 'orderHandler']  
         const propertyValues = [vaultInfo.handlerInfo.depositHandlerAddress, vaultInfo.handlerInfo.withdrawHandlerAddress, vaultInfo.handlerInfo.orderHandlerAddress]
@@ -38,7 +38,7 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('getContractBasicStorage', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('getContractBasicStorage',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const depositHandler = await (data.contractUtil as ContractUtils).getVariableValues('depositHandler')
         console.log(`depositHandler address: ${cliCyan(depositHandler)}`)
 

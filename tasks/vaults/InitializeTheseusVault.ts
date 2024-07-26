@@ -19,13 +19,13 @@ export const main = async () => {
         data.vaultInfo = networkConfig?.theseusVaultInfo!
         //TODO: This will work for one gmx plugin, however we need to update the scripts to support multiple plugins
         data.vpi = data.vaultInfo.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
-        data.contractUtil = new ContractUtils(hre, contractName, [], true, contractAddress)
+        data.contractUtil = new ContractUtils(hre, contractName, [], false, contractAddress)
     })
     
     taskManager.registerFinalizeCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
     });
 
-    taskManager.registerTask('setMaster', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setMaster',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const propertyNames= ['master']
         const propertyValues = [data.vaultInfo.vaultMasterAddress]
         const functionName = 'setMaster'
@@ -38,7 +38,7 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('setAdmin', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setAdmin',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const propertyNames= ['admin']
         const propertyValues = [data.vaultInfo.vaultAdminAddress]
         const functionName = 'setAdmin'
@@ -51,7 +51,7 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('setTokenPriceConsumer', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setTokenPriceConsumer',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const propertyNames= ['tokenPriceConsumer']
         const propertyValues = [dependencies.get(contractNames.Vaults.TokenPriceConsumer)]
         const functionName = 'setTokenPriceConsumer'
@@ -65,7 +65,7 @@ export const main = async () => {
         }
     })
 
-    taskManager.registerTask('setTreasury', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setTreasury',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const propertyNames= ['treasury']
         const propertyValues = [data.vaultInfo.treasuryAddress]
         const functionName = 'setTreasury'
@@ -78,7 +78,7 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('setProtocolFeePercentage', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setProtocolFeePercentage',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const propertyNames= ['protocolFeePercentage']
         const propertyValues = [data.vaultInfo.protocolFeePercentage]
         const functionName = 'setProtocolFeePercentage'
@@ -91,7 +91,7 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('getContractBasicStorage', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('getContractBasicStorage', false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const master = await (data.contractUtil as ContractUtils).getVariableValues('master')
         console.log(`Master: ${cliCyan(master)}`)
 
@@ -125,7 +125,7 @@ export const main = async () => {
     });
 
 
-    taskManager.registerTask('setExecutionFee', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setExecutionFee',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vpi = data.vpi as gmxPluginInfo
         const functionName = 'setExecutionFee'
         const propertyNames= ['depositMinExecFee', 'withdrawMinExecFee']
@@ -139,22 +139,22 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('addAcceptedToken', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
-        const tokens = getTokens(networkConfig.networkName)
-        const functionName = 'addAcceptedToken'
-        const tokenIndex = await cliSelectItem('Select a token to add', tokens.map(token=>[token.symbol, token.address]), true)   
-        const propertyNames= ['array:acceptedTokens']
-        const propertyValues = [tokens[tokenIndex].address]
-        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0])
-        return {
-            functionName,
-            propertyStructName: '',
-            propertyNames,
-            propertyValues
-        }
-    })
+    // taskManager.registerTask('addAcceptedToken',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    //     const tokens = getTokens(networkConfig.networkName)
+    //     const functionName = 'addAcceptedToken'
+    //     const tokenIndex = await cliSelectItem('Select a token to add', tokens.map(token=>[token.symbol, token.address]), true)   
+    //     const propertyNames= ['array:acceptedTokens']
+    //     const propertyValues = [tokens[tokenIndex].address]
+    //     await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0])
+    //     return {
+    //         functionName,
+    //         propertyStructName: '',
+    //         propertyNames,
+    //         propertyValues
+    //     }
+    // })
 
-    taskManager.registerTask('addAcceptedTokens', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('addAcceptedTokens',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const tokens = getTokens(networkConfig.networkName)
         const functionName = 'addAcceptedToken'
         const tokenIndex = await cliSelectItems('Select a tokens to add', tokens.map(token=>[token.symbol, token.address]), true)   
@@ -175,7 +175,7 @@ export const main = async () => {
     })
     
 
-    taskManager.registerTask('getAcceptedToken', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('getAcceptedToken',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const acceptedTokens: string[] = await (data.contractUtil as ContractUtils).getArrayValues('acceptedTokens')
         const tokens = getTokens(networkConfig.networkName).filter(token=>acceptedTokens.includes(token.address)).map(token=>[token.symbol, token.address])
         console.log(cliBold('Accepted Tokens:'))
@@ -185,7 +185,7 @@ export const main = async () => {
     });
     
 
-    taskManager.registerTask('removeAcceptedToken', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('removeAcceptedToken',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const functionName = 'removeAcceptedToken'
         const tokensList: string[] = await (data.contractUtil as ContractUtils).getArrayValues('acceptedTokens')
         const tokens = getTokens(networkConfig.networkName).filter(token=>tokensList.includes(token.address))
@@ -202,22 +202,22 @@ export const main = async () => {
     })
     
 
-    taskManager.registerTask('addDepositAllowedToken', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
-        const tokens = getTokens(networkConfig.networkName)
-        const functionName = 'addDepositAllowedToken'
-        const tokenIndex = await cliSelectItem('Select a token to add', tokens.map(token=>[token.symbol, token.address]), true)   
-        const propertyNames= ['array:depositAllowedTokens']
-        const propertyValues = [tokens[tokenIndex].address]
-        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0])
-        return {
-            functionName,
-            propertyStructName: '',
-            propertyNames,
-            propertyValues
-        }
-    })
+    // taskManager.registerTask('addDepositAllowedToken', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    //     const tokens = getTokens(networkConfig.networkName)
+    //     const functionName = 'addDepositAllowedToken'
+    //     const tokenIndex = await cliSelectItem('Select a token to add', tokens.map(token=>[token.symbol, token.address]), true)   
+    //     const propertyNames= ['array:depositAllowedTokens']
+    //     const propertyValues = [tokens[tokenIndex].address]
+    //     await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues[0])
+    //     return {
+    //         functionName,
+    //         propertyStructName: '',
+    //         propertyNames,
+    //         propertyValues
+    //     }
+    // })
 
-    taskManager.registerTask('addDepositAllowedTokens', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('addDepositAllowedTokens',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const tokens = getTokens(networkConfig.networkName)
         const functionName = 'addDepositAllowedToken'
         const tokenIndex = await cliSelectItems('Select a tokens to add', tokens.map(token=>[token.symbol, token.address]), true)   
@@ -237,7 +237,7 @@ export const main = async () => {
         }
     })
 
-    taskManager.registerTask('getDepositAllowedToken', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('getDepositAllowedToken',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const acceptedTokens: string[] = await (data.contractUtil as ContractUtils).getArrayValues('depositAllowedTokens')
         const tokens = getTokens(networkConfig.networkName).filter(token=>acceptedTokens.includes(token.address)).map(token=>[token.symbol, token.address])
         console.log(cliBold('Deposit Allowed Tokens:'))
@@ -246,7 +246,7 @@ export const main = async () => {
         });
     })
 
-    taskManager.registerTask('removeDepositAllowedToken', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('removeDepositAllowedToken',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const functionName = 'removeDepositAllowedToken'
         const tokensList: string[] = await (data.contractUtil as ContractUtils).getArrayValues('depositAllowedTokens')
         const tokens = getTokens(networkConfig.networkName).filter(token=>tokensList.includes(token.address))
@@ -262,7 +262,7 @@ export const main = async () => {
         }
     })
 
-    taskManager.registerTask('addPlugin', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('addPlugin',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const plugins = networkConfig.theseusVaultInfo?.vaultPlugins!
         let PluginAddresses = []
         for (let plugin of plugins.values()) {
@@ -286,7 +286,7 @@ export const main = async () => {
         }
     })
 
-    taskManager.registerTask('selectPluginAndPool', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('selectPluginAndPool',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const plugins = networkConfig.theseusVaultInfo?.vaultPlugins!
         let PluginAddresses = []
         for (let plugin of plugins.values()) {
@@ -315,7 +315,7 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('getPlugins', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('getPlugins',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const contractPlugins = await (data.contractUtil as ContractUtils).getArrayValues('plugins')
         const plugins = Array.from(networkConfig.theseusVaultInfo?.vaultPlugins!).filter(entry => contractPlugins.some(p=>entry[1].pluginId == p.pluginId))
         console.log(cliBold('Plugins:'))
@@ -324,7 +324,7 @@ export const main = async () => {
         });
     });
 
-    taskManager.registerTask('removePlugin', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('removePlugin',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const functionName = 'removePlugin'
         const contractPlugins = await (data.contractUtil as ContractUtils).getArrayValues('plugins')       
         const plugins = Array.from(networkConfig.theseusVaultInfo?.vaultPlugins!).filter(entry => contractPlugins.some(p=>entry[1].pluginId == p.pluginId))
@@ -342,7 +342,7 @@ export const main = async () => {
 
 
 
-    taskManager.registerTask('setVaultLockers', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setVaultLockers',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vaultLockers = await cliInputList('Enter the vault lockers addresses')
         const propertyNames= ['array:vaultLockers']
         const propertyValues = vaultLockers
@@ -356,7 +356,7 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('setVaultLocker as GMXCallBack', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setVaultLocker as GMXCallBack',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const propertyNames= ['array:vaultLockers']
         const propertyValues = [dependencies.get(contractNames.Vaults.Theseus.GmxCallback)]
         const functionName = 'setVaultLockers'
@@ -369,7 +369,7 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('getVaultLockers', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('getVaultLockers',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vaultLockers = await (data.contractUtil as ContractUtils).getArrayValues('vaultLockers')
         console.log(cliBold('Vault Lockers:'))
         vaultLockers.forEach((locker, index) => {
@@ -384,7 +384,7 @@ export const main = async () => {
     });
 
     
-    taskManager.registerTask('setVaultManagers', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setVaultManagers',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vaultManagers = await cliInputList('Enter the vault managers addresses')
         const propertyNames= ['array:vaultManagers']
         const propertyValues = vaultManagers
@@ -398,7 +398,7 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('setVaultManager as GMXCallBack', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setVaultManager as GMXCallBack',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const propertyNames= ['array:vaultManagers']
         const propertyValues = [dependencies.get(contractNames.Vaults.Theseus.GmxCallback)]
         const functionName = 'setVaultManagers'
@@ -411,7 +411,7 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('getVaultManagers', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('getVaultManagers',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vaultManagers = await (data.contractUtil as ContractUtils).getArrayValues('vaultManagers')
         console.log(cliBold('Vault Managers:'))
         vaultManagers.forEach((manager, index) => {

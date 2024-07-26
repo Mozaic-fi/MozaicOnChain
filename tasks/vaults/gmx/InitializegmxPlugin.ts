@@ -20,13 +20,13 @@ export const main = async () => {
         data.vaultInfo = networkConfig?.theseusVaultInfo!
         //Note: this is fine since this script is only for gmx plugin
         data.vpi = data.vaultInfo.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
-        data.contractUtil = new ContractUtils(hre, contractName, [], true, contractAddress)
+        data.contractUtil = new ContractUtils(hre, contractName, [], false, contractAddress)
     })
 
     taskManager.registerFinalizeCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
     });
 
-    taskManager.registerTask('setTreasury', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setTreasury',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const propertyNames= ['treasury']
         const propertyValues = [data.vaultInfo.treasuryAddress]
         const functionName = 'setTreasury'
@@ -39,7 +39,7 @@ export const main = async () => {
         }
     });
    
-    taskManager.registerTask('setRouterConfig', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setRouterConfig',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const propertyNames= ['exchangeRouter', 'router', 'depositVault', 'withdrawVault', 'orderVault', 'reader']
         const propertyValues = [data.vpi.vaultInfo.exchangeRouterAddress, data.vpi.vaultInfo.routerAddress, data.vpi.vaultInfo.depositVaultAddress, data.vpi.vaultInfo.withdrawVaultAddress, data.vpi.vaultInfo.orderVaultAddress, data.vpi.vaultInfo.readerAddress]
         const functionName = 'setRouterConfig'
@@ -53,7 +53,7 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('setGmxParams', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setGmxParams',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vpi = data.vpi as gmxPluginInfo
         const propertyNames= ['uiFeeReceiver', 'callbackContract', 'callbackGasLimit', 'executionFee', 'shouldUnwrapNativeToken', 'pnlFactorType']
         const executionFee = ethers.utils.parseEther(vpi.params.executionFee)
@@ -71,7 +71,7 @@ export const main = async () => {
     });
 
     
-    taskManager.registerTask('setTokenPriceConsumer', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setTokenPriceConsumer',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const propertyNames= ['tokenPriceConsumer']
         const propertyValues = [dependencies.get(contractNames.Vaults.TokenPriceConsumer)]
         const functionName = 'setTokenPriceConsumer'
@@ -85,7 +85,7 @@ export const main = async () => {
         }
     })
 
-    taskManager.registerTask('getContractBasicStorage', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('getContractBasicStorage',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const treasury = await (data.contractUtil as ContractUtils).getVariableValues('treasury')
         console.log(`treasury: ${cliCyan(treasury)}`)
 
@@ -102,7 +102,7 @@ export const main = async () => {
         console.log(`Token Price Consumer: ${cliCyan(tokenPriceConsumer)}`)
     })
 
-    taskManager.registerTask('getUniqueTokens', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('getUniqueTokens',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const acceptedTokens: string[] = await (data.contractUtil as ContractUtils).getArrayValues('uniqueTokens')
         const tokens = getTokens(networkConfig.networkName).filter(token=>acceptedTokens.includes(token.address)).map(token=>[token.symbol, token.address])
         console.log(cliBold('Unique Tokens:'))
@@ -111,7 +111,7 @@ export const main = async () => {
         });
     });
 
-    taskManager.registerTask('setTokenDecimals', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setTokenDecimals',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vpi = data.vpi as gmxPluginInfo
         const tokenAddresses= getTokens(networkConfig.networkName).map(token => token.address)
         const tokenDecimals = getTokens(networkConfig.networkName).map(token => token.decimals)
@@ -128,7 +128,7 @@ export const main = async () => {
         }
     });
 
-    taskManager.registerTask('setRewardTokens', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setRewardTokens',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const tokens = getTokens(networkConfig.networkName)
         const functionName = 'setRewardTokens'
         const tokenIndex = await cliSelectItems('Select a tokens to add', tokens.map(token=>[token.symbol, token.address]), true)  
@@ -146,7 +146,7 @@ export const main = async () => {
         }
     })
 
-    taskManager.registerTask('getRewardTokens', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('getRewardTokens',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const acceptedTokens: string[] = await (data.contractUtil as ContractUtils).getArrayValues('rewardTokens')
         const tokens = getTokens(networkConfig.networkName).filter(token=>acceptedTokens.includes(token.address)).map(token=>[token.symbol, token.address])
         console.log(cliBold('Reward Tokens:'))
@@ -155,7 +155,7 @@ export const main = async () => {
         });
     });
 
-    taskManager.registerTask('addPools', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('addPools',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vpi = data.vpi as gmxPluginInfo
         const functionName = 'addPool'
         const propertyStructName = 'pools'
@@ -183,7 +183,7 @@ export const main = async () => {
         }
     })
 
-    taskManager.registerTask('getPools', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('getPools',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const pools = await (data.contractUtil as ContractUtils).getArrayValues('pools')
         const poolsInfo:gmxPool[] = []
         for(let i =0; i<pools.length; i++){
@@ -201,26 +201,26 @@ export const main = async () => {
         });
     });
 
-    taskManager.registerTask('addPool (Single Pool)', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
-        const vpi = data.vpi as gmxPluginInfo
+    // taskManager.registerTask('addPool (Single Pool)', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    //     const vpi = data.vpi as gmxPluginInfo
 
-        const functionName = 'addPool'
-        const propertyStructName = 'pools'
-        const propertyNames = ['poolId', 'indexToken', 'longToken', 'shortToken', 'marketToken']
+    //     const functionName = 'addPool'
+    //     const propertyStructName = 'pools'
+    //     const propertyNames = ['poolId', 'indexToken', 'longToken', 'shortToken', 'marketToken']
 
-        let cliQuestionNumberResponse = await cliSelectItem('Enter the poolId of the pool you want to add', vpi.pools.map(pool => [pool.poolId, pool.indexToken.symbol, pool.longToken.symbol, pool.shortToken.symbol, pool.marketToken.address]),true)
-        const pool = vpi.pools[cliQuestionNumberResponse]
-        const propertyValues = [pool.poolId, pool.indexToken.address, pool.longToken.address, pool.shortToken.address, pool.marketToken.address]
-        await (data.contractUtil as ContractUtils).setContractConfigValuesArray(functionName, propertyStructName, propertyNames, propertyValues) 
-        return {
-            functionName,
-            propertyStructName,
-            propertyNames,
-            propertyValues
-        }
-    })
+    //     let cliQuestionNumberResponse = await cliSelectItem('Enter the poolId of the pool you want to add', vpi.pools.map(pool => [pool.poolId, pool.indexToken.symbol, pool.longToken.symbol, pool.shortToken.symbol, pool.marketToken.address]),true)
+    //     const pool = vpi.pools[cliQuestionNumberResponse]
+    //     const propertyValues = [pool.poolId, pool.indexToken.address, pool.longToken.address, pool.shortToken.address, pool.marketToken.address]
+    //     await (data.contractUtil as ContractUtils).setContractConfigValuesArray(functionName, propertyStructName, propertyNames, propertyValues) 
+    //     return {
+    //         functionName,
+    //         propertyStructName,
+    //         propertyNames,
+    //         propertyValues
+    //     }
+    // })
 
-    taskManager.registerTask('removePool', async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('removePool',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const pools = await (data.contractUtil as ContractUtils).getArrayValues('pools')
         const poolsInfo:gmxPool[] = []
         for(let i =0; i<pools.length; i++){
