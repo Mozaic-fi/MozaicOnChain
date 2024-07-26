@@ -164,6 +164,7 @@ export class TaskManagerUtils {
     
     async runInteractive(): Promise<void> {
         await this.checkDependencies();
+        await this.initialize();
         const defaultTasks = Array.from(this.tasks.entries()).filter(([, [, isDefault]]) => isDefault);
         console.log(cliGreen("Running default tasks:", true));
         for(let defaultTask of defaultTasks){
@@ -172,9 +173,8 @@ export class TaskManagerUtils {
             console.log(cliBlue('\n-----------------------------------\n'))
         }
         console.log('\n\n')
-        const taskNames = Array.from(this.tasks.keys());
+        const taskNames = Array.from(this.tasks.entries()).map(([name, [_, isDefault]]) => `${name} ${isDefault ? '(default)' : ''}`);
 
-        await this.initialize();
         while (true) {
             const index = await cliSelectItem('Select a task to run (or type "0" to finish)', taskNames, true);
     
@@ -182,7 +182,8 @@ export class TaskManagerUtils {
                 break;
             }
             else{
-                let [callback, _] = this.tasks.get(taskNames[index])!
+                let taskName  =taskNames[index].replace('(default)','').trim();
+                let [callback, _] = this.tasks.get(taskName)!
                 let valuesToLog = await callback(this.hardhatRuntimeEnvironment, this.contractName, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
                 console.log(cliBlue('\n-----------------------------------\n'))
             }           

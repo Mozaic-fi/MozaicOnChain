@@ -1,5 +1,6 @@
 import { networkConfigs, NetworkInfo } from "./networkConfigs";
 import { HardhatRuntimeEnvironment } from 'hardhat/types'
+import { BigNumber } from 'ethers'
 
 import {cliBlue, cliConfirmation, cliCyan, cliGreen, cliRed, cliYellow} from './cliUtils'
 
@@ -176,7 +177,13 @@ export class ContractUtils {
 
             let updateRequired = false;
             for (const [key, value] of prevValues) {
-                if (value[0] != value[1]) {
+                if (value[0] instanceof BigNumber && value[1] instanceof BigNumber) {
+                    if(!value[0].eq(value[1])) {
+                        updateRequired = true;
+                        break;
+                    }
+                }
+                else if (value[0] != value[1]) {
                     updateRequired = true;
                     break;
                 }

@@ -111,7 +111,7 @@ export const main = async () => {
         });
     });
 
-    taskManager.registerTask('setTokenDecimals',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    taskManager.registerTask('setTokenDecimals',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const vpi = data.vpi as gmxPluginInfo
         const tokenAddresses= getTokens(networkConfig.networkName).map(token => token.address)
         const tokenDecimals = getTokens(networkConfig.networkName).map(token => token.decimals)
