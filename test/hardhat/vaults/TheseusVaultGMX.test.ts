@@ -33,7 +33,9 @@ describe('TheseusVault Test', () => {
   let ethAmount05: BigNumber
   let ethAmount001: BigNumber
   let deposit: (token: VaultToken, user: SignerWithAddress) => Promise<void>
-
+  let withdraw: (token1: VaultToken, token2: VaultToken, user: SignerWithAddress) => Promise<void>
+  let gmxBalanceTopUp: () => Promise<void>
+  
   before(async () => { 
     network = networkConfigs.get(hre.network.name)!
     owner = (await hre.ethers.getSigners()).at(0)!
@@ -64,54 +66,101 @@ describe('TheseusVault Test', () => {
 
     deposit = async (token: VaultToken, user: SignerWithAddress)=>{
       const tokenContract = await hre.ethers.getContractAt(erc20ABI,token.address)
+    
+      const amount = ethers.utils.parseUnits('100', token.decimals)
+      await tokenContract.connect(user).mint(user.address, amount)
+      await tokenContract.connect(user).approve(vault.contractAddress, amount)
+      await sleep(1000)
+      expect(amount.eq(await tokenContract.allowance(user.address, vault.contractAddress)), 'token approval failed').to.be.equal(true)
+
+      const vaultContract = await  vault.getDeployedContract()
+      expect(await vaultContract.getVaultStatus(), 'vault closed').to.be.equal(true);
+      expect(await vaultContract.isDepositAllowedToken(token.address), 'cant deposit this token').to.be.equal(true);
+
+      const minGMAmount = ethers.utils.parseEther("0");
+      const payload = ethers.utils.defaultAbiCoder.encode(['uint256'], [minGMAmount]);
+      let lpTokenBalanceBefore = await vaultContract.balanceOf(user.address);
+      const tx = await vaultContract.connect(user).addDepositRequest(token.address, amount, user.address, payload, {value: ethAmount001, gasLimit: 5000000} )
+    
+      await sleep(10000)
+
+      let lpTokenBalanceAfter = await vaultContract.balanceOf(user.address);
+      let lpTokenBalance = lpTokenBalanceAfter.sub(lpTokenBalanceBefore)
+
+      let usdAmount = await vaultContract.calculateTokenValueInUsd(token.address, amount)
+      const expectedLP = await vaultContract.convertAssetToLP(usdAmount)
+
+      expect(ethers.utils.parseUnits('1', token.decimals).gt(Math.abs(lpTokenBalance.sub(expectedLP))), 'wrong LP amount').to.be.eq(true);
+    }
+
+    withdraw = async (token1: VaultToken, token2: VaultToken, user: SignerWithAddress)=>{
+
+      const vaultContract = await  vault.getDeployedContract()
+      const token1Contract = await hre.ethers.getContractAt(erc20ABI,token1.address)
+      const token2Contract = await hre.ethers.getContractAt(erc20ABI,token2.address)
+
+      const userBalance1Before = await token1Contract.balanceOf(user.address)
+      const userBalance2Before = await token2Contract.balanceOf(user.address)
+      const lpTokenBalanceBefore = await vaultContract.balanceOf(user.address)
+      const lpInVaultBefore = await vaultContract.balanceOf(vault.contractAddress)
+      console.log('lpInVaultBefore', lpInVaultBefore.toString())
+      console.log('lpTokenBalanceBefore', lpTokenBalanceBefore.toString())
+      console.log('userBalance1Before', userBalance1Before.toString())
+      console.log('userBalance2Before', userBalance2Before.toString())
+
+
+      await vaultContract.connect(user).approve(vault.contractAddress, lpTokenBalanceBefore)
+      const payload = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256'],[0, 0]);
+
+      const tx = await vaultContract.connect(user).addWithdrawalRequest(lpTokenBalanceBefore,1, WETHPool.poolId, user.address, payload, {value: ethAmount001, gasLimit: 5000000})
+      console.log('withdraw tx', tx.hash)
+
+      await sleep(10000)
+
+      const userBalance1After = await token1Contract.balanceOf(user.address)
+      const userBalance2After = await token2Contract.balanceOf(user.address)
+      const lpTokenBalanceAfter = await vaultContract.balanceOf(user.address);
+      const lpInVaultAfter = await vaultContract.balanceOf(vault.contractAddress)
+      console.log('lpInVaultAfter', lpInVaultAfter.toString())
+      console.log('lpTokenBalanceAfter', lpTokenBalanceAfter.toString())
+      console.log('userBalance1After', userBalance1After.toString())
+      console.log('userBalance2After', userBalance2After.toString())
+
+
+      expect(userBalance1After.gt(userBalance1Before), 'withdraw failed balance1').to.be.equal(true);
+      expect(userBalance2After.gt(userBalance2Before), 'withdraw failed balance2').to.be.equal(true);
+      expect(lpTokenBalanceAfter.lt(lpTokenBalanceBefore), 'withdraw failed lp').to.be.equal(true);
+    }
+
+    gmxBalanceTopUp = async ()=> {
       let pluginBalance = await ethers.provider.getBalance(gmxPlugin.contractAddress)
       if(pluginBalance.lt(ethAmount05)){
-        //console.log('funding the gmx plugin')
         await owner.sendTransaction({
             to: gmxPlugin.contractAddress,
             value: ethAmount2,
         });
       }
-    
-      const amount = ethers.utils.parseUnits('100', token.decimals)
-      await tokenContract.connect(user).mint(user.address, amount)
-      await tokenContract.connect(user).approve(vault.contractAddress, amount)
-      //console.log('waiting for 3 seconds')
-      await sleep(1000)
-      //console.log('checking approval')
-      expect(amount.eq(await tokenContract.allowance(user.address, vault.contractAddress)), 'token approval failed').to.be.equal(true)
-      const vaultContract = await  vault.getDeployedContract()
-      const minGMAmount = ethers.utils.parseEther("0");
-      const payload = ethers.utils.defaultAbiCoder.encode(['uint256'], [minGMAmount]);
-      expect(await vaultContract.getVaultStatus(), 'vault closed').to.be.equal(true);
-      expect(await vaultContract.isDepositAllowedToken(token.address), 'cant deposit this token').to.be.equal(true);
-      let lpTokenBalanceBefore = await vaultContract.balanceOf(user.address);
-      const tx = await vaultContract.connect(user).addDepositRequest(token.address, amount, user.address, payload, {value: ethAmount001, gasLimit: 5000000} )
-    
-      //console.log('waiting for 10 seconds')
-      await sleep(10000)
-      //console.log('calling balanceOf')
-      let lpTokenBalanceAfter = await vaultContract.balanceOf(user.address);
-      let lpTokenBalance = lpTokenBalanceAfter.sub(lpTokenBalanceBefore)
-      //console.log('calling calculateTokenValueInUsd')
-      let usdAmount = await vaultContract.calculateTokenValueInUsd(token.address, amount)
-      //console.log('calling convertAssetToLP')
-      const expectedLP = await vaultContract.convertAssetToLP(usdAmount)
-      expect(ethers.utils.parseUnits('1', token.decimals).gt(Math.abs(lpTokenBalance.sub(expectedLP))), 'wrong LP amount').to.be.eq(true);
     }
+
+    await gmxBalanceTopUp()
   }) 
 
-  it('user should be able to deposit USDC', async () => { 
-    console.log('depositing USDC')
-    await deposit(USDCToken, owner)
-    console.log('depositing USDC successful')
+  describe('user should be able to deposit', async()=>{
+    it('USDC', async () => { 
+      await deposit(USDCToken, user2)
+    })
+  
+    it('WETH', async () => { 
+      await sleep(3000)
+      await deposit(WETHToken, user2)
+    })
   })
 
-  it('user should be able to deposit WETH', async () => { 
-    await sleep(3000)
-    console.log('depositing WETH')
-    await deposit(WETHToken, user2)
-    console.log('depositing WETH successful')
+  describe('user should be able to withdraw', async()=>{
+    it('USDC-WETH', async () => {
+      await sleep(3000)
+      await withdraw(USDCToken, WETHToken, user2)
+    })
   })
 
 
