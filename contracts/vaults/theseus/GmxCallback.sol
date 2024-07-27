@@ -7,6 +7,7 @@ import "../../interfaces/gmx/IWithdrawalCallbackReceiver.sol";
 import "../../interfaces/gmx/IOrderCallbackReceiver.sol";
 import "../../interfaces/gmx/IGMXPlugin.sol";
 import "../../interfaces/gmx/ICallbackContract.sol";
+import "../../interfaces/gmx/IGasFeeCallbackReceiver.sol";
 import "../../interfaces/vaults/IVault.sol";
 import "../../interfaces/vaults/IVaultLocker.sol";
 
@@ -15,7 +16,7 @@ import "../../interfaces/vaults/IVaultLocker.sol";
  * @title GmxCallback
  * @dev Contract handling callbacks for deposit, withdrawal, and order execution/cancellation.
  */
-contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackReceiver, IOrderCallbackReceiver, ICallbackContract, IVaultLocker {
+contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackReceiver, IOrderCallbackReceiver, IGasFeeCallbackReceiver, ICallbackContract, IVaultLocker {
     // Structure to hold the withdrawal information associated with a key
     struct WithdrawalInfo {
         uint256 lpAmount;
@@ -56,6 +57,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
     event AfterOrderExecution(bytes32 _key);
     event AfterOrderCancellation(bytes32 _key);
     event AfterOrderFrozen(bytes32 _key);
+    event RefundExecutionFee(bytes32 _key);
 
     // Modifier to restrict access to the GMX plugin only
     modifier onlyGmxPlugin() {
@@ -334,5 +336,17 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
         IGMXPlugin(config.gmxPlugin).transferAllTokensToVault();
 
         emit AfterOrderFrozen(key);
+    }
+
+    /**
+     * @dev Refunds the execution fee to the GMX plugin.
+     * @param key The key associated with the execution fee.
+     * @param eventData Additional event data.
+     */
+    function refundExecutionFee(bytes32 key, EventUtils.EventLogData memory eventData) external payable {
+        (bool success, ) = config.gmxPlugin.call{value: msg.value}("");
+        require(success, "Vault: Failed to send Ether");
+        
+        emit RefundExecutionFee(key);
     }
 }
