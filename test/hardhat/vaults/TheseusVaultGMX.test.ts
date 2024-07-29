@@ -13,6 +13,7 @@ import { erc20ABI } from '../../../utils/erc20ABI'
 import { gmxPool } from '../../../utils/vaultPlugins/gmxVaultPlugins'
 import { networkNames } from '../../../utils/names/networkNames'
 import { pluginNames } from '../../../utils/names/pluginNames'
+import { assert } from 'console'
 
 describe('TheseusVault Test', () => {
 
@@ -36,6 +37,7 @@ describe('TheseusVault Test', () => {
   let deposit: (token: VaultToken, user: SignerWithAddress) => Promise<void>
   let withdraw: (token1: VaultToken, token2: VaultToken, user: SignerWithAddress) => Promise<void>
   let swapTokens: (tokenIn: VaultToken, tokenOut: VaultToken, _amount: string, user: SignerWithAddress) => Promise<void>
+  let cancelOrderAction: (user: SignerWithAddress) => Promise<void>
   let gmxBalanceTopUp: () => Promise<void>
   let emptyPlugin: () => Promise<void>
   
@@ -186,7 +188,7 @@ const DecreasePositionSwapType = {
             acceptablePrice: 0,
             executionFee: 0,
             callbackGasLimit: 0,
-            minOutputAmount: 0,
+            minOutputAmount: amount.div(100),
         },
         orderType: OrderType.MarketSwap,
         decreasePositionSwapType: DecreasePositionSwapType.SwapCollateralTokenToPnlToken,
@@ -239,6 +241,37 @@ const DecreasePositionSwapType = {
       expect(wethBalanceAfter.gt(wethBalanceBefore), 'swap failed weth').to.be.equal(true)
     }
 
+    cancelOrderAction = async (user: SignerWithAddress)=> {
+      // let depositKeys = await gmxCallBack.getArrayValues('depositKeys')
+      // let withdrawKeys = await gmxCallBack.getArrayValues('withdrawalKeys')
+      let orderKeys = await gmxCallBack.getArrayValues('orderKeys')
+      
+      expect(orderKeys.length > 0, 'no orders to cancel').to.be.equal(true)
+
+      let gmxPluginContract = await gmxPlugin.getDeployedContract()
+
+      // for(let i=0; i<depositKeys.length; i++){
+      //   const payload = ethers.utils.defaultAbiCoder.encode(['uint8', 'bytes32'],[1, depositKeys[i]]);
+      //   await (await gmxPluginContract.connect(user).cancelAction(payload)).wait()
+      // }
+      
+
+      // for(let i=0; i<withdrawKeys.length; i++){
+      //   const payload = ethers.utils.defaultAbiCoder.encode(['uint8', 'bytes32'],[1, withdrawKeys[i]]);
+      //   await (await gmxPluginContract.connect(user).cancelAction(payload)).wait()
+      // }
+      
+      for(let i=0; i<orderKeys.length; i++) {
+        const payload = ethers.utils.defaultAbiCoder.encode(['uint8', 'bytes32'],[1, orderKeys[i]]);
+        await (await gmxPluginContract.connect(user).cancelAction(payload)).wait()
+      }
+
+      orderKeys = await gmxCallBack.getArrayValues('orderKeys')
+      
+      expect(orderKeys.length == 0, 'Pending Orders Canceled').to.be.equal(true)
+
+    }
+
     gmxBalanceTopUp = async ()=> {
       let pluginBalance = await ethers.provider.getBalance(gmxPlugin.contractAddress)
       if(pluginBalance.lt(ethAmount05)){
@@ -279,7 +312,12 @@ const DecreasePositionSwapType = {
   // })
 
   describe('master should be able to cancel operation', async()=>{
-    
+    it('Order Cancelation', async () => {
+      await sleep(3000)
+      await swapTokens(USDCToken, WETHToken, '1000000000', master)
+      await sleep(10000)
+      await cancelOrderAction(master)
+    })
   })
 
 

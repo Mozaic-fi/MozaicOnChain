@@ -676,7 +676,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     function createGMOrder(IExchangeRouter.CreateOrderParams memory _params) internal {
         require(_params.addresses.receiver == localVault, "Invalid receiver");
 
-        _params.addresses.cancellationReceiver = gmxParams.callbackContract;
+        _params.addresses.cancellationReceiver = localVault;
         _params.addresses.callbackContract = gmxParams.callbackContract;
         _params.addresses.uiFeeReceiver = gmxParams.uiFeeReceiver;
         _params.numbers.callbackGasLimit = gmxParams.callbackGasLimit;

@@ -346,7 +346,11 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
     function refundExecutionFee(bytes32 key, EventUtils.EventLogData memory eventData) external payable {
         (bool success, ) = config.gmxPlugin.call{value: msg.value}("");
         require(success, "Vault: Failed to send Ether");
-        
         emit RefundExecutionFee(key);
+    }
+
+    receive() external payable { 
+        (bool success, ) = config.gmxPlugin.call{value: msg.value}("");
+        require(success, "Vault: Failed to send Ether");
     }
 }
