@@ -848,6 +848,11 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
 
     // Calculate the USD value of a given token amount based on its price and decimals.
     function calculateTokenValueInUsd(address _tokenAddress, uint256 _tokenAmount) public view returns (uint256) {
+
+        if(_tokenAmount == 0) {
+            return 0;
+        }
+
         // Retrieve the token and price consumer decimals.
         uint256 tokenDecimals = IERC20Metadata(_tokenAddress).decimals();
         uint256 priceConsumerDecimals = TokenPriceConsumer(tokenPriceConsumer).decimals(_tokenAddress);
