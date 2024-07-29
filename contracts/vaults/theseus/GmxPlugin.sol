@@ -676,7 +676,9 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     function createGMOrder(IExchangeRouter.CreateOrderParams memory _params) internal {
         require(_params.addresses.receiver == localVault, "Invalid receiver");
 
+        _params.addresses.cancellationReceiver = gmxParams.callbackContract;
         _params.addresses.callbackContract = gmxParams.callbackContract;
+        _params.addresses.uiFeeReceiver = gmxParams.uiFeeReceiver;
         _params.numbers.callbackGasLimit = gmxParams.callbackGasLimit;
         
         // Cast exchangeRouter to IExchangeRouter
@@ -684,8 +686,16 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
 
         // Extract values from _params to improve readability
         address initialCollateralToken = _params.addresses.initialCollateralToken;
+
         uint256 initialCollateralDeltaAmount = _params.numbers.initialCollateralDeltaAmount;
-        uint256 executionFee = _params.numbers.executionFee;
+
+        _params.numbers.executionFee= gmxParams.executionFee;
+        _params.numbers.callbackGasLimit = gmxParams.callbackGasLimit;
+
+        bytes[] memory multicallArgs = new bytes[](3);
+        
+        // Send execution fee to orderVault
+        multicallArgs[0] = abi.encodeWithSignature("sendWnt(address,uint256)", routerConfig.withdrawVault, gmxParams.executionFee);
 
         if (
             _params.orderType == IExchangeRouter.OrderType.MarketSwap ||
@@ -701,16 +711,16 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
             IERC20(initialCollateralToken).safeIncreaseAllowance(routerConfig.router, initialCollateralDeltaAmount);
     
             // Transfer initialCollateralToken to orderVault
-            _exchangeRouter.sendTokens(initialCollateralToken, routerConfig.orderVault, initialCollateralDeltaAmount);
+             multicallArgs[1] = abi.encodeWithSignature("sendTokens(address,address,uint256)", initialCollateralToken, routerConfig.orderVault, initialCollateralDeltaAmount);
         }
 
-        // Send execution fee to orderVault
-        _exchangeRouter.sendWnt{value: executionFee}(routerConfig.orderVault, executionFee);
-
         // Create the order using the external exchange router
-        bytes32 orderKey = _exchangeRouter.createOrder(_params);
+        multicallArgs[2] = abi.encodeWithSignature("createOrder((address,address,address,address,address,address,address[],uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint8,uint8,bool,bool,bool,bytes32))", _params);
+
+        // Execute multicall with optional value (executionFee)
+        bytes[] memory results = _exchangeRouter.multicall{value: gmxParams.executionFee}(multicallArgs);
         
-        ICallbackContract(gmxParams.callbackContract).addKey(orderKey, ICallbackContract.State.Order);
+        ICallbackContract(gmxParams.callbackContract).addKey(bytes32(results[2]), ICallbackContract.State.Order);
     }
 
     // Cancels a deposit operation identified by the specified key using the configured exchange router.

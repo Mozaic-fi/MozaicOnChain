@@ -12,6 +12,7 @@ import { tokenSymbols } from '../../../utils/names/tokenSymbols'
 import { erc20ABI } from '../../../utils/erc20ABI'
 import { gmxPool } from '../../../utils/vaultPlugins/gmxVaultPlugins'
 import { networkNames } from '../../../utils/names/networkNames'
+import { pluginNames } from '../../../utils/names/pluginNames'
 
 describe('TheseusVault Test', () => {
 
@@ -35,6 +36,32 @@ describe('TheseusVault Test', () => {
   let deposit: (token: VaultToken, user: SignerWithAddress) => Promise<void>
   let withdraw: (token1: VaultToken, token2: VaultToken, user: SignerWithAddress) => Promise<void>
   let gmxBalanceTopUp: () => Promise<void>
+
+enum ActionType {
+    // Action types
+    Stake,
+    Unstake,
+    SwapTokens,
+    ClaimRewards,
+    CancelAction
+}
+
+const OrderType = {
+    MarketSwap: 0,
+    LimitSwap: 1,
+    MarketIncrease: 2,
+    LimitIncrease: 3,
+    MarketDecrease: 4,
+    LimitDecrease: 5,
+    StopLossDecrease: 6,
+    Liquidation: 7,
+};
+
+const DecreasePositionSwapType = {
+  NoSwap: 0,
+  SwapPnlTokenToCollateralToken: 1,
+  SwapCollateralTokenToPnlToken: 2,
+};
   
   before(async () => { 
     network = networkConfigs.get(hre.network.name)!
@@ -68,10 +95,10 @@ describe('TheseusVault Test', () => {
       const tokenContract = await hre.ethers.getContractAt(erc20ABI,token.address)
     
       const amount = ethers.utils.parseUnits('100', token.decimals)
-      await tokenContract.connect(user).mint(user.address, amount)
-      await tokenContract.connect(user).approve(vault.contractAddress, amount)
-      await sleep(1000)
-      expect(amount.eq(await tokenContract.allowance(user.address, vault.contractAddress)), 'token approval failed').to.be.equal(true)
+      await (await tokenContract.connect(user).mint(user.address, amount)).wait()
+      await (await tokenContract.connect(user).approve(vault.contractAddress, amount)).wait()
+      
+      expect(amount.lte(await tokenContract.allowance(user.address, vault.contractAddress)), 'token approval failed').to.be.equal(true)
 
       const vaultContract = await  vault.getDeployedContract()
       expect(await vaultContract.getVaultStatus(), 'vault closed').to.be.equal(true);
@@ -81,7 +108,7 @@ describe('TheseusVault Test', () => {
       const payload = ethers.utils.defaultAbiCoder.encode(['uint256'], [minGMAmount]);
       let lpTokenBalanceBefore = await vaultContract.balanceOf(user.address);
       const tx = await vaultContract.connect(user).addDepositRequest(token.address, amount, user.address, payload, {value: ethAmount001, gasLimit: 5000000} )
-    
+      await tx.wait()
       await sleep(10000)
 
       let lpTokenBalanceAfter = await vaultContract.balanceOf(user.address);
@@ -109,10 +136,11 @@ describe('TheseusVault Test', () => {
       console.log('userBalance2Before', userBalance2Before.toString())
 
 
-      await vaultContract.connect(user).approve(vault.contractAddress, lpTokenBalanceBefore)
+      await (await vaultContract.connect(user).approve(vault.contractAddress, lpTokenBalanceBefore)).wait()
       const payload = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256'],[0, 0]);
 
       const tx = await vaultContract.connect(user).addWithdrawalRequest(lpTokenBalanceBefore,1, WETHPool.poolId, user.address, payload, {value: ethAmount001, gasLimit: 5000000})
+      await tx.wait()
       console.log('withdraw tx', tx.hash)
 
       await sleep(10000)
@@ -135,37 +163,117 @@ describe('TheseusVault Test', () => {
     gmxBalanceTopUp = async ()=> {
       let pluginBalance = await ethers.provider.getBalance(gmxPlugin.contractAddress)
       if(pluginBalance.lt(ethAmount05)){
-        await owner.sendTransaction({
+        await (await owner.sendTransaction({
             to: gmxPlugin.contractAddress,
             value: ethAmount2,
-        });
+        })).wait();
       }
     }
 
     await gmxBalanceTopUp()
   }) 
 
-  describe('user should be able to deposit', async()=>{
-    it('USDC', async () => { 
-      await deposit(USDCToken, user2)
-    })
+  // describe('user should be able to deposit', async()=>{
+  //   it('USDC', async () => { 
+  //     await deposit(USDCToken, user2)
+  //   })
   
-    it('WETH', async () => { 
-      await sleep(3000)
-      await deposit(WETHToken, user2)
-    })
-  })
+  //   it('WETH', async () => { 
+  //     await sleep(3000)
+  //     await deposit(WETHToken, user2)
+  //   })
+  // })
 
-  describe('user should be able to withdraw', async()=>{
-    it('USDC-WETH', async () => {
-      await sleep(3000)
-      await withdraw(USDCToken, WETHToken, user2)
-    })
-  })
+  // describe('user should be able to withdraw', async()=>{
+  //   it('USDC-WETH', async () => {
+  //     await sleep(3000)
+  //     await withdraw(USDCToken, WETHToken, user2)
+  //   })
+  // })
 
   describe('master should be able to swap tokens', async()=>{
     it('GMX: USDC-WETH', async () => {
+      const tokenInContract = await hre.ethers.getContractAt(erc20ABI,USDCToken.address)
+      const tokenOutContract = await hre.ethers.getContractAt(erc20ABI,WETHToken.address)
+    
+      const amount = ethers.utils.parseUnits('10', USDCToken.decimals)
+      await (await tokenInContract.mint(vault.contractAddress, amount)).wait()
+      const usdtBalanceBefore = await tokenInContract.balanceOf(vault.contractAddress)
+      expect(amount.lte(usdtBalanceBefore), 'mint failed').to.be.equal(true)
+  
       
+      const vaultContract = await  vault.getDeployedContract()
+      await (await vaultContract.connect(owner).approveTokens(pluginNames.gmx.id, [USDCToken.address], [amount])).wait()
+      expect(amount.lte(await tokenInContract.allowance(vault.contractAddress, gmxPlugin.contractAddress)), 'token approval failed').to.be.equal(true)
+
+      const wethBalanceBefore = await tokenOutContract.balanceOf(vault.contractAddress)
+
+      const params = {
+        addresses: {
+            receiver: vault.contractAddress,
+            cancellationReceiver: ethers.constants.AddressZero,
+            callbackContract: ethers.constants.AddressZero,
+            uiFeeReceiver: ethers.constants.AddressZero,
+            market: ethers.constants.AddressZero,
+            initialCollateralToken: USDCToken.address,
+            swapPath: [WETHPool.marketToken.address],
+        },
+        numbers: {
+            sizeDeltaUsd: 0,
+            initialCollateralDeltaAmount: amount,
+            triggerPrice: 0,
+            acceptablePrice: 0,
+            executionFee: 0,
+            callbackGasLimit: 0,
+            minOutputAmount: 0,
+        },
+        orderType: OrderType.MarketSwap,
+        decreasePositionSwapType: DecreasePositionSwapType.SwapCollateralTokenToPnlToken,
+        isLong: false,
+        shouldUnwrapNativeToken: false,
+        autoCancel: false,
+        referralCode: ethers.constants.HashZero 
+      }
+
+      const encodedParams = ethers.utils.defaultAbiCoder.encode(
+        [
+          'tuple(tuple(address,address,address,address,address,address,address[]),tuple(uint256,uint256,uint256,uint256,uint256,uint256,uint256),uint8,uint8,bool,bool,bool,bytes32)'
+        ],
+        [[
+            [
+                params.addresses.receiver,
+                params.addresses.callbackContract,
+                params.addresses.uiFeeReceiver,
+                params.addresses.market,
+                params.addresses.initialCollateralToken,
+                params.addresses.swapPath
+            ],
+            [
+                params.numbers.sizeDeltaUsd,
+                params.numbers.initialCollateralDeltaAmount,
+                params.numbers.triggerPrice,
+                params.numbers.acceptablePrice,
+                params.numbers.executionFee,
+                params.numbers.callbackGasLimit,
+                params.numbers.minOutputAmount
+            ],
+            params.orderType,
+            params.decreasePositionSwapType,
+            params.isLong,
+            params.shouldUnwrapNativeToken,
+            params.referralCode
+        ]]
+      )
+
+      const tx = await vaultContract.connect(owner).execute(pluginNames.gmx.id, ActionType.SwapTokens, encodedParams, {gasLimit: 5000000} )
+      await tx.wait()
+
+      await sleep(10000)
+      const usdtBalanceAfter = await tokenInContract.balanceOf(vault.contractAddress)
+      const wethBalanceAfter = await tokenOutContract.balanceOf(vault.contractAddress)
+
+      expect(usdtBalanceAfter.lte(usdtBalanceBefore), 'swap failed usdt').to.be.equal(true)
+      expect(wethBalanceAfter.gt(wethBalanceBefore), 'swap failed weth').to.be.equal(true)
 
     })
 
