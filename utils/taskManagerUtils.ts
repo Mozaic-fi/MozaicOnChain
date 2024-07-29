@@ -165,14 +165,16 @@ export class TaskManagerUtils {
     async runInteractive(): Promise<void> {
         await this.checkDependencies();
         await this.initialize();
-        const defaultTasks = Array.from(this.tasks.entries()).filter(([, [, isDefault]]) => isDefault);
-        console.log(cliGreen("Running default tasks:", true));
-        for(let defaultTask of defaultTasks){
-            console.log(`Running ${cliCyan(defaultTask[0])}...`);
-            let valuesToLog = await defaultTask[1][0](this.hardhatRuntimeEnvironment, this.contractName, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
-            console.log(cliBlue('\n-----------------------------------\n'))
+        if(await cliConfirmation('Do you want to run default tasks?', true)){
+            const defaultTasks = Array.from(this.tasks.entries()).filter(([, [, isDefault]]) => isDefault);
+            console.log(cliGreen("Running default tasks:", true));
+            for(let defaultTask of defaultTasks){
+                console.log(`Running ${cliCyan(defaultTask[0])}...`);
+                let valuesToLog = await defaultTask[1][0](this.hardhatRuntimeEnvironment, this.contractName, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
+                console.log(cliBlue('\n-----------------------------------\n'))
+            }
+            console.log('\n\n')
         }
-        console.log('\n\n')
         const taskNames = Array.from(this.tasks.entries()).map(([name, [_, isDefault]]) => `${name} ${isDefault ? '(default)' : ''}`);
 
         while (true) {

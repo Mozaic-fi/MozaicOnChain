@@ -163,6 +163,14 @@ describe('TheseusVault Test', () => {
     })
   })
 
+  describe('master should be able to swap tokens', async()=>{
+    it('GMX: USDC-WETH', async () => {
+      
+
+    })
+
+  })
+
 
 })
 
