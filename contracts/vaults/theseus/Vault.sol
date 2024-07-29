@@ -13,7 +13,9 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
 
 import "../../interfaces/vaults/IPlugin.sol";
 import "../../interfaces/vaults/IVaultLocker.sol";
+import "../../interfaces/lifi/ICalldataVerificationFacet.sol";
 import "../TokenPriceConsumer.sol";
+
 
 contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -29,6 +31,9 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
 
     // A constant representing the maximum fee percentage allowed (1000 basis points or 10% in this case).
     uint256 public constant MAX_FEE = 1e3;
+
+    // The Address of lifi contract
+    address public constant LIFI_CONTRACT = 0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE;
 
     // Struct defining the properties of a Plugin.
     struct Plugin {
@@ -94,6 +99,13 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     // The minimum execution fee required when withdrawing funds from the vault.
     uint256 public withdrawMinExecFee;
 
+    struct lifiWhiteListReceiver {
+        uint256 chainId;
+        bool isWhiteListed;
+    }
+    // The list of addresses that can receive funds from the vault via lifi bridge.
+    mapping(address => lifiWhiteListReceiver) public lifiReceiverWhiteList;
+
 
     /* ========== EVENTS ========== */
     event AddPlugin(uint8 _pluginId, address _pluginAddress);
@@ -118,6 +130,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     event ApproveTokens(uint8 _pluginId, address[] _tokens, uint256[] _amounts);
     event WithdrawProtocolFee(address _token, uint256 _amount);
     event StakeToSelectedPool(uint8 _selectedPluginId, uint8 _selectedPoolId, address _token, uint256 _tokenAmount);
+    event SetLifiReceiverWhiteList(address _receiver, uint256 _chaindId, bool _status);
 
 
     /* ========== MODIFIERS ========== */
@@ -171,6 +184,10 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         tokenPriceConsumer = _tokenPriceConsumer;
         treasury = _treasury;
         admin = _admin;
+
+        lifiReceiverWhiteList[address(this)] = lifiWhiteListReceiver(block.chainid, true);
+
+        lifiReceiverWhiteList[treasury] = lifiWhiteListReceiver(block.chainid, true);
     }
 
     // Allows the owner to set a new master address for the Vault.
@@ -228,6 +245,12 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
 
         // Emit an event to log the treasury address update.
         emit SetTreasury(_treasury);
+    }
+
+    // Allows the owner to whitelist/remove from whitelist addresses that can receive funds from the vault via lifi bridge.
+    function setLifiReceiverWhiteList(address _receiver,uint256 _chaindId, bool _status) public onlyOwner {
+        lifiReceiverWhiteList[_receiver] = lifiWhiteListReceiver(_chaindId, _status);
+        emit SetLifiReceiverWhiteList(_receiver, _chaindId, _status);
     }
 
     // Allows the master contract to select a plugin and pool.
@@ -668,6 +691,38 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         require(success, "Vault: Failed to send Ether");
     }
  
+     function bridgeViaLifi(
+        address _srcToken,
+        uint256 _amount,
+        uint256 _value,
+        bool _bridge,
+        bytes calldata _data
+    ) external onlyMaster nonReentrant {
+
+        if(_bridge) {
+            ( , , address receiver, , uint256 destinationChainId, , ) = ICalldataVerificationFacet(LIFI_CONTRACT).extractMainParameters(_data);
+            lifiWhiteListReceiver memory receiverInfo = lifiReceiverWhiteList[receiver];
+            require(receiverInfo.isWhiteListed &&  receiverInfo.chainId == destinationChainId, "Vault: Lifi receiver not whitelisted");
+        } else {
+            ( , , address receiver, , ) = ICalldataVerificationFacet(LIFI_CONTRACT).extractGenericSwapParameters(_data);
+            lifiWhiteListReceiver memory receiverInfo = lifiReceiverWhiteList[receiver];
+            require(receiverInfo.isWhiteListed && receiverInfo.chainId == block.chainid, "Vault: Lifi receiver not whitelisted");
+        }
+
+        bool isNative = (_srcToken == address(0));
+        if (!isNative) {           
+            uint256 currentAllowance = IERC20(_srcToken).allowance(address(this), address(LIFI_CONTRACT));
+            if (_amount > currentAllowance) {
+                uint256 increaseAmount = _amount - currentAllowance;
+                IERC20(_srcToken).safeIncreaseAllowance(address(LIFI_CONTRACT), increaseAmount);
+            } else if (_amount < currentAllowance) {
+                uint256 decreaseAmount = currentAllowance - _amount;
+                IERC20(_srcToken).safeDecreaseAllowance(address(LIFI_CONTRACT), decreaseAmount);
+            }
+        }
+        (bool success,) = LIFI_CONTRACT.call{value: _value}(_data);
+        require(success, "Lifi: call failed");
+    }
 
     /* ========== VIEW FUNCTIONS ========== */
 
