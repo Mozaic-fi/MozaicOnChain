@@ -35,7 +35,10 @@ describe('TheseusVault Test', () => {
   let ethAmount001: BigNumber
   let deposit: (token: VaultToken, user: SignerWithAddress) => Promise<void>
   let withdraw: (token1: VaultToken, token2: VaultToken, user: SignerWithAddress) => Promise<void>
+  let swapTokens: (tokenIn: VaultToken, tokenOut: VaultToken, _amount: string, user: SignerWithAddress) => Promise<void>
   let gmxBalanceTopUp: () => Promise<void>
+  let emptyPlugin: () => Promise<void>
+  
 
 enum ActionType {
     // Action types
@@ -129,30 +132,20 @@ const DecreasePositionSwapType = {
       const userBalance1Before = await token1Contract.balanceOf(user.address)
       const userBalance2Before = await token2Contract.balanceOf(user.address)
       const lpTokenBalanceBefore = await vaultContract.balanceOf(user.address)
-      const lpInVaultBefore = await vaultContract.balanceOf(vault.contractAddress)
-      console.log('lpInVaultBefore', lpInVaultBefore.toString())
-      console.log('lpTokenBalanceBefore', lpTokenBalanceBefore.toString())
-      console.log('userBalance1Before', userBalance1Before.toString())
-      console.log('userBalance2Before', userBalance2Before.toString())
+      const amountToWithdraw = lpTokenBalanceBefore.div(10)
 
 
-      await (await vaultContract.connect(user).approve(vault.contractAddress, lpTokenBalanceBefore)).wait()
+      await (await vaultContract.connect(user).approve(vault.contractAddress, amountToWithdraw)).wait()
       const payload = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256'],[0, 0]);
 
-      const tx = await vaultContract.connect(user).addWithdrawalRequest(lpTokenBalanceBefore,1, WETHPool.poolId, user.address, payload, {value: ethAmount001, gasLimit: 5000000})
+      const tx = await vaultContract.connect(user).addWithdrawalRequest(amountToWithdraw,1, WETHPool.poolId, user.address, payload, {value: ethAmount001, gasLimit: 5000000})
       await tx.wait()
-      console.log('withdraw tx', tx.hash)
 
       await sleep(10000)
 
       const userBalance1After = await token1Contract.balanceOf(user.address)
       const userBalance2After = await token2Contract.balanceOf(user.address)
       const lpTokenBalanceAfter = await vaultContract.balanceOf(user.address);
-      const lpInVaultAfter = await vaultContract.balanceOf(vault.contractAddress)
-      console.log('lpInVaultAfter', lpInVaultAfter.toString())
-      console.log('lpTokenBalanceAfter', lpTokenBalanceAfter.toString())
-      console.log('userBalance1After', userBalance1After.toString())
-      console.log('userBalance2After', userBalance2After.toString())
 
 
       expect(userBalance1After.gt(userBalance1Before), 'withdraw failed balance1').to.be.equal(true);
@@ -160,50 +153,18 @@ const DecreasePositionSwapType = {
       expect(lpTokenBalanceAfter.lt(lpTokenBalanceBefore), 'withdraw failed lp').to.be.equal(true);
     }
 
-    gmxBalanceTopUp = async ()=> {
-      let pluginBalance = await ethers.provider.getBalance(gmxPlugin.contractAddress)
-      if(pluginBalance.lt(ethAmount05)){
-        await (await owner.sendTransaction({
-            to: gmxPlugin.contractAddress,
-            value: ethAmount2,
-        })).wait();
-      }
-    }
-
-    await gmxBalanceTopUp()
-  }) 
-
-  // describe('user should be able to deposit', async()=>{
-  //   it('USDC', async () => { 
-  //     await deposit(USDCToken, user2)
-  //   })
-  
-  //   it('WETH', async () => { 
-  //     await sleep(3000)
-  //     await deposit(WETHToken, user2)
-  //   })
-  // })
-
-  // describe('user should be able to withdraw', async()=>{
-  //   it('USDC-WETH', async () => {
-  //     await sleep(3000)
-  //     await withdraw(USDCToken, WETHToken, user2)
-  //   })
-  // })
-
-  describe('master should be able to swap tokens', async()=>{
-    it('GMX: USDC-WETH', async () => {
-      const tokenInContract = await hre.ethers.getContractAt(erc20ABI,USDCToken.address)
-      const tokenOutContract = await hre.ethers.getContractAt(erc20ABI,WETHToken.address)
+    swapTokens = async (tokenIn: VaultToken, tokenOut: VaultToken, _amount: string, user: SignerWithAddress)=> {
+      const tokenInContract = await hre.ethers.getContractAt(erc20ABI,tokenIn.address)
+      const tokenOutContract = await hre.ethers.getContractAt(erc20ABI,tokenOut.address)
     
-      const amount = ethers.utils.parseUnits('10', USDCToken.decimals)
+      const amount = ethers.utils.parseUnits(_amount, tokenIn.decimals)
       await (await tokenInContract.mint(vault.contractAddress, amount)).wait()
       const usdtBalanceBefore = await tokenInContract.balanceOf(vault.contractAddress)
       expect(amount.lte(usdtBalanceBefore), 'mint failed').to.be.equal(true)
   
       
       const vaultContract = await  vault.getDeployedContract()
-      await (await vaultContract.connect(owner).approveTokens(pluginNames.gmx.id, [USDCToken.address], [amount])).wait()
+      await (await vaultContract.connect(user).approveTokens(pluginNames.gmx.id, [tokenIn.address], [amount])).wait()
       expect(amount.lte(await tokenInContract.allowance(vault.contractAddress, gmxPlugin.contractAddress)), 'token approval failed').to.be.equal(true)
 
       const wethBalanceBefore = await tokenOutContract.balanceOf(vault.contractAddress)
@@ -215,7 +176,7 @@ const DecreasePositionSwapType = {
             callbackContract: ethers.constants.AddressZero,
             uiFeeReceiver: ethers.constants.AddressZero,
             market: ethers.constants.AddressZero,
-            initialCollateralToken: USDCToken.address,
+            initialCollateralToken: tokenIn.address,
             swapPath: [WETHPool.marketToken.address],
         },
         numbers: {
@@ -242,6 +203,7 @@ const DecreasePositionSwapType = {
         [[
             [
                 params.addresses.receiver,
+                params.addresses.cancellationReceiver,
                 params.addresses.callbackContract,
                 params.addresses.uiFeeReceiver,
                 params.addresses.market,
@@ -261,11 +223,12 @@ const DecreasePositionSwapType = {
             params.decreasePositionSwapType,
             params.isLong,
             params.shouldUnwrapNativeToken,
+            params.autoCancel,
             params.referralCode
         ]]
       )
 
-      const tx = await vaultContract.connect(owner).execute(pluginNames.gmx.id, ActionType.SwapTokens, encodedParams, {gasLimit: 5000000} )
+      const tx = await vaultContract.connect(user).execute(pluginNames.gmx.id, ActionType.SwapTokens, encodedParams, {gasLimit: 5000000} )
       await tx.wait()
 
       await sleep(10000)
@@ -274,9 +237,49 @@ const DecreasePositionSwapType = {
 
       expect(usdtBalanceAfter.lte(usdtBalanceBefore), 'swap failed usdt').to.be.equal(true)
       expect(wethBalanceAfter.gt(wethBalanceBefore), 'swap failed weth').to.be.equal(true)
+    }
 
-    })
+    gmxBalanceTopUp = async ()=> {
+      let pluginBalance = await ethers.provider.getBalance(gmxPlugin.contractAddress)
+      if(pluginBalance.lt(ethAmount05)){
+        await (await owner.sendTransaction({
+            to: gmxPlugin.contractAddress,
+            value: ethAmount2,
+        })).wait();
+      }
+    }
 
+    emptyPlugin = async ()=> {
+      let pluginBalance = await ethers.provider.getBalance(gmxPlugin.contractAddress)
+      let pluginContract = await gmxPlugin.getDeployedContract()
+      await (await pluginContract.connect(owner).withdrawFee(pluginBalance)).wait()
+    }
+
+    await gmxBalanceTopUp()
+  }) 
+
+  // describe('user should be able to deposit', async()=>{
+  //   it('USDC', async () => { 
+  //     await deposit(USDCToken, user2)
+  //   })
+  // })
+
+  // describe('user should be able to withdraw', async()=>{
+  //   it('USDC-WETH', async () => {
+  //     await sleep(3000)
+  //     await withdraw(USDCToken, WETHToken, user2)
+  //   })
+  // })
+
+  // describe('master should be able to swap tokens', async()=>{
+  //   it('GMX: USDC-WETH', async () => {
+  //     await sleep(3000)
+  //     await swapTokens(USDCToken, WETHToken, '10', master)
+  //   })
+  // })
+
+  describe('master should be able to cancel operation', async()=>{
+    
   })
 
 

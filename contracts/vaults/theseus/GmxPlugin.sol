@@ -692,11 +692,6 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         _params.numbers.executionFee= gmxParams.executionFee;
         _params.numbers.callbackGasLimit = gmxParams.callbackGasLimit;
 
-        bytes[] memory multicallArgs = new bytes[](3);
-        
-        // Send execution fee to orderVault
-        multicallArgs[0] = abi.encodeWithSignature("sendWnt(address,uint256)", routerConfig.withdrawVault, gmxParams.executionFee);
-
         if (
             _params.orderType == IExchangeRouter.OrderType.MarketSwap ||
             _params.orderType == IExchangeRouter.OrderType.LimitSwap ||
@@ -711,16 +706,16 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
             IERC20(initialCollateralToken).safeIncreaseAllowance(routerConfig.router, initialCollateralDeltaAmount);
     
             // Transfer initialCollateralToken to orderVault
-             multicallArgs[1] = abi.encodeWithSignature("sendTokens(address,address,uint256)", initialCollateralToken, routerConfig.orderVault, initialCollateralDeltaAmount);
+            _exchangeRouter.sendTokens(initialCollateralToken, routerConfig.orderVault, initialCollateralDeltaAmount);
         }
 
-        // Create the order using the external exchange router
-        multicallArgs[2] = abi.encodeWithSignature("createOrder((address,address,address,address,address,address,address[],uint256,uint256,uint256,uint256,uint256,uint256,uint256,uint8,uint8,bool,bool,bool,bytes32))", _params);
+        // Send execution fee to orderVault
+        _exchangeRouter.sendWnt{value: gmxParams.executionFee}(routerConfig.orderVault, gmxParams.executionFee);
 
-        // Execute multicall with optional value (executionFee)
-        bytes[] memory results = _exchangeRouter.multicall{value: gmxParams.executionFee}(multicallArgs);
+        // Create the order using the external exchange router
+        bytes32 orderKey = _exchangeRouter.createOrder(_params);
         
-        ICallbackContract(gmxParams.callbackContract).addKey(bytes32(results[2]), ICallbackContract.State.Order);
+        ICallbackContract(gmxParams.callbackContract).addKey(orderKey, ICallbackContract.State.Order);
     }
 
     // Cancels a deposit operation identified by the specified key using the configured exchange router.
