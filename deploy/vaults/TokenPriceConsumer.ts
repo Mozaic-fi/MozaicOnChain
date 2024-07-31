@@ -29,7 +29,7 @@ const deploy: DeployFunction = async (hre) => {
     const heartBeats = tokensData?.map(token => token.heartBeatDuration)
 
     const constructorArgs = [address, priceFeeds, heartBeats]
-    const deployer = new ContractUtils(hre, contractName, constructorArgs)
+    const deployer = new ContractUtils(hre, contractName, constructorArgs, false)
 
     await deployer.deployAndVerifyContract()
 }

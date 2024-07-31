@@ -11,14 +11,14 @@ async function main() {
 
     const taskManager = new TaskManagerUtils(hre, contractAddress, [contractNames.Tokens.XMozToken, contractNames.Tokens.MozToken])
     taskManager.registerInitCallback(async( hre, contractName, signer, contractAddress, networkConfig, dependencies, data) => {
-        data.contractUtil = new ContractUtils(hre, contractName, [], true, contractAddress)
+        data.contractUtil = new ContractUtils(hre, contractName, [], false, contractAddress)
         console.log(`Initializing ${contractAddress} on ${hre.network.name}`)
     })
 
     taskManager.registerFinalizeCallback(async( hre, contractName, signer, contractAddress, networkConfig, dependencies, data) => {
     });
 
-    taskManager.registerTask('initialize-contract', async( hre, contractName, signer, contractAddress, networkConfig, dependencies, data) => {
+    taskManager.registerTask('initialize-contract',true, async( hre, contractName, signer, contractAddress, networkConfig, dependencies, data) => {
         if(networkConfig?.tokensInfo?.requireAdapter){
             return
         }

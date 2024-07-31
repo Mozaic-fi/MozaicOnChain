@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment  } from 'hardhat/types';
 
 import {networkConfigs, NetworkInfo} from './networkConfigs'
-import {cliBlue, cliConfirmation, cliCyan, cliGreen, cliRed, cliSelectItem, cliYellow} from './cliUtils'
+import {cliBlue, cliConfirmation, cliCyan, cliGreen, cliMagenta, cliRed, cliSelectItem, cliYellow} from './cliUtils'
 
 import * as readline from 'readline';
 
@@ -16,7 +16,7 @@ type TaskCallback = (hre: HardhatRuntimeEnvironment, contractName: string, signe
 export class TaskManagerUtils {
     private initCallback: TaskCallback | null = null;
     private finalizeCallback: TaskCallback | null = null;
-    private tasks: Map<string, TaskCallback> = new Map();
+    private tasks: Map<string, [TaskCallback, boolean]> = new Map();
     private hardhatRuntimeEnvironment: HardhatRuntimeEnvironment;
     private contractName: string;
     private deploymentExtension: any;
@@ -44,7 +44,7 @@ export class TaskManagerUtils {
         try{
             this.mainContractDeploymentAddress = (await this.deploymentExtension.get(this.contractName)).address          
         } catch (error) {
-            console.log(`Contract ${this.contractName} not found in deployments on ${this.networkName}`);
+            console.log(`Contract ${cliGreen(this.contractName, true)} not found in deployments on ${cliCyan(this.networkName, true)}`);
             throw error;
         }
         for (const [contractName, deploymentName] of this.dependencies) {
@@ -52,14 +52,14 @@ export class TaskManagerUtils {
                 const deployment = await this.deploymentExtension.get(contractName);
                 this.dependencies.set(contractName, deployment.address);
             } catch (error) {
-                console.log(`Contract ${contractName} not found in deployments on ${this.networkName}`);
+                console.log(`Contract ${cliGreen(contractName, true)} not found in deployments on ${cliCyan(this.networkName, true)}`);
                 throw error;
             }  
         }
-        console.log(`Contract ${this.contractName} found at ${this.mainContractDeploymentAddress} on ${this.networkName}`);
-        console.log(`Dependencies on ${this.networkName}:`);
+        console.log(`Contract ${cliGreen(this.contractName, true)} found at ${cliCyan(this.mainContractDeploymentAddress, true)} on ${cliMagenta(this.networkName, true)}`);
+        console.log(`Dependencies on ${cliMagenta(this.networkName, true)}:`);
         this.dependencies.forEach((address, name) => {
-            console.log(`- ${name} found at ${address}`);
+            console.log(`- ${cliGreen(name, true)} found at ${cliCyan(address, true)}`);
         });
     }
 
@@ -71,11 +71,11 @@ export class TaskManagerUtils {
         this.finalizeCallback = callback;
     }
 
-    registerTask(taskName: string, callback: TaskCallback): void {
+    registerTask(taskName: string,defaultTask: boolean, callback: TaskCallback): void {
         if (this.tasks.has(taskName)) {
             throw new Error(`Task "${taskName}" already exists.`);
         }
-        this.tasks.set(taskName, callback);
+        this.tasks.set(taskName, [callback, defaultTask]);
     }
 
     async initialize(): Promise<void> {
@@ -150,7 +150,8 @@ export class TaskManagerUtils {
             await this.initialize();
                 for (const taskName of tasksToRun) {
                     console.log(cliBlue(`\nExecuting task: ${taskName}`));
-                    let valuesToLog = await this.tasks.get(taskName)!(this.hardhatRuntimeEnvironment, this.contractName, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
+                    let [callback, _] = this.tasks.get(taskName)!
+                    let valuesToLog = await callback(this.hardhatRuntimeEnvironment, this.contractName, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
                     //console.log(`Task ${taskName} executed with values: ${JSON.stringify(valuesToLog)}`);
                     console.log(cliBlue('\n-----------------------------------\n'))
                 }
@@ -163,10 +164,19 @@ export class TaskManagerUtils {
     
     async runInteractive(): Promise<void> {
         await this.checkDependencies();
-
-        const taskNames = Array.from(this.tasks.keys());
-
         await this.initialize();
+        if(await cliConfirmation('Do you want to run default tasks?', true)){
+            const defaultTasks = Array.from(this.tasks.entries()).filter(([, [, isDefault]]) => isDefault);
+            console.log(cliGreen("Running default tasks:", true));
+            for(let defaultTask of defaultTasks){
+                console.log(`Running ${cliCyan(defaultTask[0])}...`);
+                let valuesToLog = await defaultTask[1][0](this.hardhatRuntimeEnvironment, this.contractName, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
+                console.log(cliBlue('\n-----------------------------------\n'))
+            }
+            console.log('\n\n')
+        }
+        const taskNames = Array.from(this.tasks.entries()).map(([name, [_, isDefault]]) => `${name} ${isDefault ? '(default)' : ''}`);
+
         while (true) {
             const index = await cliSelectItem('Select a task to run (or type "0" to finish)', taskNames, true);
     
@@ -174,7 +184,9 @@ export class TaskManagerUtils {
                 break;
             }
             else{
-                let valuesToLog = await this.tasks.get(taskNames[index])!(this.hardhatRuntimeEnvironment, this.contractName, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
+                let taskName  =taskNames[index].replace('(default)','').trim();
+                let [callback, _] = this.tasks.get(taskName)!
+                let valuesToLog = await callback(this.hardhatRuntimeEnvironment, this.contractName, this.signer, this.mainContractDeploymentAddress, this.networkConfig, this.dependencies, this.deploymentData);
                 console.log(cliBlue('\n-----------------------------------\n'))
             }           
         }

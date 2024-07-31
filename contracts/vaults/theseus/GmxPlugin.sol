@@ -676,7 +676,9 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     function createGMOrder(IExchangeRouter.CreateOrderParams memory _params) internal {
         require(_params.addresses.receiver == localVault, "Invalid receiver");
 
+        _params.addresses.cancellationReceiver = localVault;
         _params.addresses.callbackContract = gmxParams.callbackContract;
+        _params.addresses.uiFeeReceiver = gmxParams.uiFeeReceiver;
         _params.numbers.callbackGasLimit = gmxParams.callbackGasLimit;
         
         // Cast exchangeRouter to IExchangeRouter
@@ -684,8 +686,11 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
 
         // Extract values from _params to improve readability
         address initialCollateralToken = _params.addresses.initialCollateralToken;
+
         uint256 initialCollateralDeltaAmount = _params.numbers.initialCollateralDeltaAmount;
-        uint256 executionFee = _params.numbers.executionFee;
+
+        _params.numbers.executionFee= gmxParams.executionFee;
+        _params.numbers.callbackGasLimit = gmxParams.callbackGasLimit;
 
         if (
             _params.orderType == IExchangeRouter.OrderType.MarketSwap ||
@@ -705,7 +710,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         }
 
         // Send execution fee to orderVault
-        _exchangeRouter.sendWnt{value: executionFee}(routerConfig.orderVault, executionFee);
+        _exchangeRouter.sendWnt{value: gmxParams.executionFee}(routerConfig.orderVault, gmxParams.executionFee);
 
         // Create the order using the external exchange router
         bytes32 orderKey = _exchangeRouter.createOrder(_params);

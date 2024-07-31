@@ -13,6 +13,7 @@ import { EndpointId } from '@layerzerolabs/lz-definitions'
 
 // If you prefer to be authenticated using a private key, set a PRIVATE_KEY environment variable
 const PRIVATE_KEY = process.env.PRIVATE_KEY
+const PRIVATE_KEY_2 = process.env.PRIVATE_KEY_2
 
 
 const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY
@@ -23,7 +24,7 @@ const SEPOLIA_ARBISCAN_API_KEY = process.env.SEPOLIA_ARBISCAN_API_KEY
 const SEPOLIA_BASESCAN_API_KEY = process.env.SEPOLIA_BASESCAN_API_KEY
 const SEPOLIA_API_KEY = process.env.SEPOLIA_API_KEY
 
-const accounts: HttpNetworkAccountsUserConfig | undefined = [PRIVATE_KEY!]
+const accounts: HttpNetworkAccountsUserConfig | undefined = [PRIVATE_KEY!, PRIVATE_KEY_2!]
 
 if (accounts == null) {
     console.warn(

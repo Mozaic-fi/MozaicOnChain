@@ -13,7 +13,7 @@ const deploy: DeployFunction = async (hre) => {
     const TokenPriceConsumerAddress = (await hre.deployments.get(contractNames.Vaults.TokenPriceConsumer )).address
 
     const constructorArgs = [networkConfig?.theseusVaultInfo?.vaultMasterAddress,networkConfig?.theseusVaultInfo?.vaultAdminAddress,TokenPriceConsumerAddress, networkConfig?.theseusVaultInfo?.treasuryAddress ]
-    const deployer = new ContractUtils(hre, contractName, constructorArgs)
+    const deployer = new ContractUtils(hre, contractName, constructorArgs, false)
 
     await deployer.deployAndVerifyContract()
 }
