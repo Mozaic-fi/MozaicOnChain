@@ -4,7 +4,7 @@ import { contractNames } from '../names/contractNames'
 import { pluginNames } from '../names/pluginNames' 
 import { tokenSymbols } from '../names/tokenSymbols'
 import { vaultPlugin } from '../vaultPlugins/baseVaultPlugins'
-import { gmxPluginInfo,  getGMXHandlerInfo, getGMXVaultInfo } from '../vaultPlugins/gmxVaultPlugins'
+import { gmxPluginInfo, getGMXVaultInfo } from '../vaultPlugins/gmxVaultPlugins'
 import { mockPluginInfo } from '../vaultPlugins/mockVaultPlugins'
 import { getTokens, getToken, getGMXToken } from '../vaultTokens'
 
@@ -25,7 +25,6 @@ export const avalancheFujiNetworkConfig: NetworkInfo =  {
                     pluginId: pluginNames.gmx.id,
                     pluginName: pluginNames.gmx.name,
                     pluginContractName: contractNames.Vaults.Theseus.GmxPlugin,
-                    handlerInfo: getGMXHandlerInfo(networkNames.avalancheFuji),
                     vaultInfo: getGMXVaultInfo(networkNames.avalancheFuji),
                     params:{
                         uiFeeReceiverAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',

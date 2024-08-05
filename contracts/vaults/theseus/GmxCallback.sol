@@ -2,12 +2,16 @@
 pragma solidity ^0.8.18;
 
 import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import { SafeERC20 } from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "../../libraries/gmx/Role.sol";
 import "../../interfaces/gmx/IDepositCallbackReceiver.sol";
 import "../../interfaces/gmx/IWithdrawalCallbackReceiver.sol";
 import "../../interfaces/gmx/IOrderCallbackReceiver.sol";
 import "../../interfaces/gmx/IGMXPlugin.sol";
 import "../../interfaces/gmx/ICallbackContract.sol";
 import "../../interfaces/gmx/IGasFeeCallbackReceiver.sol";
+import "../../interfaces/gmx/IRoleStore.sol";
 import "../../interfaces/vaults/IVault.sol";
 import "../../interfaces/vaults/IVaultLocker.sol";
 
@@ -17,6 +21,7 @@ import "../../interfaces/vaults/IVaultLocker.sol";
  * @dev Contract handling callbacks for deposit, withdrawal, and order execution/cancellation.
  */
 contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackReceiver, IOrderCallbackReceiver, IGasFeeCallbackReceiver, ICallbackContract, IVaultLocker {
+    using SafeERC20 for IERC20;
     // Structure to hold the withdrawal information associated with a key
     struct WithdrawalInfo {
         uint256 lpAmount;
@@ -40,10 +45,8 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
     bytes32[] public withdrawalKeys;
     bytes32[] public orderKeys;
 
-    // Handlers for deposit, withdrawal, and order operations
-    address public depositHandler;
-    address public withdrawalHandler;
-    address public orderHandler;
+    // gmx role store
+    IRoleStore public roleStore;
 
     event SetConfig(address _vault, address _gmxPlugin);
     event SetHandler(address _depositHandler, address _withdrawalHandler, address _orderHandler);
@@ -66,18 +69,8 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
     }
 
     // Modifier to restrict access to specific handlers (deposit, withdrawal, order)
-    modifier onlyHandler(State stateOption) {
-        address handler;
-        if (stateOption == State.Deposit) {
-            handler = depositHandler;
-        } else if (stateOption == State.Withdrawal) {
-            handler = withdrawalHandler;
-        } else if (stateOption == State.Order) {
-            handler = orderHandler;
-        } else {
-            revert("Invalid state");
-        }
-        require(msg.sender == handler, "Invalid caller");
+    modifier onlyHandler() {
+        require(roleStore.hasRole(msg.sender, Role.CONTROLLER), "Invalid caller");
         _;
     }
 
@@ -86,11 +79,13 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
      * @param _vault Address of the vault.
      * @param _gmxPlugin Address of the GMX plugin.
      */
-    constructor(address _vault, address _gmxPlugin) Ownable(msg.sender) {
+    constructor(address _vault, address _gmxPlugin, address _roleStore) Ownable(msg.sender) {
         config = Config({
             vault: _vault,
             gmxPlugin: _gmxPlugin
         });
+
+        roleStore = IRoleStore(_roleStore);
     }
 
     /**
@@ -107,22 +102,6 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
         });
 
         emit SetConfig(_vault, _gmxPlugin);
-    }
-
-    /**
-     * @dev Updates the deposit, withdrawal, and order handlers in the contract.
-     * @param _depositHandler Address of the deposit handler.
-     * @param _withdrawalHandler Address of the withdrawal handler.
-     * @param _orderHandler Address of the order handler.
-     */
-    function setHandler(address _depositHandler, address _withdrawalHandler, address _orderHandler) external onlyOwner {
-        require(_depositHandler != address(0) && _withdrawalHandler != address(0) && _orderHandler != address(0), "Invalid address");
-
-        depositHandler = _depositHandler;
-        withdrawalHandler = _withdrawalHandler;
-        orderHandler = _orderHandler;
-
-        emit SetHandler(_depositHandler, _withdrawalHandler, _orderHandler);
     }
 
     /**
@@ -244,7 +223,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
      * @param deposit The deposit details.
      * @param eventData Additional event data.
      */
-    function afterDepositExecution(bytes32 key, Deposit.Props memory deposit, EventUtils.EventLogData memory eventData) external onlyHandler(State.Deposit) {
+    function afterDepositExecution(bytes32 key, Deposit.Props memory deposit, EventUtils.EventLogData memory eventData) external onlyHandler() {
         removeKey(key, State.Deposit);
         IGMXPlugin(config.gmxPlugin).transferAllTokensToVault();
         
@@ -257,7 +236,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
      * @param deposit The deposit details.
      * @param eventData Additional event data.
      */
-    function afterDepositCancellation(bytes32 key, Deposit.Props memory deposit, EventUtils.EventLogData memory eventData) external onlyHandler(State.Deposit) {
+    function afterDepositCancellation(bytes32 key, Deposit.Props memory deposit, EventUtils.EventLogData memory eventData) external onlyHandler() {
         removeKey(key, State.Deposit);
         IGMXPlugin(config.gmxPlugin).transferAllTokensToVault();
         
@@ -270,7 +249,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
      * @param withdrawal The withdrawal details.
      * @param eventData Additional event data.
      */
-    function afterWithdrawalExecution(bytes32 key, Withdrawal.Props memory withdrawal, EventUtils.EventLogData memory eventData) external onlyHandler(State.Withdrawal) {
+    function afterWithdrawalExecution(bytes32 key, Withdrawal.Props memory withdrawal, EventUtils.EventLogData memory eventData) external onlyHandler() {
         removeKey(key, State.Withdrawal);
         WithdrawalInfo memory info = withdrawalData[key];
         if (info.lpAmount != 0) {
@@ -288,7 +267,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
      * @param withdrawal The withdrawal details.
      * @param eventData Additional event data.
      */
-    function afterWithdrawalCancellation(bytes32 key, Withdrawal.Props memory withdrawal, EventUtils.EventLogData memory eventData) external onlyHandler(State.Withdrawal) {
+    function afterWithdrawalCancellation(bytes32 key, Withdrawal.Props memory withdrawal, EventUtils.EventLogData memory eventData) external onlyHandler() {
         removeKey(key, State.Withdrawal);
         WithdrawalInfo memory info = withdrawalData[key];
         if (info.lpAmount != 0 && info.receiver != address(0) && info.receiver != config.gmxPlugin) {
@@ -306,7 +285,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
      * @param order The order details.
      * @param eventData Additional event data.
      */
-    function afterOrderExecution(bytes32 key, Order.Props memory order, EventUtils.EventLogData memory eventData) external onlyHandler(State.Order) {
+    function afterOrderExecution(bytes32 key, Order.Props memory order, EventUtils.EventLogData memory eventData) external onlyHandler() {
         removeKey(key, State.Order);
         IGMXPlugin(config.gmxPlugin).transferAllTokensToVault();
 
@@ -319,7 +298,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
      * @param order The order details.
      * @param eventData Additional event data.
      */
-    function afterOrderCancellation(bytes32 key, Order.Props memory order, EventUtils.EventLogData memory eventData) external onlyHandler(State.Order) {
+    function afterOrderCancellation(bytes32 key, Order.Props memory order, EventUtils.EventLogData memory eventData) external onlyHandler() {
         removeKey(key, State.Order);
         IGMXPlugin(config.gmxPlugin).transferAllTokensToVault();
 
@@ -332,7 +311,7 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
      * @param order The order details.
      * @param eventData Additional event data.
      */
-    function afterOrderFrozen(bytes32 key, Order.Props memory order, EventUtils.EventLogData memory eventData) external onlyHandler(State.Order) {
+    function afterOrderFrozen(bytes32 key, Order.Props memory order, EventUtils.EventLogData memory eventData) external onlyHandler() {
         IGMXPlugin(config.gmxPlugin).transferAllTokensToVault();
 
         emit AfterOrderFrozen(key);
@@ -347,6 +326,13 @@ contract GmxCallback is Ownable, IDepositCallbackReceiver, IWithdrawalCallbackRe
         (bool success, ) = config.gmxPlugin.call{value: msg.value}("");
         require(success, "Vault: Failed to send Ether");
         emit RefundExecutionFee(key);
+        
+    }
+
+    function withdrawStuckToken(address token,address _to) external onlyOwner {
+        require(_to != address(0), "Zero address");
+        uint256 _contractTokenBalance = IERC20(token).balanceOf(address(this));
+        IERC20(token).safeTransfer(_to, _contractTokenBalance);
     }
 
     receive() external payable { 

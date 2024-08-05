@@ -4,7 +4,7 @@ import { contractNames } from '../names/contractNames'
 import { pluginNames } from '../names/pluginNames' 
 import { tokenSymbols } from '../names/tokenSymbols'
 import { vaultPlugin } from '../vaultPlugins/baseVaultPlugins'
-import { gmxPluginInfo, getGMXHandlerInfo, getGMXVaultInfo, gmxPool } from '../vaultPlugins/gmxVaultPlugins'
+import { gmxPluginInfo, getGMXVaultInfo, gmxPool } from '../vaultPlugins/gmxVaultPlugins'
 import { getTokens, getToken, getGMXToken, getTokenFromAddress } from '../vaultTokens'
 
 
@@ -79,7 +79,6 @@ export const arbitrumOneNetworkConfig: NetworkInfo = {
                     pluginId: pluginNames.gmx.id,
                     pluginName: pluginNames.gmx.name,
                     pluginContractName: contractNames.Vaults.Theseus.GmxPlugin,
-                    handlerInfo: getGMXHandlerInfo(networkNames.arbitrumOne),
                     vaultInfo: getGMXVaultInfo(networkNames.arbitrumOne),
                     params:{
                         uiFeeReceiverAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',

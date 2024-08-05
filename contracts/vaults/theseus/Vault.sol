@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
 
@@ -854,7 +853,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         }
 
         // Retrieve the token and price consumer decimals.
-        uint256 tokenDecimals = IERC20Metadata(_tokenAddress).decimals();
+        uint256 tokenDecimals = TokenPriceConsumer(tokenPriceConsumer).getTokenDecimal(_tokenAddress);
         uint256 priceConsumerDecimals = TokenPriceConsumer(tokenPriceConsumer).decimals(_tokenAddress);
 
         // Retrieve the token price from the price consumer.
@@ -866,7 +865,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     // Calculate the token amount corresponding to a given USD value based on token price and decimals.
     function calculateTokenAmountFromUsd(address _tokenAddress, uint256 _tokenValueUsd) public view returns (uint256) {
         // Retrieve the token and price consumer decimals.
-        uint256 tokenDecimals = IERC20Metadata(_tokenAddress).decimals();
+        uint256 tokenDecimals = TokenPriceConsumer(tokenPriceConsumer).getTokenDecimal(_tokenAddress);
         uint256 priceConsumerDecimals = TokenPriceConsumer(tokenPriceConsumer).decimals(_tokenAddress);
 
         // Convert the USD value to the desired ASSET_DECIMALS.

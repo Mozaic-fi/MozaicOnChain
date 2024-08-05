@@ -3,12 +3,6 @@ import { VaultToken } from '../vaultTokens'
 import { networkNames } from '../names/networkNames'
 import { GmxUtils,gmxContracts } from '../gmxUtils'
 
-export type gmxPluginHandlerInfo = {
-    depositHandlerAddress: string
-    withdrawHandlerAddress: string
-    orderHandlerAddress: string
-}
-
 export type gmxPluginVaultInfo = {
     exchangeRouterAddress: string
     routerAddress: string
@@ -16,6 +10,7 @@ export type gmxPluginVaultInfo = {
     withdrawVaultAddress: string
     orderVaultAddress: string
     readerAddress: string
+    roleStoreAddress: string
 
 }
 
@@ -36,7 +31,6 @@ export type gmxPool = {
 }
 
 export interface  gmxPluginInfo extends  vaultPlugin {
-    handlerInfo: gmxPluginHandlerInfo
     vaultInfo: gmxPluginVaultInfo
     params: gmxParams
     pools: gmxPool[]
@@ -52,15 +46,7 @@ export const getGMXVaultInfo = (networkName: networkNames): gmxPluginVaultInfo =
         depositVaultAddress: gmxUtils.getContractAddress(gmxContracts.depositVault),
         orderVaultAddress: gmxUtils.getContractAddress(gmxContracts.orderVault),
         withdrawVaultAddress: gmxUtils.getContractAddress(gmxContracts.withdrawalVault),
-        readerAddress: gmxUtils.getContractAddress(gmxContracts.reader)   
-    };
-}
-
-export const getGMXHandlerInfo = (networkName: networkNames): gmxPluginHandlerInfo => {
-    const gmxUtils = new GmxUtils(networkName);
-    return {
-        depositHandlerAddress: gmxUtils.getContractAddress(gmxContracts.depositHandler),
-        orderHandlerAddress: gmxUtils.getContractAddress(gmxContracts.orderHandler),
-        withdrawHandlerAddress: gmxUtils.getContractAddress(gmxContracts.withdrawalHandler),
+        readerAddress: gmxUtils.getContractAddress(gmxContracts.reader),
+        roleStoreAddress: gmxUtils.getContractAddress(gmxContracts.roleStore)   
     };
 }

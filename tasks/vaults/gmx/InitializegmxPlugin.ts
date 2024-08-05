@@ -111,23 +111,6 @@ export const main = async () => {
         });
     });
 
-    taskManager.registerTask('setTokenDecimals',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
-        const vpi = data.vpi as gmxPluginInfo
-        const tokenAddresses= getTokens(networkConfig.networkName).map(token => token.address)
-        const tokenDecimals = getTokens(networkConfig.networkName).map(token => token.decimals)
-        const functionName = 'setTokenDecimalsBatch'
-        const propertyStructName = 'mapping'
-        const propertyValues = [tokenAddresses, tokenDecimals]
-        const propertyNames = ['decimals']
-        await (data.contractUtil as ContractUtils).runContractFunction(functionName, tokenAddresses, tokenDecimals)
-        return {
-            functionName,
-            propertyStructName,
-            propertyNames,
-            propertyValues
-        }
-    });
-
     taskManager.registerTask('setRewardTokens',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const tokens = getTokens(networkConfig.networkName)
         const functionName = 'setRewardTokens'

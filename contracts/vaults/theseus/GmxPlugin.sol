@@ -90,8 +90,6 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     address public tokenPriceConsumer;
 
     address[] public rewardTokens;
-    
-    mapping(address => uint8) public tokenDecimalList;
 
     /* ========== EVENTS ========== */
     event SetMaster(address master);
@@ -99,7 +97,6 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     event SetRouterConfig(address _exchangeRouter, address _router, address _depositVault, address _withdrawVault, address _orderVault, address _reader);
     event SetGmxParams(address _uiFeeReceiver, address _callbackContract, uint256 _callbackGasLimit, uint256 _executionFee, bool _shouldUnwrapNativeToken, bytes32 _pnlFactorType);
     event SetTokenPriceConsumer(address _tokenPriceConsumer);
-    event SetTokenDecimals(address _token, uint8 _decimals);
     event SetRewardTokens(address[] _rewardTokens);
     event PoolAdded(uint8 poolId);
     event PoolRemoved(uint8 poolId);
@@ -194,20 +191,6 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         });
 
         emit SetGmxParams(_uiFeeReceiver, _callbackContract, _callbackGasLimit, _executionFee, _shouldUnwrapNativeToken, _pnlFactorType);
-    }
-
-    function setTokenDecimals(address _token, uint8 _decimals) public onlyOwner {
-        tokenDecimalList[_token] = _decimals;
-
-        emit SetTokenDecimals(_token, _decimals);
-    }
-
-
-    function setTokenDecimalsBatch(address[] calldata _tokens, uint8[] calldata _newDecimals) external onlyOwner {
-        require(_tokens.length == _newDecimals.length, "Arrays must have the same length");
-        for (uint256 i = 0; i < _tokens.length; i++) {
-            setTokenDecimals(_tokens[i], _newDecimals[i]);
-        }
     }
 
     // Function allowing the owner to set the token price consumer contract address.
@@ -399,7 +382,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
 
     // Function to calculate the USD value of a given token amount based on its price and decimals.
     function calculateTokenValueInUsd(address _tokenAddress, uint256 _tokenAmount) public view returns (uint256) {
-        uint256 tokenDecimals = IERC20Metadata(_tokenAddress).decimals();
+        uint256 tokenDecimals = TokenPriceConsumer(tokenPriceConsumer).getTokenDecimal(_tokenAddress);
         uint256 priceConsumerDecimals = TokenPriceConsumer(tokenPriceConsumer).decimals(_tokenAddress);
 
         // Get the token price from the TokenPriceConsumer.
@@ -797,12 +780,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         // Create an instance of TokenPriceConsumer for fetching token prices
         TokenPriceConsumer priceConsumer = TokenPriceConsumer(tokenPriceConsumer);
 
-        uint256 tokenDecimal;
-        if(isContract(token)) {
-            tokenDecimal = IERC20Metadata(token).decimals();
-        } else {
-            tokenDecimal = tokenDecimalList[token];        
-        }
+        uint256 tokenDecimal = priceConsumer.getTokenDecimal(token);
         
         IPrice.Props memory tokenPrice = IPrice.Props(
             convertDecimals(priceConsumer.getTokenPrice(token), priceConsumer.decimals(token), MARKET_TOKEN_PRICE_DECIMALS - tokenDecimal),
@@ -885,20 +863,4 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
 
     receive() external payable {}
     fallback() external payable {}
-
-    // Public view function to determine whether the given address is a contract or an externally-owned account (EOA).
-    // It uses the assembly block to efficiently check the size of the code at the specified address.
-    // If the size of the code (extcodesize) is greater than 0, the address is considered a contract.
-    // Returns true if the address is a contract and false if it is an externally-owned account.
-    function isContract(address _addr) public view returns (bool) {
-        uint32 size;
-
-        // Use assembly to get the size of the code at the specified address.
-        assembly {
-            size := extcodesize(_addr)
-        }
-
-        // Return true if the size of the code is greater than 0, indicating a contract.
-        return (size > 0);
-    }
 }

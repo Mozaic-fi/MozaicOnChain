@@ -25,6 +25,7 @@ class TaskRunner {
       this.networks.push(networkName as networkNames);
     }
     this.addTask(TaskType.Deploy, 'Deploy Vault', 'GmxCallback');
+    this.addTask(TaskType.Config, 'Configure TokenPriceConsumer', 'tasks/vaults/InitializeTokenPriceConsumer.ts');
     this.addTask(TaskType.Config, 'Configure GMX CallBack', 'tasks/vaults/gmx/InitializegmxCallBack.ts');
     this.addTask(TaskType.Config, 'Configure GMX Plugin', 'tasks/vaults/gmx/InitializegmxPlugin.ts');
     this.addTask(TaskType.Config, 'Configure Vault', 'tasks/vaults/InitializeTheseusVault.ts');

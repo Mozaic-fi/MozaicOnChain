@@ -22,7 +22,8 @@ export enum gmxContracts {
     withdrawalVault = 'WithdrawalVault',
     exchangeRouter = 'ExchangeRouter',
     router = 'Router',
-    marketToken = '../MarketToken'
+    marketToken = '../MarketToken',
+    roleStore = 'RoleStore'
 }
 
 export class GmxUtils {
