@@ -132,4 +132,49 @@ interface IExchangeRouter {
     function cancelDeposit(bytes32 key) external payable;
     function cancelWithdrawal(bytes32 key) external payable;
     function cancelOrder(bytes32 key) external payable;
+    
+    /**
+     * @dev Claims funding fees for the given markets and tokens on behalf of the caller, and sends the
+     * fees to the specified receiver. The length of the `markets` and `tokens` arrays must be the same.
+     * For each market-token pair, the `claimFundingFees()` function in the `MarketUtils` contract is
+     * called to claim the fees for the caller.
+     *
+     * @param markets An array of market addresses
+     * @param tokens An array of token addresses, corresponding to the given markets
+     * @param receiver The address to which the claimed fees should be sent
+     */
+    function claimFundingFees(
+        address[] memory markets,
+        address[] memory tokens,
+        address receiver
+    ) external payable returns (uint256[] memory);
+
+    function claimCollateral(
+        address[] memory markets,
+        address[] memory tokens,
+        uint256[] memory timeKeys,
+        address receiver
+    ) external payable returns (uint256[] memory);
+
+    /**
+     * @dev Claims affiliate rewards for the given markets and tokens on behalf of the caller, and sends
+     * the rewards to the specified receiver. The length of the `markets` and `tokens` arrays must be
+     * the same. For each market-token pair, the `claimAffiliateReward()` function in the `ReferralUtils`
+     * contract is called to claim the rewards for the caller.
+     *
+     * @param markets An array of market addresses
+     * @param tokens An array of token addresses, corresponding to the given markets
+     * @param receiver The address to which the claimed rewards should be sent
+     */
+    function claimAffiliateRewards(
+        address[] memory markets,
+        address[] memory tokens,
+        address receiver
+    ) external payable returns (uint256[] memory);
+
+    function claimUiFees(
+        address[] memory markets,
+        address[] memory tokens,
+        address receiver
+    ) external payable returns (uint256[] memory);
 }

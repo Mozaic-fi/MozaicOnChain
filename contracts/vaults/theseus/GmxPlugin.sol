@@ -103,6 +103,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     event Execute(ActionType _actionType, bytes _payload);
     event TransferAllTokensToVault();
     event CancelAction(uint8 _actionType, bytes32 _key);
+    event ClaimFromGMX(ActionType _actionType,  uint256[] claimedAmounts);
     /* ========== MODIFIERS ========== */
 
     // Modifier allowing only the local vault to execute the function.
@@ -289,9 +290,30 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
             cancelAction(_payload);
         } else if (_actionType == ActionType.ClaimRewards) {
             claimRewards();
+        } else {
+            claimFromGMX(_actionType, _payload);
         }
 
         emit Execute(_actionType, _payload);
+    }
+
+    function claimFromGMX(ActionType _actionType, bytes calldata _payload) internal {
+        (address[] memory markets, address[] memory tokens, uint256[] memory timeKeys, uint256 amount) = abi.decode(_payload, (address[], address[], uint256[], uint256));
+        uint256[] memory claimedAmounts = new uint256[](markets.length);
+        IExchangeRouter _exchangeRouter = IExchangeRouter(routerConfig.exchangeRouter);
+        if (_actionType == ActionType.ClaimUiFees ) {
+            claimedAmounts = _exchangeRouter.claimUiFees{value: amount}(markets, tokens, localVault);
+            emit ClaimFromGMX(_actionType, claimedAmounts);
+        } else if (_actionType == ActionType.ClaimAffiliateRewards) {
+            claimedAmounts = _exchangeRouter.claimAffiliateRewards{value: amount}(markets, tokens, localVault);
+            emit ClaimFromGMX(_actionType, claimedAmounts);
+        } else if (_actionType == ActionType.ClaimCollateral) {
+            claimedAmounts = _exchangeRouter.claimCollateral{value: amount}(markets, tokens, timeKeys, localVault);
+            emit ClaimFromGMX(_actionType, claimedAmounts);
+        } else if (_actionType == ActionType.ClaimFundingFees) {
+            claimedAmounts = _exchangeRouter.claimFundingFees{value: amount}(markets, tokens, localVault);
+            emit ClaimFromGMX(_actionType, claimedAmounts);
+        }
     }
 
     // Transfers all ERC-20 tokens held by this contract to a designated vault.

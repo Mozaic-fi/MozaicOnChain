@@ -11,7 +11,11 @@ interface IPlugin {
         Unstake,
         SwapTokens,
         ClaimRewards,
-        CancelAction
+        CancelAction,
+        ClaimUiFees,
+        ClaimAffiliateRewards,
+        ClaimCollateral,
+        ClaimFundingFees
     }
 
     function execute(ActionType _actionType, bytes calldata _payload) external payable;
