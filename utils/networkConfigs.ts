@@ -32,7 +32,8 @@ export type VaultInfo = {
     vaultAdminAddress: string
     vaultPlugins: Map<string, vaultPlugin>
     version: number,
-    protocolFeePercentage: number
+    protocolFeePercentage: number,
+    hypernativeOracleAddress: string
 }
 
 export type NetworkInfo = {

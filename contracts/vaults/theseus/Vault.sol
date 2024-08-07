@@ -14,10 +14,12 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
 import "../../interfaces/vaults/IPlugin.sol";
 import "../../interfaces/vaults/IVaultLocker.sol";
 import "../../interfaces/lifi/ICalldataVerificationFacet.sol";
+import "../../libraries/hypernative/OracleProtected.sol";
 import "../TokenPriceConsumer.sol";
 
 
-contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
+
+contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtected  {
     using SafeERC20 for IERC20;
 
     // Constant representing the number of decimals for the MOZAIC token.
@@ -174,7 +176,11 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
 
     /* ========== CONFIGURATION ========== */
     // Constructor for the Mozaic Theseus LPToken contract, inheriting from ERC20.
-    constructor(address _master,address _admin, address _tokenPriceConsumer, address payable _treasury) ERC20("Mozaic Theseus LP", "MOZ-THE-LP") Ownable(msg.sender){
+    constructor(address _master,address _admin, address _tokenPriceConsumer, address payable _treasury, address _hypernativeOracle) 
+        ERC20("Mozaic Theseus LP", "MOZ-THE-LP") 
+        Ownable(msg.sender)
+        OracleProtected(_hypernativeOracle)
+    {
         require(_master != address(0), "Vault: Invalid Address");
         require(_admin != address(0), "Vault: Invalid Address");
         require(_tokenPriceConsumer != address(0), "Vault: Invalid Address");
@@ -415,7 +421,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     /* ========== USER FUNCTIONS ========== */
     
     // Allows users to initiate a deposit request by converting tokens to LP tokens and staking them into the selected pool.
-    function addDepositRequest(address _token, uint256 _tokenAmount, address _receiver, bytes memory _payload) external payable nonReentrant whenNotPaused {
+    function addDepositRequest(address _token, uint256 _tokenAmount, address _receiver, bytes memory _payload) external payable nonReentrant onlyOracleApproved whenNotPaused {
         require(getVaultStatus() == true, "Vault: Vault is locked");
 
         require(msg.value >= depositMinExecFee, "Vault: Insufficient execution fee");
@@ -490,7 +496,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     }
 
     // Function to add a withdrawal request for a specified LP token amount from a selected pool using a specified plugin.
-    function addWithdrawalRequest(uint256 _lpAmount, uint8 _pluginId, uint8 _poolId, address _receiver, bytes memory payload) external payable whenNotPaused nonReentrant{
+    function addWithdrawalRequest(uint256 _lpAmount, uint8 _pluginId, uint8 _poolId, address _receiver, bytes memory payload) external payable whenNotPaused onlyOracleApproved nonReentrant{
         // Ensure that the vault is not locked before processing withdrawal requests.
         require(getVaultStatus() == true, "Vault: Vault is locked");
 

@@ -18,6 +18,7 @@ export const avalancheFujiNetworkConfig: NetworkInfo =  {
         vaultMasterAddress: '0xa3D6360C288551600B20A7992860766F9754e477',
         vaultAdminAddress: '0xa3D6360C288551600B20A7992860766F9754e477',
         protocolFeePercentage: 1000,
+        hypernativeOracleAddress: '',
         vaultPlugins: new Map<string, vaultPlugin>([
             [
                 pluginNames.gmx.name,

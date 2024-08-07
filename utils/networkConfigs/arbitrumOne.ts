@@ -71,6 +71,7 @@ export const arbitrumOneNetworkConfig: NetworkInfo = {
         vaultMasterAddress: '0xa3D6360C288551600B20A7992860766F9754e477',
         vaultAdminAddress: '0xa3D6360C288551600B20A7992860766F9754e477',
         protocolFeePercentage: 1000,
+        hypernativeOracleAddress: '0x',
         version: 1,
         vaultPlugins: new Map<string, vaultPlugin>([
             [
