@@ -15,7 +15,7 @@ export const baseSepoliaNetworkConfig: NetworkInfo = {
         layerZeroEIDV2: 40245,
     },
     tokensInfo: {
-        treasuryAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
+        treasuryAddress: '0xa3D6360C288551600B20A7992860766F9754e477',
         firstDeployment: false,
         requireAdapter: false,
         multiSigOwnerAddress: '0x4D037D1faa356a8BCa7627cf188E6e6a16167756',

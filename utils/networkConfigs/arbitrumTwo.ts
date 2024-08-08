@@ -14,7 +14,7 @@ export const arbitrumTwoNetworkConfig: NetworkInfo =  {
     layerZeroInfo: arbitrumOneNetworkConfig.layerZeroInfo,
     tokensInfo: {
         ...arbitrumOneNetworkConfig.tokensInfo!,
-        treasuryAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde'
+        treasuryAddress: '0xa3D6360C288551600B20A7992860766F9754e477'
     },
     theseusVaultInfo: arbitrumOneNetworkConfig.theseusVaultInfo,
     testNet: true,
