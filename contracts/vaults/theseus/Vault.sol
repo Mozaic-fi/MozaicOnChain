@@ -605,6 +605,12 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
         emit Execute(_pluginId, _actionType, _payload);
     }
 
+    function multiExecute(uint8 _pluginId, IPlugin.ActionType _actionType, bytes[] memory _payloads) public onlyMaster nonReentrant whenNotPaused{
+        for (uint256 i = 0; i < _payloads.length; i++) {
+            execute(_pluginId, _actionType, _payloads[i]);
+        }
+    }
+
     // Allows the master contract to approve tokens for a specified plugin based on the provided payload.
     function approveTokens(uint8 _pluginId, address[] memory _tokens, uint256[] memory _amounts) external onlyMaster nonReentrant whenNotPaused {
         // Ensure that the specified plugin exists.
