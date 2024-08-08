@@ -92,7 +92,6 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     address[] public rewardTokens;
 
     /* ========== EVENTS ========== */
-    event SetMaster(address master);
     event SetTreasury(address payable treasury);
     event SetRouterConfig(address _exchangeRouter, address _router, address _depositVault, address _withdrawVault, address _orderVault, address _reader);
     event SetGmxParams(address _uiFeeReceiver, address _callbackContract, uint256 _callbackGasLimit, uint256 _executionFee, bool _shouldUnwrapNativeToken, bytes32 _pnlFactorType);

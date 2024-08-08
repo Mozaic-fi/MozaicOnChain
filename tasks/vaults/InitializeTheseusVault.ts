@@ -13,7 +13,7 @@ import hre from 'hardhat';
 export const main = async () => {
     const contractName = contractNames.Vaults.Theseus.Vault
     
-    const taskManager = new TaskManagerUtils(hre, contractName, [contractNames.Vaults.TokenPriceConsumer, contractNames.Vaults.Theseus.GmxCallback, contractNames.Vaults.Theseus.GmxPlugin])
+    const taskManager = new TaskManagerUtils(hre, contractName, [contractNames.Vaults.TokenPriceConsumer, contractNames.Vaults.Theseus.GmxCallback, contractNames.Vaults.Theseus.GmxPlugin, contractNames.Vaults.Theseus.MultiCallVaultMaster])
     taskManager.registerInitCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         console.log(`Initializing ${contractName} on ${hre.network.name}`)
         data.vaultInfo = networkConfig?.theseusVaultInfo!
@@ -27,7 +27,7 @@ export const main = async () => {
 
     taskManager.registerTask('setMaster',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const propertyNames= ['master']
-        const propertyValues = [data.vaultInfo.vaultMasterAddress]
+        const propertyValues = [dependencies.get(contractNames.Vaults.Theseus.MultiCallVaultMaster)]
         const functionName = 'setMaster'
         await (data.contractUtil as ContractUtils).setContractConfigValues(functionName, propertyNames, propertyValues)
         return {

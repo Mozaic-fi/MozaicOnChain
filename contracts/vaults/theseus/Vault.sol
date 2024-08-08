@@ -41,8 +41,8 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     }
     
     /* ========== STATE VARIABLES ========== */
-    // Stores the address of the master contract.
-    address public master;
+    // Stores the address of the multicall master Contract contract. 
+    address public masterContract;
 
     // Stores the address of the contract admin.
     address public admin;
@@ -133,9 +133,9 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
 
 
     /* ========== MODIFIERS ========== */
-    // Modifier allowing only the master contract to execute the function.
+    // Modifier allowing only the masterContract contract to execute the function.
     modifier onlyMaster() {
-        require(msg.sender == master, "Vault: caller must be master");
+        require(msg.sender == masterContract, "Vault: caller must be masterContract");
         _;
     }
 
@@ -179,7 +179,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         require(_tokenPriceConsumer != address(0), "Vault: Invalid Address");
         require(_treasury != address(0), "Vault: Invalid Address");
 
-        master = _master;
+        masterContract = _master;
         tokenPriceConsumer = _tokenPriceConsumer;
         treasury = _treasury;
         admin = _admin;
@@ -189,18 +189,18 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         lifiReceiverWhiteList[treasury] = lifiWhiteListReceiver(block.chainid, true);
     }
 
-    // Allows the owner to set a new master address for the Vault.
+    // Allows the owner to set a new masterContract address for the Vault.
     function setMaster(address _newMaster) external onlyOwner {
-        // Ensure that the new master address is valid.
+        // Ensure that the new masterContract address is valid.
         require(_newMaster != address(0), "Vault: Invalid Address");
 
-        // Store the current master address before updating.
-        address _oldMaster = master;
+        // Store the current masterContract address before updating.
+        address _oldMaster = masterContract;
 
-        // Update the master address to the new value.
-        master = _newMaster;
+        // Update the masterContract address to the new value.
+        masterContract = _newMaster;
 
-        // Emit an event to log the master address update.
+        // Emit an event to log the masterContract address update.
         emit MasterUpdated(_oldMaster, _newMaster);
     }
 
@@ -252,7 +252,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         emit SetLifiReceiverWhiteList(_receiver, _chaindId, _status);
     }
 
-    // Allows the master contract to select a plugin and pool.
+    // Allows the masterContract contract to select a plugin and pool.
     function selectPluginAndPool(uint8 _pluginId, uint8 _poolId) onlyAdmin public {
         // Set the selectedPluginId and selectedPoolId to the provided values.
         selectedPluginId = _pluginId;
@@ -489,7 +489,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     }
 
     // Function to add a withdrawal request for a specified LP token amount from a selected pool using a specified plugin.
-    function addWithdrawalRequest(uint256 _lpAmount, uint8 _pluginId, uint8 _poolId, address _receiver, bytes memory payload) external payable whenNotPaused nonReentrant{
+    function addWithdrawalRequest(uint256 _lpAmount, uint8 _pluginId, uint8 _poolId, address _receiver, bytes memory payload) external payable nonReentrant whenNotPaused{
         // Ensure that the vault is not locked before processing withdrawal requests.
         require(getVaultStatus() == true, "Vault: Vault is locked");
 
@@ -565,8 +565,8 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     
     /* ========== MASTER FUNCTIONS ========== */
     
-    // Allows the master contract to execute actions on a specified plugin.
-    function execute(uint8 _pluginId, IPlugin.ActionType _actionType, bytes memory _payload) public onlyMaster nonReentrant whenNotPaused{
+    // Allows the masterContract contract to execute actions on a specified plugin.
+    function execute(uint8 _pluginId, IPlugin.ActionType _actionType, bytes memory _payload) public onlyMaster whenNotPaused {
         // Ensure that the specified plugin exists.
         require(pluginIdToIndex[_pluginId] != 0, "Plugin with this ID does not exist");
 
@@ -598,8 +598,8 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         emit Execute(_pluginId, _actionType, _payload);
     }
 
-    // Allows the master contract to approve tokens for a specified plugin based on the provided payload.
-    function approveTokens(uint8 _pluginId, address[] memory _tokens, uint256[] memory _amounts) external onlyMaster nonReentrant whenNotPaused {
+    // Allows the masterContract contract to approve tokens for a specified plugin based on the provided payload.
+    function approveTokens(uint8 _pluginId, address[] memory _tokens, uint256[] memory _amounts) external onlyMaster whenNotPaused {
         // Ensure that the specified plugin exists.
         require(pluginIdToIndex[_pluginId] != 0, "Plugin with this ID does not exist");
 
@@ -651,7 +651,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     }
 
     // Withdraws protocol fees stored in the vault for a specific token.
-    function withdrawProtocolFee(address _token) external onlyMaster nonReentrant whenNotPaused {
+    function withdrawProtocolFee(address _token) external onlyAdmin whenNotPaused {
         require(isAcceptedToken(_token), "Vault: Invalid token");
 
         // Calculate the token amount from the protocol fee in the vault
@@ -676,7 +676,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     }
 
     // Transfers the execution fee to the specified plugin.
-    function transferExecutionFee(uint8 _pluginId, uint256 _amount) external onlyMaster nonReentrant whenNotPaused {
+    function transferExecutionFee(uint8 _pluginId, uint256 _amount) external onlyMaster whenNotPaused {
         // Retrieve information about the specified plugin
         Plugin memory plugin = getPlugin(_pluginId);
         
@@ -696,7 +696,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         uint256 _value,
         bool _bridge,
         bytes calldata _data
-    ) external onlyMaster nonReentrant {
+    ) payable external onlyMaster whenNotPaused {
 
         if(_bridge) {
             ( , , address receiver, , uint256 destinationChainId, , ) = ICalldataVerificationFacet(LIFI_CONTRACT).extractMainParameters(_data);
