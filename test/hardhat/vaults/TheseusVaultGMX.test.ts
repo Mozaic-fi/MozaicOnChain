@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
 import { BigNumber, Contract } from 'ethers'
@@ -13,7 +14,33 @@ import { erc20ABI } from '../../../utils/erc20ABI'
 import { gmxPool } from '../../../utils/vaultPlugins/gmxVaultPlugins'
 import { networkNames } from '../../../utils/names/networkNames'
 import { pluginNames } from '../../../utils/names/pluginNames'
-import { assert } from 'console'
+import { gmxContracts } from '../../../utils/gmxUtils'
+
+enum ActionType {
+  // Action types
+  Stake,
+  Unstake,
+  SwapTokens,
+  ClaimRewards,
+  CancelAction
+}
+
+const OrderType = {
+  MarketSwap: 0,
+  LimitSwap: 1,
+  MarketIncrease: 2,
+  LimitIncrease: 3,
+  MarketDecrease: 4,
+  LimitDecrease: 5,
+  StopLossDecrease: 6,
+  Liquidation: 7,
+};
+
+const DecreasePositionSwapType = {
+NoSwap: 0,
+SwapPnlTokenToCollateralToken: 1,
+SwapCollateralTokenToPnlToken: 2,
+};
 
 describe('TheseusVault Test', () => {
 
@@ -24,6 +51,7 @@ describe('TheseusVault Test', () => {
   let vault: ContractUtils
   let gmxPlugin: ContractUtils
   let gmxCallBack: ContractUtils
+  let multiCallVaultMasterContract: ContractUtils
   let gmxUtils: GmxUtils
   let WETHToken: VaultToken
   let USDCToken: VaultToken
@@ -44,32 +72,6 @@ describe('TheseusVault Test', () => {
   let gmxBalanceTopUp: () => Promise<void>
   let emptyPlugin: () => Promise<void>
   
-
-enum ActionType {
-    // Action types
-    Stake,
-    Unstake,
-    SwapTokens,
-    ClaimRewards,
-    CancelAction
-}
-
-const OrderType = {
-    MarketSwap: 0,
-    LimitSwap: 1,
-    MarketIncrease: 2,
-    LimitIncrease: 3,
-    MarketDecrease: 4,
-    LimitDecrease: 5,
-    StopLossDecrease: 6,
-    Liquidation: 7,
-};
-
-const DecreasePositionSwapType = {
-  NoSwap: 0,
-  SwapPnlTokenToCollateralToken: 1,
-  SwapCollateralTokenToPnlToken: 2,
-};
   
   before(async () => { 
     network = networkConfigs.get(hre.network.name)!
@@ -80,6 +82,7 @@ const DecreasePositionSwapType = {
     gmxPlugin = await ContractUtils.createFromDeployment(hre, contractNames.Vaults.Theseus.GmxPlugin)
     gmxCallBack = await ContractUtils.createFromDeployment(hre, contractNames.Vaults.Theseus.GmxCallback)
     tokenPriceConsumer = await ContractUtils.createFromDeployment(hre, contractNames.Vaults.TokenPriceConsumer)
+    multiCallVaultMasterContract = await ContractUtils.createFromDeployment(hre, contractNames.Vaults.Theseus.MultiCallVaultMaster)
     gmxUtils = new GmxUtils(network.networkName)
     WETHToken = getToken(tokenSymbols.WETH,network.networkName)
     USDCToken = getToken(tokenSymbols.USDC,network.networkName)
@@ -188,66 +191,7 @@ const DecreasePositionSwapType = {
 
       const wethBalanceBefore = await tokenOutContract.balanceOf(vault.contractAddress)
 
-      const params = {
-        addresses: {
-            receiver: vault.contractAddress,
-            cancellationReceiver: ethers.constants.AddressZero,
-            callbackContract: ethers.constants.AddressZero,
-            uiFeeReceiver: ethers.constants.AddressZero,
-            market: ethers.constants.AddressZero,
-            initialCollateralToken: tokenIn.address,
-            swapPath: [WETHPool.marketToken.address],
-        },
-        numbers: {
-            sizeDeltaUsd: 0,
-            initialCollateralDeltaAmount: amount,
-            triggerPrice: 0,
-            acceptablePrice: 0,
-            executionFee: 0,
-            callbackGasLimit: 0,
-            minOutputAmount: amount.div(100),
-        },
-        orderType: OrderType.MarketSwap,
-        decreasePositionSwapType: DecreasePositionSwapType.SwapCollateralTokenToPnlToken,
-        isLong: false,
-        shouldUnwrapNativeToken: false,
-        autoCancel: false,
-        referralCode: ethers.constants.HashZero 
-      }
-
-      const encodedParams = ethers.utils.defaultAbiCoder.encode(
-        [
-          'tuple(tuple(address,address,address,address,address,address,address[]),tuple(uint256,uint256,uint256,uint256,uint256,uint256,uint256),uint8,uint8,bool,bool,bool,bytes32)'
-        ],
-        [[
-            [
-                params.addresses.receiver,
-                params.addresses.cancellationReceiver,
-                params.addresses.callbackContract,
-                params.addresses.uiFeeReceiver,
-                params.addresses.market,
-                params.addresses.initialCollateralToken,
-                params.addresses.swapPath
-            ],
-            [
-                params.numbers.sizeDeltaUsd,
-                params.numbers.initialCollateralDeltaAmount,
-                params.numbers.triggerPrice,
-                params.numbers.acceptablePrice,
-                params.numbers.executionFee,
-                params.numbers.callbackGasLimit,
-                params.numbers.minOutputAmount
-            ],
-            params.orderType,
-            params.decreasePositionSwapType,
-            params.isLong,
-            params.shouldUnwrapNativeToken,
-            params.autoCancel,
-            params.referralCode
-        ]]
-      )
-
-      const tx = await vaultContract.connect(user).execute(pluginNames.gmx.id, ActionType.SwapTokens, encodedParams, {gasLimit: 5000000} )
+      const tx = await vaultContract.connect(user).execute(pluginNames.gmx.id, ActionType.SwapTokens, getGMXSwapParams(vault,tokenIn, WETHPool, amount), {gasLimit: 5000000} )
       await tx.wait()
       if(runCancelation){
         await cancelOrderAction(user)
@@ -294,7 +238,7 @@ const DecreasePositionSwapType = {
 
     gmxBalanceTopUp = async ()=> {
       let pluginBalance = await ethers.provider.getBalance(gmxPlugin.contractAddress)
-      if(pluginBalance.lt(ethAmount05)){
+      if(pluginBalance.lt(ethAmount1)){
         await (await owner.sendTransaction({
             to: gmxPlugin.contractAddress,
             value: ethAmount2,
@@ -313,13 +257,13 @@ const DecreasePositionSwapType = {
 
   // describe('user should be able to deposit', async()=>{
   //   it('USDC', async () => { 
-  //     await deposit(USDCToken, user2, '5', '0')
+  //     await deposit(USDCToken, user2, '500', '0')
   //   })
 
-  //   it('Canceled-USDC', async () => { 
-  //     await sleep(3000)
-  //     await deposit(USDCToken, user2, '5', '100000')
-  //   })
+  //   // it('Canceled-USDC', async () => { 
+  //   //   await sleep(3000)
+  //   //   await deposit(USDCToken, user2, '5', '100000')
+  //   // })
   // })
 
   // describe('user should be able to withdraw', async()=>{
@@ -343,9 +287,214 @@ const DecreasePositionSwapType = {
   //   })
   // })
 
+  // describe('multicall admin should be able to use fallback', async()=>{
+  //   it('transferExecutionFee', async () => {
+  //     const functionSignature = "transferExecutionFee(uint8 _pluginId, uint256 _amount)";
+  //     const values = ["1", "0"];
+  //     const iface = new ethers.utils.Interface([`function ${functionSignature}`]);
+  //     const data = iface.encodeFunctionData(functionSignature.split('(')[0], values);
+  //     const master = await  multiCallVaultMasterContract.getDeployedContract()
+  //     const tx = await owner.sendTransaction({
+  //       to: master.address,
+  //       data,
+  //     });
+  //     await tx.wait()
+  //   })
+  // })
+
+  describe('master should be able to rebalance', async()=>{
+    // it('multicall unstake', async () => {
+    //   const token1 = USDCToken
+    //   const token2 = WETHToken
+    //   const token3 = WBTCToken
+    //   const token1Contract = await hre.ethers.getContractAt(erc20ABI,token1.address)
+    //   const token2Contract = await hre.ethers.getContractAt(erc20ABI,token2.address)
+    //   const token3Contract = await hre.ethers.getContractAt(erc20ABI,token3.address)
+    //   const balance1Before = await token1Contract.balanceOf(vault.contractAddress)
+    //   const balance2Before = await token2Contract.balanceOf(vault.contractAddress)
+    //   const balance3Before = await token3Contract.balanceOf(vault.contractAddress)
+    //   const market1 = await hre.ethers.getContractAt(gmxUtils.getContractAbi(gmxContracts.marketToken), WETHPool.marketToken.address)
+    //   const market2 = await hre.ethers.getContractAt(gmxUtils.getContractAbi(gmxContracts.marketToken), WBTCPool.marketToken.address)
+    //   const market1BalanceBefore = await market1.balanceOf(gmxPlugin.contractAddress)
+    //   const market2BalanceBefore = await market2.balanceOf(gmxPlugin.contractAddress)
+    //   const multicall = await multiCallVaultMasterContract.getDeployedContract()
+    //   const basePayload = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256'],[0, 0])
+    //   const payloads = [ethers.utils.defaultAbiCoder.encode(['uint8', 'uint256', 'uint256', 'address', 'bytes'],[WETHPool.poolId, market1BalanceBefore.div(5), 0, vault.contractAddress, basePayload]), 
+    //     ethers.utils.defaultAbiCoder.encode(['uint8', 'uint256', 'uint256', 'address', 'bytes'],[WBTCPool.poolId, market2BalanceBefore.div(5), 0, vault.contractAddress, basePayload])]
+    //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, ActionType.Unstake, payloads, [], {gasLimit: 5000000})).wait()
+    //   await sleep(10000)
+    //   const market1BalanceAfter = await market1.balanceOf(gmxPlugin.contractAddress)
+    //   const market2BalanceAfter = await market2.balanceOf(gmxPlugin.contractAddress)
+    //   const balance1After = await token1Contract.balanceOf(vault.contractAddress)
+    //   const balance2After = await token2Contract.balanceOf(vault.contractAddress)
+    //   const balance3After = await token3Contract.balanceOf(vault.contractAddress)
+    //   expect(market1BalanceBefore.gt(market1BalanceAfter), 'market1 unstake failed').to.be.equal(true)
+    //   expect(market2BalanceBefore.gt(market2BalanceAfter), 'market2 unstake failed').to.be.equal(true)
+    //   expect(balance1Before.lt(balance1After), 'balance1 unstake failed').to.be.equal(true)
+    //   expect(balance2Before.lt(balance2After), 'balance2 unstake failed').to.be.equal(true)
+    //   expect(balance3Before.lt(balance3After), 'balance3 unstake failed').to.be.equal(true)
+      
+    // })
+
+    // it('multicall stake', async () => {
+    //   await sleep(3000)
+    //   const market1 = await hre.ethers.getContractAt(gmxUtils.getContractAbi(gmxContracts.marketToken), WETHPool.marketToken.address)
+    //   const market2 = await hre.ethers.getContractAt(gmxUtils.getContractAbi(gmxContracts.marketToken), WBTCPool.marketToken.address)
+    //   const market1BalanceBefore = await market1.balanceOf(gmxPlugin.contractAddress)
+    //   const market2BalanceBefore = await market2.balanceOf(gmxPlugin.contractAddress)
+    //   const token = USDCToken
+    //   const tokenContract = await hre.ethers.getContractAt(erc20ABI,token.address)
+    //   const balanceBefore = await tokenContract.balanceOf(vault.contractAddress)
+    //   const multicall = await multiCallVaultMasterContract.getDeployedContract()
+    //   const basePayload = ethers.utils.defaultAbiCoder.encode(['uint256'],[0])
+    //   const payloads = [ethers.utils.defaultAbiCoder.encode(['uint8', 'address[]', 'uint256[]', 'bytes'],[WETHPool.poolId, [WETHPool.longToken.address, WETHPool.shortToken.address], [0, balanceBefore.div(3)], basePayload]), 
+    //     ethers.utils.defaultAbiCoder.encode(['uint8', 'address[]', 'uint256[]', 'bytes'],[WBTCPool.poolId, [WBTCPool.longToken.address, WBTCPool.shortToken.address], [0, balanceBefore.div(3)], basePayload])]
+    //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, ActionType.Stake, payloads, [], {gasLimit: 5000000})).wait()
+    //   await sleep(10000)
+    //   const market1BalanceAfter = await market1.balanceOf(gmxPlugin.contractAddress)
+    //   const market2BalanceAfter = await market2.balanceOf(gmxPlugin.contractAddress)
+    //   const balanceAfter = await tokenContract.balanceOf(vault.contractAddress)
+    //   expect(market1BalanceBefore.lt(market1BalanceAfter), 'market1 unstake failed').to.be.equal(true)
+    //   expect(market2BalanceBefore.lt(market2BalanceAfter), 'market2 unstake failed').to.be.equal(true)
+    //   expect(balanceBefore.gt(balanceAfter), 'token stake failed').to.be.equal(true)
+
+    // })
+
+    // it('multicall swap lifi', async () => {
+    //   const amount = '1000'
+    //   const halfAmount = '500'
+    //   const tokenIn = USDCToken
+    //   const tokenOut1 = WETHToken
+    //   const tokenOut2 = WBTCToken
+    //   const tokenInContract = await hre.ethers.getContractAt(erc20ABI,tokenIn.address)
+    //   const tokenOut1Contract = await hre.ethers.getContractAt(erc20ABI,tokenOut1.address)
+    //   const tokenOut2Contract = await hre.ethers.getContractAt(erc20ABI,tokenOut2.address)
+    //   await (await tokenInContract.connect(owner).mint(vault.contractAddress, amount)).wait()
+    //   const balanceInBefore = await tokenInContract.balanceOf(vault.contractAddress)
+    //   const balanceOut1Before = await tokenOut1Contract.balanceOf(vault.contractAddress)
+    //   const balanceOut2Before = await tokenOut2Contract.balanceOf(vault.contractAddress)
+    //   const quote1 = await getQuote('arb', 'arb', 'USDC', 'WETH', halfAmount, vault.contractAddress)
+    //   const quote2 = await getQuote('arb', 'arb', 'USDC', 'WBTC', halfAmount, vault.contractAddress)
+    //   const lifiPayload = [
+    //     [tokenIn.address, halfAmount, 0, false, quote1],
+    //     [tokenIn.address, halfAmount, 0, false, quote2]
+    //   ]
+    //   const multicall = await multiCallVaultMasterContract.getDeployedContract()
+    //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, 2, [], lifiPayload, {gasLimit: 5000000})).wait()
+    //   await sleep(10000)
+    //   const balanceInAfter = await tokenInContract.balanceOf(vault.contractAddress)
+    //   const balanceOut1After = await tokenOut1Contract.balanceOf(vault.contractAddress)
+    //   const balanceOut2After = await tokenOut2Contract.balanceOf(vault.contractAddress)
+    //   expect(balanceInBefore.gt(balanceInAfter), 'tokenIn swap failed').to.be.equal(true)
+    //   expect(balanceOut1Before.lt(balanceOut1After), 'tokenOut1 swap failed').to.be.equal(true)
+    //   expect(balanceOut2Before.lt(balanceOut2After), 'tokenOut2 swap failed').to.be.equal(true)
+
+    // })
+
+    it('multicall gmx swap', async () => {
+      const tokenIn = USDCToken
+      const amount = ethers.utils.parseUnits('1000', tokenIn.decimals)
+      const tokenOut1 = WETHToken
+      const tokenOut2 = WBTCToken
+      const tokenInContract = await hre.ethers.getContractAt(erc20ABI,tokenIn.address)
+      const tokenOut1Contract = await hre.ethers.getContractAt(erc20ABI,tokenOut1.address)
+      const tokenOut2Contract = await hre.ethers.getContractAt(erc20ABI,tokenOut2.address)
+      await (await tokenInContract.connect(owner).mint(vault.contractAddress, amount)).wait()
+      const balanceInBefore = await tokenInContract.balanceOf(vault.contractAddress)
+      const balanceOut1Before = await tokenOut1Contract.balanceOf(vault.contractAddress)
+      const balanceOut2Before = await tokenOut2Contract.balanceOf(vault.contractAddress)
+      const multicall = await multiCallVaultMasterContract.getDeployedContract()
+      const payloads = [getGMXSwapParams(vault, tokenIn, WETHPool, amount.div(2)), getGMXSwapParams(vault, tokenIn, WBTCPool, amount.div(2))]
+      await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, 3, payloads, [], {gasLimit: 5000000})).wait()
+      await sleep(10000)
+      const balanceInAfter = await tokenInContract.balanceOf(vault.contractAddress)
+      const balanceOut1After = await tokenOut1Contract.balanceOf(vault.contractAddress)
+      const balanceOut2After = await tokenOut2Contract.balanceOf(vault.contractAddress)
+      expect(balanceInBefore.gt(balanceInAfter), 'tokenIn swap failed').to.be.equal(true)
+      expect(balanceOut1Before.lt(balanceOut1After), 'tokenOut1 swap failed').to.be.equal(true)
+      expect(balanceOut2Before.lt(balanceOut2After), 'tokenOut2 swap failed').to.be.equal(true)
+    })
+  })
+
 
 })
 
 function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+const getQuote = async (fromChain:string, toChain:string, fromToken:string, toToken:string, fromAmount:string, fromAddress:string) => {
+  const result = await axios.get('https://li.quest/v1/quote', {
+      params: {
+          fromChain,
+          toChain,
+          fromToken,
+          toToken,
+          fromAmount,
+          fromAddress,
+      }
+  });
+  return result.data;
+}
+
+const getGMXSwapParams = (vault: ContractUtils,tokenIn: VaultToken, pool: gmxPool, amount: BigNumber) => {
+  const params = {
+    addresses: {
+        receiver: vault.contractAddress,
+        cancellationReceiver: ethers.constants.AddressZero,
+        callbackContract: ethers.constants.AddressZero,
+        uiFeeReceiver: ethers.constants.AddressZero,
+        market: ethers.constants.AddressZero,
+        initialCollateralToken: tokenIn.address,
+        swapPath: [pool.marketToken.address],
+    },
+    numbers: {
+        sizeDeltaUsd: 0,
+        initialCollateralDeltaAmount: amount,
+        triggerPrice: 0,
+        acceptablePrice: 0,
+        executionFee: 0,
+        callbackGasLimit: 0,
+        minOutputAmount: 0,
+    },
+    orderType: OrderType.MarketSwap,
+    decreasePositionSwapType: DecreasePositionSwapType.SwapCollateralTokenToPnlToken,
+    isLong: false,
+    shouldUnwrapNativeToken: false,
+    autoCancel: false,
+    referralCode: ethers.constants.HashZero 
+  }
+
+  const encodedParams = ethers.utils.defaultAbiCoder.encode(
+    [
+      'tuple(tuple(address,address,address,address,address,address,address[]),tuple(uint256,uint256,uint256,uint256,uint256,uint256,uint256),uint8,uint8,bool,bool,bool,bytes32)'
+    ],
+    [[
+        [
+            params.addresses.receiver,
+            params.addresses.cancellationReceiver,
+            params.addresses.callbackContract,
+            params.addresses.uiFeeReceiver,
+            params.addresses.market,
+            params.addresses.initialCollateralToken,
+            params.addresses.swapPath
+        ],
+        [
+            params.numbers.sizeDeltaUsd,
+            params.numbers.initialCollateralDeltaAmount,
+            params.numbers.triggerPrice,
+            params.numbers.acceptablePrice,
+            params.numbers.executionFee,
+            params.numbers.callbackGasLimit,
+            params.numbers.minOutputAmount
+        ],
+        params.orderType,
+        params.decreasePositionSwapType,
+        params.isLong,
+        params.shouldUnwrapNativeToken,
+        params.autoCancel,
+        params.referralCode
+    ]]
+  )
+  return encodedParams
 }
