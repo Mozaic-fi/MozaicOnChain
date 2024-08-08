@@ -7,19 +7,17 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
 
 
 import "../../interfaces/vaults/IPlugin.sol";
 import "../../interfaces/vaults/IVaultLocker.sol";
 import "../../interfaces/lifi/ICalldataVerificationFacet.sol";
-import "../../libraries/hypernative/OracleProtected.sol";
 import "../TokenPriceConsumer.sol";
 
 
 
-contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtected  {
+contract Vault is Ownable, ERC20, ERC20Pausable {
     using SafeERC20 for IERC20;
 
     // Constant representing the number of decimals for the MOZAIC token.
@@ -108,6 +106,8 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
     // The list of addresses that can receive funds from the vault via lifi bridge.
     mapping(address => lifiWhiteListReceiver) public lifiReceiverWhiteList;
 
+    address public vaultLogicContract;
+
 
     /* ========== EVENTS ========== */
     event AddPlugin(uint8 _pluginId, address _pluginAddress);
@@ -133,6 +133,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
     event WithdrawProtocolFee(address _token, uint256 _amount);
     event StakeToSelectedPool(uint8 _selectedPluginId, uint8 _selectedPoolId, address _token, uint256 _tokenAmount);
     event SetLifiReceiverWhiteList(address _receiver, uint256 _chaindId, bool _status);
+    event VaultLogicContractUpdated(address _oldVaultLogicContract ,address _newVaultLogicContract);
 
 
     /* ========== MODIFIERS ========== */
@@ -147,6 +148,10 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
         _;
     }
 
+    modifier onlyVaultLogicContract() {
+        require(msg.sender == vaultLogicContract, "Vault: caller must be vault logic contract");
+        _;
+    }
 
     // Modifier allowing only the vault lockers to execute the function.
     modifier onlyVaultLockers() {
@@ -176,10 +181,9 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
 
     /* ========== CONFIGURATION ========== */
     // Constructor for the Mozaic Theseus LPToken contract, inheriting from ERC20.
-    constructor(address _master,address _admin, address _tokenPriceConsumer, address payable _treasury, address _hypernativeOracle) 
+    constructor(address _master,address _admin, address _tokenPriceConsumer, address payable _treasury) 
         ERC20("Mozaic Theseus LP", "MOZ-THE-LP") 
         Ownable(msg.sender)
-        OracleProtected(_hypernativeOracle)
     {
         require(_master != address(0), "Vault: Invalid Address");
         require(_admin != address(0), "Vault: Invalid Address");
@@ -225,6 +229,17 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
         // Emit an event to log the admin address update.
         emit MasterUpdated(_oldAdmin, _newAdmin);
     }
+
+    function SetVaultLogicContract(address _newVaultLogicContract) external onlyOwner {
+        require(_newVaultLogicContract != address(0), "Vault: Invalid Address");
+
+        address _oldVaultLogicContract = vaultLogicContract;
+
+        vaultLogicContract = _newVaultLogicContract;
+
+        emit VaultLogicContractUpdated(_oldVaultLogicContract, _newVaultLogicContract);
+    }
+
 
     // Allows the owner to set the address of the token price consumer contract.
     function setTokenPriceConsumer(address _tokenPriceConsumer) public onlyOwner {
@@ -421,7 +436,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
     /* ========== USER FUNCTIONS ========== */
     
     // Allows users to initiate a deposit request by converting tokens to LP tokens and staking them into the selected pool.
-    function addDepositRequest(address _token, uint256 _tokenAmount, address _receiver, bytes memory _payload) external payable nonReentrant onlyOracleApproved whenNotPaused {
+    function addDepositRequest(address _token, uint256 _tokenAmount, address _receiver, bytes memory _payload) external payable whenNotPaused onlyVaultLogicContract {
         require(getVaultStatus() == true, "Vault: Vault is locked");
 
         require(msg.value >= depositMinExecFee, "Vault: Insufficient execution fee");
@@ -496,7 +511,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
     }
 
     // Function to add a withdrawal request for a specified LP token amount from a selected pool using a specified plugin.
-    function addWithdrawalRequest(uint256 _lpAmount, uint8 _pluginId, uint8 _poolId, address _receiver, bytes memory payload) external payable whenNotPaused onlyOracleApproved nonReentrant{
+    function addWithdrawalRequest(uint256 _lpAmount, uint8 _pluginId, uint8 _poolId, address _receiver, bytes memory payload) external payable whenNotPaused {
         // Ensure that the vault is not locked before processing withdrawal requests.
         require(getVaultStatus() == true, "Vault: Vault is locked");
 
@@ -573,7 +588,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
     /* ========== MASTER FUNCTIONS ========== */
     
     // Allows the master contract to execute actions on a specified plugin.
-    function execute(uint8 _pluginId, IPlugin.ActionType _actionType, bytes memory _payload) public onlyMaster nonReentrant whenNotPaused{
+    function execute(uint8 _pluginId, IPlugin.ActionType _actionType, bytes memory _payload) public onlyMaster whenNotPaused{
         // Ensure that the specified plugin exists.
         require(pluginIdToIndex[_pluginId] != 0, "Plugin with this ID does not exist");
 
@@ -605,14 +620,14 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
         emit Execute(_pluginId, _actionType, _payload);
     }
 
-    function multiExecute(uint8 _pluginId, IPlugin.ActionType _actionType, bytes[] memory _payloads) public onlyMaster nonReentrant whenNotPaused{
+    function multiExecute(uint8 _pluginId, IPlugin.ActionType _actionType, bytes[] memory _payloads) public onlyMaster whenNotPaused{
         for (uint256 i = 0; i < _payloads.length; i++) {
             execute(_pluginId, _actionType, _payloads[i]);
         }
     }
 
     // Allows the master contract to approve tokens for a specified plugin based on the provided payload.
-    function approveTokens(uint8 _pluginId, address[] memory _tokens, uint256[] memory _amounts) external onlyMaster nonReentrant whenNotPaused {
+    function approveTokens(uint8 _pluginId, address[] memory _tokens, uint256[] memory _amounts) external onlyMaster whenNotPaused {
         // Ensure that the specified plugin exists.
         require(pluginIdToIndex[_pluginId] != 0, "Plugin with this ID does not exist");
 
@@ -664,7 +679,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
     }
 
     // Withdraws protocol fees stored in the vault for a specific token.
-    function withdrawProtocolFee(address _token) external onlyMaster nonReentrant whenNotPaused {
+    function withdrawProtocolFee(address _token) external onlyMaster whenNotPaused {
         require(isAcceptedToken(_token), "Vault: Invalid token");
 
         // Calculate the token amount from the protocol fee in the vault
@@ -689,7 +704,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
     }
 
     // Transfers the execution fee to the specified plugin.
-    function transferExecutionFee(uint8 _pluginId, uint256 _amount) external onlyMaster nonReentrant whenNotPaused {
+    function transferExecutionFee(uint8 _pluginId, uint256 _amount) external onlyMaster whenNotPaused {
         // Retrieve information about the specified plugin
         Plugin memory plugin = getPlugin(_pluginId);
         
@@ -709,7 +724,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
         uint256 _value,
         bool _bridge,
         bytes calldata _data
-    ) external onlyMaster nonReentrant {
+    ) external onlyMaster {
 
         if(_bridge) {
             ( , , address receiver, , uint256 destinationChainId, , ) = ICalldataVerificationFacet(LIFI_CONTRACT).extractMainParameters(_data);
@@ -737,16 +752,6 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
     }
 
     /* ========== VIEW FUNCTIONS ========== */
-
-    // Retrieve the array of plugins registered in the vault.
-    function getPlugins() public view returns (Plugin[] memory) {
-        return plugins;
-    }
-
-    // Retrieve the total count of registered plugins in the vault.
-    function getPluginsCount() public view returns (uint256) {
-        return plugins.length;
-    }
 
     // Retrieve details about a specific plugin based on its unique identifier.
     function getPlugin(uint8 _pluginId) public view returns (Plugin memory) {
@@ -806,14 +811,6 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard, OracleProtecte
     // Check if a given token is allowed for deposit in the vault.
     function isDepositAllowedToken(address _token) public view returns (bool) {
         return depositAllowedTokenMap[_token];
-    }
-
-    function getAcceptedTokens() public view returns (address[] memory) {
-        return acceptedTokens;
-    }
-
-    function getDepositAllowedTokens() public view returns (address[] memory) {
-        return depositAllowedTokens;
     }
 
     // Retrieve the list of tokens allowed for a specific pool associated with a plugin.
