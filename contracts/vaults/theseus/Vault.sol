@@ -274,7 +274,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
 
 
     // Allows the owner to add a new accepted token.
-    function addAcceptedToken(address _token) external onlyOwner {
+    function addAcceptedToken(address _token) internal {
         // Check if the token does not already exist in the accepted tokens mapping.
         if (acceptedTokenMap[_token] == false) {
             // Set the token as accepted, add it to the acceptedTokens array, and emit an event.
@@ -287,9 +287,9 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         }
     }
 
-    function addAcceptedTokens(address[] calldata _tokens) external onlyOwner {
+    function addAcceptedTokens(address[] memory _tokens) external onlyOwner {
         for(uint256 i = 0; i < _tokens.length; i++) {
-            this.addAcceptedToken(_tokens[i]);
+            addAcceptedToken(_tokens[i]);
         }
     }
 
@@ -313,7 +313,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     }
 
     // Allows the owner to add a new deposit allowed token.
-    function addDepositAllowedToken(address _token) external onlyOwner {
+    function addDepositAllowedToken(address _token) internal {
         // Check if the token does not already exist in the deposit allowed tokens mapping.
         if (depositAllowedTokenMap[_token] == false) {
             // Set the token as allowed for deposit, add it to the depositAllowedTokens array, and emit an event.
@@ -326,9 +326,9 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         }
     }
 
-    function addDepositAllowedTokens(address[] calldata _tokens) external onlyOwner {
+    function addDepositAllowedTokens(address[] memory _tokens) external onlyOwner {
         for(uint256 i = 0; i < _tokens.length; i++) {
-            this.addDepositAllowedToken(_tokens[i]);
+            addDepositAllowedToken(_tokens[i]);
         }
     }
 

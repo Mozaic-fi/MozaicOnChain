@@ -223,7 +223,8 @@ export const main = async () => {
             console.log(`Adding token ${cliGreen(token.symbol)}:${cliBlue(token.address)}`)
             propertyValues.push(token.address)
         }
-        await (data.contractUtil as ContractUtils).runContractFunction(functionName, propertyValues)
+        let values: string[] = (propertyValues as string[])
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, values)
         return {
             functionName,
             propertyStructName: '',
@@ -342,7 +343,8 @@ export const main = async () => {
             console.log(`Adding token ${cliGreen(token.symbol)}:${cliBlue(token.address)}`)
             propertyValues.push(token.address)
         }
-        await (data.contractUtil as ContractUtils).runContractFunction(functionName,propertyValues )
+        let values:string[] =(propertyValues as string[])
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName,values)
         return {
             functionName,
             propertyStructName: '',

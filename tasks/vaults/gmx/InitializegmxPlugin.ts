@@ -178,7 +178,7 @@ export const main = async () => {
             return
         }
 
-        const pools: number[] = await (data.contractUtil as ContractUtils).getArrayValues(propertyNames[0])
+        const pools: number[] = (await (data.contractUtil as ContractUtils).getArrayValues('pools')).map(pool=>pool[0])
         for (let pindex of cliQuestionNumberResponses)
         {
             const pool = vpi.pools[pindex]

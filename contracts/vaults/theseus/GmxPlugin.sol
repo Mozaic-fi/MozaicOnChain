@@ -217,7 +217,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         address _longToken,
         address _shortToken,
         address _marketToken
-    ) external onlyOwner {
+    ) internal {
         // Ensure the pool with the given poolId does not already exist.
         require(_poolId != 0, "GMX: Invalid Pool Id");
         require(!poolExistsMap[_poolId], "GMX: Pool with this poolId already exists");
@@ -243,22 +243,12 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     }
 
     function addPools(
-        uint8[] calldata _poolIds,
-        address[] calldata _indexTokens,
-        address[] calldata _longTokens,
-        address[] calldata _shortTokens,
-        address[] calldata _marketTokens
+        PoolConfig[] memory _pools
     ) external onlyOwner {
-        require(
-            _poolIds.length == _indexTokens.length &&
-            _poolIds.length == _longTokens.length &&
-            _poolIds.length == _shortTokens.length &&
-            _poolIds.length == _marketTokens.length,
-            "GMX: Invalid Array Length"
-        );
+    
 
-        for (uint256 i = 0; i < _poolIds.length; i++) {
-            this.addPool(_poolIds[i], _indexTokens[i], _longTokens[i], _shortTokens[i], _marketTokens[i]);
+        for (uint256 i = 0; i < _pools.length; i++) {
+            addPool(_pools[i].poolId, _pools[i].indexToken, _pools[i].longToken, _pools[i].shortToken, _pools[i].marketToken);
         }
     }
 
