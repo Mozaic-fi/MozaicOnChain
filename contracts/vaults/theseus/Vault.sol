@@ -287,6 +287,12 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         }
     }
 
+    function addAcceptedTokens(address[] calldata _tokens) external onlyOwner {
+        for(uint256 i = 0; i < _tokens.length; i++) {
+            this.addAcceptedToken(_tokens[i]);
+        }
+    }
+
     // Allows the owner to remove an accepted token.
     function removeAcceptedToken(address _token) external onlyOwner {
         // Check if the token exists in the accepted tokens mapping.
@@ -317,6 +323,12 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         } else {
             // Revert if the token already exists in the deposit allowed tokens.
             revert("Vault: Token already exists.");
+        }
+    }
+
+    function addDepositAllowedTokens(address[] calldata _tokens) external onlyOwner {
+        for(uint256 i = 0; i < _tokens.length; i++) {
+            this.addDepositAllowedToken(_tokens[i]);
         }
     }
 

@@ -302,120 +302,131 @@ describe('TheseusVault Test', () => {
   //   })
   // })
 
-  describe('master should be able to rebalance', async()=>{
-    // it('multicall unstake', async () => {
-    //   const token1 = USDCToken
-    //   const token2 = WETHToken
-    //   const token3 = WBTCToken
-    //   const token1Contract = await hre.ethers.getContractAt(erc20ABI,token1.address)
-    //   const token2Contract = await hre.ethers.getContractAt(erc20ABI,token2.address)
-    //   const token3Contract = await hre.ethers.getContractAt(erc20ABI,token3.address)
-    //   const balance1Before = await token1Contract.balanceOf(vault.contractAddress)
-    //   const balance2Before = await token2Contract.balanceOf(vault.contractAddress)
-    //   const balance3Before = await token3Contract.balanceOf(vault.contractAddress)
-    //   const market1 = await hre.ethers.getContractAt(gmxUtils.getContractAbi(gmxContracts.marketToken), WETHPool.marketToken.address)
-    //   const market2 = await hre.ethers.getContractAt(gmxUtils.getContractAbi(gmxContracts.marketToken), WBTCPool.marketToken.address)
-    //   const market1BalanceBefore = await market1.balanceOf(gmxPlugin.contractAddress)
-    //   const market2BalanceBefore = await market2.balanceOf(gmxPlugin.contractAddress)
-    //   const multicall = await multiCallVaultMasterContract.getDeployedContract()
-    //   const basePayload = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256'],[0, 0])
-    //   const payloads = [ethers.utils.defaultAbiCoder.encode(['uint8', 'uint256', 'uint256', 'address', 'bytes'],[WETHPool.poolId, market1BalanceBefore.div(5), 0, vault.contractAddress, basePayload]), 
-    //     ethers.utils.defaultAbiCoder.encode(['uint8', 'uint256', 'uint256', 'address', 'bytes'],[WBTCPool.poolId, market2BalanceBefore.div(5), 0, vault.contractAddress, basePayload])]
-    //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, ActionType.Unstake, payloads, [], {gasLimit: 5000000})).wait()
-    //   await sleep(10000)
-    //   const market1BalanceAfter = await market1.balanceOf(gmxPlugin.contractAddress)
-    //   const market2BalanceAfter = await market2.balanceOf(gmxPlugin.contractAddress)
-    //   const balance1After = await token1Contract.balanceOf(vault.contractAddress)
-    //   const balance2After = await token2Contract.balanceOf(vault.contractAddress)
-    //   const balance3After = await token3Contract.balanceOf(vault.contractAddress)
-    //   expect(market1BalanceBefore.gt(market1BalanceAfter), 'market1 unstake failed').to.be.equal(true)
-    //   expect(market2BalanceBefore.gt(market2BalanceAfter), 'market2 unstake failed').to.be.equal(true)
-    //   expect(balance1Before.lt(balance1After), 'balance1 unstake failed').to.be.equal(true)
-    //   expect(balance2Before.lt(balance2After), 'balance2 unstake failed').to.be.equal(true)
-    //   expect(balance3Before.lt(balance3After), 'balance3 unstake failed').to.be.equal(true)
+  // describe('master should be able to rebalance', async()=>{
+  //   // it('multicall unstake', async () => {
+  //   //   const token1 = USDCToken
+  //   //   const token2 = WETHToken
+  //   //   const token3 = WBTCToken
+  //   //   const token1Contract = await hre.ethers.getContractAt(erc20ABI,token1.address)
+  //   //   const token2Contract = await hre.ethers.getContractAt(erc20ABI,token2.address)
+  //   //   const token3Contract = await hre.ethers.getContractAt(erc20ABI,token3.address)
+  //   //   const balance1Before = await token1Contract.balanceOf(vault.contractAddress)
+  //   //   const balance2Before = await token2Contract.balanceOf(vault.contractAddress)
+  //   //   const balance3Before = await token3Contract.balanceOf(vault.contractAddress)
+  //   //   const market1 = await hre.ethers.getContractAt(gmxUtils.getContractAbi(gmxContracts.marketToken), WETHPool.marketToken.address)
+  //   //   const market2 = await hre.ethers.getContractAt(gmxUtils.getContractAbi(gmxContracts.marketToken), WBTCPool.marketToken.address)
+  //   //   const market1BalanceBefore = await market1.balanceOf(gmxPlugin.contractAddress)
+  //   //   const market2BalanceBefore = await market2.balanceOf(gmxPlugin.contractAddress)
+  //   //   const multicall = await multiCallVaultMasterContract.getDeployedContract()
+  //   //   const basePayload = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256'],[0, 0])
+  //   //   const payloads = [ethers.utils.defaultAbiCoder.encode(['uint8', 'uint256', 'uint256', 'address', 'bytes'],[WETHPool.poolId, market1BalanceBefore.div(5), 0, vault.contractAddress, basePayload]), 
+  //   //     ethers.utils.defaultAbiCoder.encode(['uint8', 'uint256', 'uint256', 'address', 'bytes'],[WBTCPool.poolId, market2BalanceBefore.div(5), 0, vault.contractAddress, basePayload])]
+  //   //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, ActionType.Unstake, payloads, [], {gasLimit: 5000000})).wait()
+  //   //   await sleep(10000)
+  //   //   const market1BalanceAfter = await market1.balanceOf(gmxPlugin.contractAddress)
+  //   //   const market2BalanceAfter = await market2.balanceOf(gmxPlugin.contractAddress)
+  //   //   const balance1After = await token1Contract.balanceOf(vault.contractAddress)
+  //   //   const balance2After = await token2Contract.balanceOf(vault.contractAddress)
+  //   //   const balance3After = await token3Contract.balanceOf(vault.contractAddress)
+  //   //   expect(market1BalanceBefore.gt(market1BalanceAfter), 'market1 unstake failed').to.be.equal(true)
+  //   //   expect(market2BalanceBefore.gt(market2BalanceAfter), 'market2 unstake failed').to.be.equal(true)
+  //   //   expect(balance1Before.lt(balance1After), 'balance1 unstake failed').to.be.equal(true)
+  //   //   expect(balance2Before.lt(balance2After), 'balance2 unstake failed').to.be.equal(true)
+  //   //   expect(balance3Before.lt(balance3After), 'balance3 unstake failed').to.be.equal(true)
       
-    // })
+  //   // })
 
-    // it('multicall stake', async () => {
-    //   await sleep(3000)
-    //   const market1 = await hre.ethers.getContractAt(gmxUtils.getContractAbi(gmxContracts.marketToken), WETHPool.marketToken.address)
-    //   const market2 = await hre.ethers.getContractAt(gmxUtils.getContractAbi(gmxContracts.marketToken), WBTCPool.marketToken.address)
-    //   const market1BalanceBefore = await market1.balanceOf(gmxPlugin.contractAddress)
-    //   const market2BalanceBefore = await market2.balanceOf(gmxPlugin.contractAddress)
-    //   const token = USDCToken
-    //   const tokenContract = await hre.ethers.getContractAt(erc20ABI,token.address)
-    //   const balanceBefore = await tokenContract.balanceOf(vault.contractAddress)
-    //   const multicall = await multiCallVaultMasterContract.getDeployedContract()
-    //   const basePayload = ethers.utils.defaultAbiCoder.encode(['uint256'],[0])
-    //   const payloads = [ethers.utils.defaultAbiCoder.encode(['uint8', 'address[]', 'uint256[]', 'bytes'],[WETHPool.poolId, [WETHPool.longToken.address, WETHPool.shortToken.address], [0, balanceBefore.div(3)], basePayload]), 
-    //     ethers.utils.defaultAbiCoder.encode(['uint8', 'address[]', 'uint256[]', 'bytes'],[WBTCPool.poolId, [WBTCPool.longToken.address, WBTCPool.shortToken.address], [0, balanceBefore.div(3)], basePayload])]
-    //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, ActionType.Stake, payloads, [], {gasLimit: 5000000})).wait()
-    //   await sleep(10000)
-    //   const market1BalanceAfter = await market1.balanceOf(gmxPlugin.contractAddress)
-    //   const market2BalanceAfter = await market2.balanceOf(gmxPlugin.contractAddress)
-    //   const balanceAfter = await tokenContract.balanceOf(vault.contractAddress)
-    //   expect(market1BalanceBefore.lt(market1BalanceAfter), 'market1 unstake failed').to.be.equal(true)
-    //   expect(market2BalanceBefore.lt(market2BalanceAfter), 'market2 unstake failed').to.be.equal(true)
-    //   expect(balanceBefore.gt(balanceAfter), 'token stake failed').to.be.equal(true)
+  //   // it('multicall stake', async () => {
+  //   //   await sleep(3000)
+  //   //   const market1 = await hre.ethers.getContractAt(gmxUtils.getContractAbi(gmxContracts.marketToken), WETHPool.marketToken.address)
+  //   //   const market2 = await hre.ethers.getContractAt(gmxUtils.getContractAbi(gmxContracts.marketToken), WBTCPool.marketToken.address)
+  //   //   const market1BalanceBefore = await market1.balanceOf(gmxPlugin.contractAddress)
+  //   //   const market2BalanceBefore = await market2.balanceOf(gmxPlugin.contractAddress)
+  //   //   const token = USDCToken
+  //   //   const tokenContract = await hre.ethers.getContractAt(erc20ABI,token.address)
+  //   //   const balanceBefore = await tokenContract.balanceOf(vault.contractAddress)
+  //   //   const multicall = await multiCallVaultMasterContract.getDeployedContract()
+  //   //   const basePayload = ethers.utils.defaultAbiCoder.encode(['uint256'],[0])
+  //   //   const payloads = [ethers.utils.defaultAbiCoder.encode(['uint8', 'address[]', 'uint256[]', 'bytes'],[WETHPool.poolId, [WETHPool.longToken.address, WETHPool.shortToken.address], [0, balanceBefore.div(3)], basePayload]), 
+  //   //     ethers.utils.defaultAbiCoder.encode(['uint8', 'address[]', 'uint256[]', 'bytes'],[WBTCPool.poolId, [WBTCPool.longToken.address, WBTCPool.shortToken.address], [0, balanceBefore.div(3)], basePayload])]
+  //   //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, ActionType.Stake, payloads, [], {gasLimit: 5000000})).wait()
+  //   //   await sleep(10000)
+  //   //   const market1BalanceAfter = await market1.balanceOf(gmxPlugin.contractAddress)
+  //   //   const market2BalanceAfter = await market2.balanceOf(gmxPlugin.contractAddress)
+  //   //   const balanceAfter = await tokenContract.balanceOf(vault.contractAddress)
+  //   //   expect(market1BalanceBefore.lt(market1BalanceAfter), 'market1 unstake failed').to.be.equal(true)
+  //   //   expect(market2BalanceBefore.lt(market2BalanceAfter), 'market2 unstake failed').to.be.equal(true)
+  //   //   expect(balanceBefore.gt(balanceAfter), 'token stake failed').to.be.equal(true)
 
-    // })
+  //   // })
 
-    // it('multicall swap lifi', async () => {
-    //   const amount = '1000'
-    //   const halfAmount = '500'
-    //   const tokenIn = USDCToken
-    //   const tokenOut1 = WETHToken
-    //   const tokenOut2 = WBTCToken
-    //   const tokenInContract = await hre.ethers.getContractAt(erc20ABI,tokenIn.address)
-    //   const tokenOut1Contract = await hre.ethers.getContractAt(erc20ABI,tokenOut1.address)
-    //   const tokenOut2Contract = await hre.ethers.getContractAt(erc20ABI,tokenOut2.address)
-    //   await (await tokenInContract.connect(owner).mint(vault.contractAddress, amount)).wait()
-    //   const balanceInBefore = await tokenInContract.balanceOf(vault.contractAddress)
-    //   const balanceOut1Before = await tokenOut1Contract.balanceOf(vault.contractAddress)
-    //   const balanceOut2Before = await tokenOut2Contract.balanceOf(vault.contractAddress)
-    //   const quote1 = await getQuote('arb', 'arb', 'USDC', 'WETH', halfAmount, vault.contractAddress)
-    //   const quote2 = await getQuote('arb', 'arb', 'USDC', 'WBTC', halfAmount, vault.contractAddress)
-    //   const lifiPayload = [
-    //     [tokenIn.address, halfAmount, 0, false, quote1],
-    //     [tokenIn.address, halfAmount, 0, false, quote2]
-    //   ]
-    //   const multicall = await multiCallVaultMasterContract.getDeployedContract()
-    //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, 2, [], lifiPayload, {gasLimit: 5000000})).wait()
-    //   await sleep(10000)
-    //   const balanceInAfter = await tokenInContract.balanceOf(vault.contractAddress)
-    //   const balanceOut1After = await tokenOut1Contract.balanceOf(vault.contractAddress)
-    //   const balanceOut2After = await tokenOut2Contract.balanceOf(vault.contractAddress)
-    //   expect(balanceInBefore.gt(balanceInAfter), 'tokenIn swap failed').to.be.equal(true)
-    //   expect(balanceOut1Before.lt(balanceOut1After), 'tokenOut1 swap failed').to.be.equal(true)
-    //   expect(balanceOut2Before.lt(balanceOut2After), 'tokenOut2 swap failed').to.be.equal(true)
+  //   // it('multicall swap lifi', async () => {
+  //   //   const amount = '1000'
+  //   //   const halfAmount = '500'
+  //   //   const tokenIn = USDCToken
+  //   //   const tokenOut1 = WETHToken
+  //   //   const tokenOut2 = WBTCToken
+  //   //   const tokenInContract = await hre.ethers.getContractAt(erc20ABI,tokenIn.address)
+  //   //   const tokenOut1Contract = await hre.ethers.getContractAt(erc20ABI,tokenOut1.address)
+  //   //   const tokenOut2Contract = await hre.ethers.getContractAt(erc20ABI,tokenOut2.address)
+  //   //   await (await tokenInContract.connect(owner).mint(vault.contractAddress, amount)).wait()
+  //   //   const balanceInBefore = await tokenInContract.balanceOf(vault.contractAddress)
+  //   //   const balanceOut1Before = await tokenOut1Contract.balanceOf(vault.contractAddress)
+  //   //   const balanceOut2Before = await tokenOut2Contract.balanceOf(vault.contractAddress)
+  //   //   const quote1 = await getQuote('arb', 'arb', 'USDC', 'WETH', halfAmount, vault.contractAddress)
+  //   //   const quote2 = await getQuote('arb', 'arb', 'USDC', 'WBTC', halfAmount, vault.contractAddress)
+  //   //   const lifiPayload = [
+  //   //     [tokenIn.address, halfAmount, 0, false, quote1],
+  //   //     [tokenIn.address, halfAmount, 0, false, quote2]
+  //   //   ]
+  //   //   const multicall = await multiCallVaultMasterContract.getDeployedContract()
+  //   //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, 2, [], lifiPayload, {gasLimit: 5000000})).wait()
+  //   //   await sleep(10000)
+  //   //   const balanceInAfter = await tokenInContract.balanceOf(vault.contractAddress)
+  //   //   const balanceOut1After = await tokenOut1Contract.balanceOf(vault.contractAddress)
+  //   //   const balanceOut2After = await tokenOut2Contract.balanceOf(vault.contractAddress)
+  //   //   expect(balanceInBefore.gt(balanceInAfter), 'tokenIn swap failed').to.be.equal(true)
+  //   //   expect(balanceOut1Before.lt(balanceOut1After), 'tokenOut1 swap failed').to.be.equal(true)
+  //   //   expect(balanceOut2Before.lt(balanceOut2After), 'tokenOut2 swap failed').to.be.equal(true)
 
-    // })
+  //   // })
 
-    it('multicall gmx swap', async () => {
-      const tokenIn = USDCToken
-      const amount = ethers.utils.parseUnits('1000', tokenIn.decimals)
-      const tokenOut1 = WETHToken
-      const tokenOut2 = WBTCToken
-      const tokenInContract = await hre.ethers.getContractAt(erc20ABI,tokenIn.address)
-      const tokenOut1Contract = await hre.ethers.getContractAt(erc20ABI,tokenOut1.address)
-      const tokenOut2Contract = await hre.ethers.getContractAt(erc20ABI,tokenOut2.address)
-      await (await tokenInContract.connect(owner).mint(vault.contractAddress, amount)).wait()
-      const balanceInBefore = await tokenInContract.balanceOf(vault.contractAddress)
-      const balanceOut1Before = await tokenOut1Contract.balanceOf(vault.contractAddress)
-      const balanceOut2Before = await tokenOut2Contract.balanceOf(vault.contractAddress)
-      const multicall = await multiCallVaultMasterContract.getDeployedContract()
-      const payloads = [getGMXSwapParams(vault, tokenIn, WETHPool, amount.div(2)), getGMXSwapParams(vault, tokenIn, WBTCPool, amount.div(2))]
-      await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, 3, payloads, [], {gasLimit: 5000000})).wait()
-      await sleep(10000)
-      const balanceInAfter = await tokenInContract.balanceOf(vault.contractAddress)
-      const balanceOut1After = await tokenOut1Contract.balanceOf(vault.contractAddress)
-      const balanceOut2After = await tokenOut2Contract.balanceOf(vault.contractAddress)
-      expect(balanceInBefore.gt(balanceInAfter), 'tokenIn swap failed').to.be.equal(true)
-      expect(balanceOut1Before.lt(balanceOut1After), 'tokenOut1 swap failed').to.be.equal(true)
-      expect(balanceOut2Before.lt(balanceOut2After), 'tokenOut2 swap failed').to.be.equal(true)
-    })
-  })
+  //   // it('multicall gmx swap', async () => {
+  //   //   const tokenIn = USDCToken
+  //   //   const amount = ethers.utils.parseUnits('1000', tokenIn.decimals)
+  //   //   const tokenOut1 = WETHToken
+  //   //   const tokenOut2 = WBTCToken
+  //   //   const tokenInContract = await hre.ethers.getContractAt(erc20ABI,tokenIn.address)
+  //   //   const tokenOut1Contract = await hre.ethers.getContractAt(erc20ABI,tokenOut1.address)
+  //   //   const tokenOut2Contract = await hre.ethers.getContractAt(erc20ABI,tokenOut2.address)
+  //   //   await (await tokenInContract.connect(owner).mint(vault.contractAddress, amount)).wait()
+  //   //   const balanceInBefore = await tokenInContract.balanceOf(vault.contractAddress)
+  //   //   const balanceOut1Before = await tokenOut1Contract.balanceOf(vault.contractAddress)
+  //   //   const balanceOut2Before = await tokenOut2Contract.balanceOf(vault.contractAddress)
+  //   //   const multicall = await multiCallVaultMasterContract.getDeployedContract()
+  //   //   const payloads = [getGMXSwapParams(vault, tokenIn, WETHPool, amount.div(2)), getGMXSwapParams(vault, tokenIn, WBTCPool, amount.div(2))]
+  //   //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, 3, payloads, [], {gasLimit: 5000000})).wait()
+  //   //   await sleep(10000)
+  //   //   const balanceInAfter = await tokenInContract.balanceOf(vault.contractAddress)
+  //   //   const balanceOut1After = await tokenOut1Contract.balanceOf(vault.contractAddress)
+  //   //   const balanceOut2After = await tokenOut2Contract.balanceOf(vault.contractAddress)
+  //   //   expect(balanceInBefore.gt(balanceInAfter), 'tokenIn swap failed').to.be.equal(true)
+  //   //   expect(balanceOut1Before.lt(balanceOut1After), 'tokenOut1 swap failed').to.be.equal(true)
+  //   //   expect(balanceOut2Before.lt(balanceOut2After), 'tokenOut2 swap failed').to.be.equal(true)
+  //   // })
+  // })
 
+  // describe('Lifi API should give out correct quotes', async()=>{
+  //   it('USDC-WETH', async () => {
+  //     const quote = await getQuote('arb', 'arb', 'USDC', 'WETH', '1000', vault.contractAddress)
+  //     console.log(quote)
+  //   })
+
+  //   it('USDC-WBTC', async () => {
+  //     const quote = await getQuote('arb', 'arb', 'USDC', 'WBTC', '1000', vault.contractAddress)
+  //     console.log(quote)
+  //   })
+  // })
 
 })
 

@@ -242,6 +242,26 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         emit PoolAdded(_poolId);
     }
 
+    function addPools(
+        uint8[] calldata _poolIds,
+        address[] calldata _indexTokens,
+        address[] calldata _longTokens,
+        address[] calldata _shortTokens,
+        address[] calldata _marketTokens
+    ) external onlyOwner {
+        require(
+            _poolIds.length == _indexTokens.length &&
+            _poolIds.length == _longTokens.length &&
+            _poolIds.length == _shortTokens.length &&
+            _poolIds.length == _marketTokens.length,
+            "GMX: Invalid Array Length"
+        );
+
+        for (uint256 i = 0; i < _poolIds.length; i++) {
+            this.addPool(_poolIds[i], _indexTokens[i], _longTokens[i], _shortTokens[i], _marketTokens[i]);
+        }
+    }
+
     // Function allowing the owner to remove an existing pool.
     function removePool(uint8 _poolId) external onlyOwner {
         // Ensure the pool with the given poolId exists.
