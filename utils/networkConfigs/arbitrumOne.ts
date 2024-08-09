@@ -83,7 +83,7 @@ export const arbitrumOneNetworkConfig: NetworkInfo = {
                     params:{
                         uiFeeReceiverAddress: '0xa3D6360C288551600B20A7992860766F9754e477',
                         callbackGasLimit: 2000000,
-                        executionFee: '0.005',
+                        executionFee: '0.0005',
                         shouldUnwrapNativeToken: false,
                         //keccak256(abi.encode("MAX_PNL_FACTOR_FOR_TRADERS"));
                         pnlFactorType: '0xab15365d3aa743e766355e2557c230d8f943e195dc84d9b2b05928a07b635ee1'

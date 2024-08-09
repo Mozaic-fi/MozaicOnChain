@@ -64,6 +64,7 @@ describe('TheseusVault Test', () => {
   let ethAmount2: BigNumber
   let ethAmount05: BigNumber
   let ethAmount001: BigNumber
+  let gasAmount: number
   let deposit: (token: VaultToken, user: SignerWithAddress, _amount: string, _amountBack: string) => Promise<void>
   let withdraw: (token1: VaultToken, token2: VaultToken, user: SignerWithAddress, _amount: number) => Promise<void>
   let swapTokens: (tokenIn: VaultToken, tokenOut: VaultToken, _amount: string, user: SignerWithAddress, runCancelation: boolean) => Promise<void>
@@ -88,10 +89,11 @@ describe('TheseusVault Test', () => {
     USDCToken = getToken(tokenSymbols.USDC,network.networkName)
     WBTCToken = getToken(tokenSymbols.WBTC,network.networkName)
     ethAmount01 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('0.1') : ethers.utils.parseEther('0.001'); // 0.1 Ether
-    ethAmount1 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('1'): ethers.utils.parseEther('0.01'); // 1 Ether
-    ethAmount2 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('2'): ethers.utils.parseEther('0.02'); // 2 Ether
-    ethAmount05 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('0.5'): ethers.utils.parseEther('0.005'); // 0.5 Ether
-    ethAmount001 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('0.001'):ethers.utils.parseEther('0.00001'); // 0.001 Ether
+    ethAmount1 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('1'): ethers.utils.parseEther('0.001'); // 1 Ether
+    ethAmount2 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('2'): ethers.utils.parseEther('0.002'); // 2 Ether
+    ethAmount05 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('0.5'): ethers.utils.parseEther('0.0005'); // 0.5 Ether
+    ethAmount001 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('0.001'):ethers.utils.parseEther('0'); // 0.001 Ether
+    gasAmount = network.networkName===networkNames.avalancheFuji?5000000: 2000000; // 0.05 Ether
 
     //fuji or arbi
     let wethgmxaddress= network.networkName===networkNames.avalancheFuji? '0xbf338a6C595f06B7Cfff2FA8c958d49201466374':'0x70d95587d40A2caf56bd97485aB3Eec10Bee6336'
@@ -103,10 +105,10 @@ describe('TheseusVault Test', () => {
         marketToken: getTokenFromAddress(network.networkName,wethgmxaddress)
     }
 
-    let wbtcgmxaddress= network.networkName===networkNames.avalancheFuji? '0x79E6e0E454dE82fA98c02dB012a2A69103630B07':''
+    let wbtcgmxaddress= network.networkName===networkNames.avalancheFuji? '0x79E6e0E454dE82fA98c02dB012a2A69103630B07':'0x47c031236e19d024b42f8AE6780E44A573170703'
     WBTCPool = {
         poolId: 3,
-        indexToken: getToken(tokenSymbols.WBTC,network.networkName),
+        indexToken: network.networkName===networkNames.avalancheFuji? getToken(tokenSymbols.WBTC,network.networkName): getToken(tokenSymbols.BTC,network.networkName),
         longToken: getToken(tokenSymbols.WBTC,network.networkName),
         shortToken: getToken(tokenSymbols.USDC,network.networkName),
         marketToken: getTokenFromAddress(network.networkName,wbtcgmxaddress)
@@ -116,7 +118,7 @@ describe('TheseusVault Test', () => {
       const tokenContract = await hre.ethers.getContractAt(erc20ABI,token.address)
     
       const amount = ethers.utils.parseUnits(_amount, token.decimals)
-      await (await tokenContract.connect(user).mint(user.address, amount)).wait()
+      if(network.networkName==networkNames.avalancheFuji)await (await tokenContract.connect(user).mint(user.address, amount)).wait()
       await (await tokenContract.connect(user).approve(vault.contractAddress, amount)).wait()
       
       expect(amount.lte(await tokenContract.allowance(user.address, vault.contractAddress)), 'token approval failed').to.be.equal(true)
@@ -129,7 +131,7 @@ describe('TheseusVault Test', () => {
       const payload = ethers.utils.defaultAbiCoder.encode(['uint256'], [minGMAmount]);
       let lpTokenBalanceBefore = await vaultContract.balanceOf(user.address);
 
-      const tx = await vaultContract.connect(user).addDepositRequest(token.address, amount, user.address, payload, {value: ethAmount001, gasLimit: 5000000} )
+      const tx = await vaultContract.connect(user).addDepositRequest(token.address, amount, user.address, payload, {value: ethAmount001, gasLimit: gasAmount} )
       await tx.wait()
       await sleep(10000)
 
@@ -161,7 +163,7 @@ describe('TheseusVault Test', () => {
       await (await vaultContract.connect(user).approve(vault.contractAddress, amountToWithdraw)).wait()
       const payload = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256'],[0, 0]);
 
-      const tx = await vaultContract.connect(user).addWithdrawalRequest(amountToWithdraw,1, WETHPool.poolId, user.address, payload, {value: ethAmount001, gasLimit: 5000000})
+      const tx = await vaultContract.connect(user).addWithdrawalRequest(amountToWithdraw,1, WETHPool.poolId, user.address, payload, {value: ethAmount001, gasLimit: gasAmount})
       await tx.wait()
 
       await sleep(10000)
@@ -191,7 +193,7 @@ describe('TheseusVault Test', () => {
 
       const wethBalanceBefore = await tokenOutContract.balanceOf(vault.contractAddress)
 
-      const tx = await vaultContract.connect(user).execute(pluginNames.gmx.id, ActionType.SwapTokens, getGMXSwapParams(vault,tokenIn, WETHPool, amount), {gasLimit: 5000000} )
+      const tx = await vaultContract.connect(user).execute(pluginNames.gmx.id, ActionType.SwapTokens, getGMXSwapParams(vault,tokenIn, WETHPool, amount), {gasLimit: gasAmount} )
       await tx.wait()
       if(runCancelation){
         await cancelOrderAction(user)
@@ -227,7 +229,7 @@ describe('TheseusVault Test', () => {
       
       for(let i=0; i<orderKeys.length; i++) {
         const payload = ethers.utils.defaultAbiCoder.encode(['uint8', 'bytes32'],[2, orderKeys[i]]);
-        await (await vaultContract.connect(user).execute(pluginNames.gmx.id, ActionType.CancelAction, payload, {gasLimit: 5000000} )).wait()
+        await (await vaultContract.connect(user).execute(pluginNames.gmx.id, ActionType.CancelAction, payload, {gasLimit: gasAmount} )).wait()
       }
 
       orderKeys = await gmxCallBack.getArrayValues('orderKeys')
@@ -255,16 +257,16 @@ describe('TheseusVault Test', () => {
     await gmxBalanceTopUp()
   }) 
 
-  // describe('user should be able to deposit', async()=>{
-  //   it('USDC', async () => { 
-  //     await deposit(USDCToken, user2, '500', '0')
-  //   })
+  describe('user should be able to deposit', async()=>{
+    it('USDC', async () => { 
+      await deposit(USDCToken, user2, '1', '0')
+    })
 
-  //   // it('Canceled-USDC', async () => { 
-  //   //   await sleep(3000)
-  //   //   await deposit(USDCToken, user2, '5', '100000')
-  //   // })
-  // })
+    // it('Canceled-USDC', async () => { 
+    //   await sleep(3000)
+    //   await deposit(USDCToken, user2, '5', '100000')
+    // })
+  })
 
   // describe('user should be able to withdraw', async()=>{
   //   it('USDC-WETH', async () => {
@@ -321,7 +323,7 @@ describe('TheseusVault Test', () => {
   //   //   const basePayload = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256'],[0, 0])
   //   //   const payloads = [ethers.utils.defaultAbiCoder.encode(['uint8', 'uint256', 'uint256', 'address', 'bytes'],[WETHPool.poolId, market1BalanceBefore.div(5), 0, vault.contractAddress, basePayload]), 
   //   //     ethers.utils.defaultAbiCoder.encode(['uint8', 'uint256', 'uint256', 'address', 'bytes'],[WBTCPool.poolId, market2BalanceBefore.div(5), 0, vault.contractAddress, basePayload])]
-  //   //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, ActionType.Unstake, payloads, [], {gasLimit: 5000000})).wait()
+  //   //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, ActionType.Unstake, payloads, [], {gasLimit: gasAmount})).wait()
   //   //   await sleep(10000)
   //   //   const market1BalanceAfter = await market1.balanceOf(gmxPlugin.contractAddress)
   //   //   const market2BalanceAfter = await market2.balanceOf(gmxPlugin.contractAddress)
@@ -349,7 +351,7 @@ describe('TheseusVault Test', () => {
   //   //   const basePayload = ethers.utils.defaultAbiCoder.encode(['uint256'],[0])
   //   //   const payloads = [ethers.utils.defaultAbiCoder.encode(['uint8', 'address[]', 'uint256[]', 'bytes'],[WETHPool.poolId, [WETHPool.longToken.address, WETHPool.shortToken.address], [0, balanceBefore.div(3)], basePayload]), 
   //   //     ethers.utils.defaultAbiCoder.encode(['uint8', 'address[]', 'uint256[]', 'bytes'],[WBTCPool.poolId, [WBTCPool.longToken.address, WBTCPool.shortToken.address], [0, balanceBefore.div(3)], basePayload])]
-  //   //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, ActionType.Stake, payloads, [], {gasLimit: 5000000})).wait()
+  //   //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, ActionType.Stake, payloads, [], {gasLimit: gasAmount})).wait()
   //   //   await sleep(10000)
   //   //   const market1BalanceAfter = await market1.balanceOf(gmxPlugin.contractAddress)
   //   //   const market2BalanceAfter = await market2.balanceOf(gmxPlugin.contractAddress)
@@ -380,7 +382,7 @@ describe('TheseusVault Test', () => {
   //   //     [tokenIn.address, halfAmount, 0, false, quote2]
   //   //   ]
   //   //   const multicall = await multiCallVaultMasterContract.getDeployedContract()
-  //   //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, 2, [], lifiPayload, {gasLimit: 5000000})).wait()
+  //   //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, 2, [], lifiPayload, {gasLimit: gasAmount})).wait()
   //   //   await sleep(10000)
   //   //   const balanceInAfter = await tokenInContract.balanceOf(vault.contractAddress)
   //   //   const balanceOut1After = await tokenOut1Contract.balanceOf(vault.contractAddress)
@@ -405,7 +407,7 @@ describe('TheseusVault Test', () => {
   //   //   const balanceOut2Before = await tokenOut2Contract.balanceOf(vault.contractAddress)
   //   //   const multicall = await multiCallVaultMasterContract.getDeployedContract()
   //   //   const payloads = [getGMXSwapParams(vault, tokenIn, WETHPool, amount.div(2)), getGMXSwapParams(vault, tokenIn, WBTCPool, amount.div(2))]
-  //   //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, 3, payloads, [], {gasLimit: 5000000})).wait()
+  //   //   await (await multicall.connect(master).executeMultiCall(pluginNames.gmx.id, 3, payloads, [], {gasLimit: gasAmount})).wait()
   //   //   await sleep(10000)
   //   //   const balanceInAfter = await tokenInContract.balanceOf(vault.contractAddress)
   //   //   const balanceOut1After = await tokenOut1Contract.balanceOf(vault.contractAddress)
@@ -418,12 +420,12 @@ describe('TheseusVault Test', () => {
 
   // describe('Lifi API should give out correct quotes', async()=>{
   //   it('USDC-WETH', async () => {
-  //     const quote = await getQuote('arb', 'arb', 'USDC', 'WETH', '1000', vault.contractAddress)
+  //     const quote = await getQuote('arb', 'arb', tokenSymbols.USDC, tokenSymbols.WETH, '1000', vault.contractAddress)
   //     console.log(quote)
   //   })
 
   //   it('USDC-WBTC', async () => {
-  //     const quote = await getQuote('arb', 'arb', 'USDC', 'WBTC', '1000', vault.contractAddress)
+  //     const quote = await getQuote('arb', 'arb', tokenSymbols.USDC, tokenSymbols.WBTC, '1000', vault.contractAddress)
   //     console.log(quote)
   //   })
   // })
