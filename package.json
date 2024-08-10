@@ -32,13 +32,13 @@
     "test-lztransfer-baseSepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network baseSepolia",
     "test-lztransfer-sepolia": "npx hardhat test test/hardhat/token/MozTokenLZTransfer.test.ts --network sepolia",
     "test-gmx": "npx hardhat run tasks/gmx/getGMXPools.ts --network arbitrumTwo",
-    "deploy-vault-testnet" : "npx hardhat deploy --tags GmxCallback --network avalancheFuji",
-    "init-vault-testnet" : "npx hardhat run tasks/vaults/InitializeTheseusVault.ts --network avalancheFuji",
-    "init-gmx-testnet" : "npx hardhat run tasks/vaults/gmx/InitializegmxCallBack.ts --network avalancheFuji && npx hardhat run tasks/vaults/gmx/InitializegmxPlugin.ts --network avalancheFuji",
+    "deploy-vault-testnet": "npx hardhat deploy --tags GmxCallback --network avalancheFuji",
+    "init-vault-testnet": "npx hardhat run tasks/vaults/InitializeTheseusVault.ts --network avalancheFuji",
+    "init-gmx-testnet": "npx hardhat run tasks/vaults/gmx/InitializegmxCallBack.ts --network avalancheFuji && npx hardhat run tasks/vaults/gmx/InitializegmxPlugin.ts --network avalancheFuji",
     "test-vault-gmx-testnet": "npx hardhat test test/hardhat/vaults/TheseusVaultGMX.test.ts --network avalancheFuji",
-    "deploy-vault-vnet" : "npx hardhat deploy --tags GmxCallback --network arbitrumTwo",
-    "init-vault-vnet" : "npx hardhat run tasks/vaults/InitializeTheseusVault.ts --network arbitrumTwo",
-    "init-gmx-vnet" : "npx hardhat run tasks/vaults/gmx/InitializegmxCallBack.ts --network arbitrumTwo && npx hardhat run tasks/vaults/gmx/InitializegmxPlugin.ts --network arbitrumTwo"
+    "deploy-vault-vnet": "npx hardhat deploy --tags GmxCallback --network arbitrumTwo",
+    "init-vault-vnet": "npx hardhat run tasks/vaults/InitializeTheseusVault.ts --network arbitrumTwo",
+    "init-gmx-vnet": "npx hardhat run tasks/vaults/gmx/InitializegmxCallBack.ts --network arbitrumTwo && npx hardhat run tasks/vaults/gmx/InitializegmxPlugin.ts --network arbitrumTwo"
   },
   "resolutions": {
     "@nomicfoundation/edr": "0.3.5",
@@ -68,6 +68,7 @@
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "~18.18.14",
+    "axios": "^1.7.3",
     "chai": "^4.4.1",
     "dotenv": "^16.4.1",
     "eslint-plugin-jest-extended": "~2.0.0",

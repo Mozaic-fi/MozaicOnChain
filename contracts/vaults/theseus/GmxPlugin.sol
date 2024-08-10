@@ -92,7 +92,6 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     address[] public rewardTokens;
 
     /* ========== EVENTS ========== */
-    event SetMaster(address master);
     event SetTreasury(address payable treasury);
     event SetRouterConfig(address _exchangeRouter, address _router, address _depositVault, address _withdrawVault, address _orderVault, address _reader);
     event SetGmxParams(address _uiFeeReceiver, address _callbackContract, uint256 _callbackGasLimit, uint256 _executionFee, bool _shouldUnwrapNativeToken, bytes32 _pnlFactorType);
@@ -218,7 +217,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         address _longToken,
         address _shortToken,
         address _marketToken
-    ) external onlyOwner {
+    ) internal {
         // Ensure the pool with the given poolId does not already exist.
         require(_poolId != 0, "GMX: Invalid Pool Id");
         require(!poolExistsMap[_poolId], "GMX: Pool with this poolId already exists");
@@ -241,6 +240,16 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
 
         // Emit an event indicating the addition of a new pool.
         emit PoolAdded(_poolId);
+    }
+
+    function addPools(
+        PoolConfig[] memory _pools
+    ) external onlyOwner {
+    
+
+        for (uint256 i = 0; i < _pools.length; i++) {
+            addPool(_pools[i].poolId, _pools[i].indexToken, _pools[i].longToken, _pools[i].shortToken, _pools[i].marketToken);
+        }
     }
 
     // Function allowing the owner to remove an existing pool.

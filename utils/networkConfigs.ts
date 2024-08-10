@@ -28,8 +28,8 @@ export type VaultInfo = {
     name: string
     treasuryAddress: string
     multiSigOwnerAddress: string
-    vaultMasterAddress: string
     vaultAdminAddress: string
+    vaultMasterAdminAddress: string
     vaultPlugins: Map<string, vaultPlugin>
     version: number,
     protocolFeePercentage: number

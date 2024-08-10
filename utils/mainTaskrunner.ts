@@ -26,11 +26,14 @@ class TaskRunner {
     }
     this.addTask(TaskType.Deploy, 'Deploy Vault', 'GmxCallback');
     this.addTask(TaskType.Config, 'Configure TokenPriceConsumer', 'tasks/vaults/InitializeTokenPriceConsumer.ts');
+    this.addTask(TaskType.Config, 'Configure Vault master', 'tasks/vaults/InitializeMultiCallVaultMaster.ts');
     this.addTask(TaskType.Config, 'Configure GMX CallBack', 'tasks/vaults/gmx/InitializegmxCallBack.ts');
     this.addTask(TaskType.Config, 'Configure GMX Plugin', 'tasks/vaults/gmx/InitializegmxPlugin.ts');
     this.addTask(TaskType.Config, 'Configure Vault', 'tasks/vaults/InitializeTheseusVault.ts');
     this.addTask(TaskType.Config, 'Test GMX', 'tasks/gmx/getGMXPools.ts');
     this.addTask(TaskType.Test, 'Test Vault', 'test/hardhat/vaults/TheseusVaultGMX.test.ts');
+    this.addTask(TaskType.Config, 'Get Contract Addresses', 'tasks/getContractAddresses.ts');
+    this.addTask(TaskType.Yarn, 'Size Contracts', 'hardhat size-contracts');
   }
 
   addTask(type: TaskType, name: string, cmd: string): void {

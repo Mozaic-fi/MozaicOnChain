@@ -13,10 +13,10 @@ export const avalancheFujiNetworkConfig: NetworkInfo =  {
     networkName: networkNames.avalancheFuji,
     theseusVaultInfo:{
         name: 'theseusVault',
-        treasuryAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
-        multiSigOwnerAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
-        vaultMasterAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
-        vaultAdminAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
+        treasuryAddress: '0xa3D6360C288551600B20A7992860766F9754e477',
+        multiSigOwnerAddress: '0xa3D6360C288551600B20A7992860766F9754e477',
+        vaultAdminAddress: '0xa3D6360C288551600B20A7992860766F9754e477',
+        vaultMasterAdminAddress: '0xa3D6360C288551600B20A7992860766F9754e477',
         protocolFeePercentage: 1000,
         vaultPlugins: new Map<string, vaultPlugin>([
             [
@@ -27,7 +27,7 @@ export const avalancheFujiNetworkConfig: NetworkInfo =  {
                     pluginContractName: contractNames.Vaults.Theseus.GmxPlugin,
                     vaultInfo: getGMXVaultInfo(networkNames.avalancheFuji),
                     params:{
-                        uiFeeReceiverAddress: '0x7E9BA79614FeC2C52e85842502df66A6dB107fde',
+                        uiFeeReceiverAddress: '0xa3D6360C288551600B20A7992860766F9754e477',
                         callbackGasLimit: 2000000,
                         executionFee: '0.5',
                         shouldUnwrapNativeToken: false,
