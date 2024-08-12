@@ -28,8 +28,8 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     // A constant representing the denominator for basis points (BP). Used for percentage calculations.
     uint256 public constant BP_DENOMINATOR = 1e4;
 
-    // A constant representing the maximum fee percentage allowed (1000 basis points or 10% in this case).
-    uint256 public constant MAX_FEE = 1e3;
+    // A constant representing the maximum fee percentage allowed (2000 basis points or 20% in this case).
+    uint256 public constant MAX_FEE = 2e3;
 
     // The Address of lifi contract
     address public constant LIFI_CONTRACT = 0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE;

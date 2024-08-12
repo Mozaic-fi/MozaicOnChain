@@ -64,6 +64,19 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         uint256 poolValue;
     }
 
+    struct PoolTokenInformation {
+        uint8 poolId;
+        address longToken;
+        address shortToken;
+        address marketToken;
+        uint256 longTokenBalance;
+        uint256 shortTokenBalance;
+        uint256 marketTokenBalance;
+        uint256 longTokenDecimals;
+        uint256 shortTokenDecimals;
+        uint256 marketTokenDecimals;
+    }
+
     /* ========== STATE VARIABLES ========== */
     // Address of the local vault associated with the smart contract.
     address public localVault;
@@ -890,6 +903,42 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         require(treasury != address(0), "Vault: Invalid treasury");
         (bool success, ) = treasury.call{value: _amount}("");
         require(success, "Vault: Failed to send Ether");
+    }
+
+
+    function getMarketInfo(uint8 _poolId) public view returns (PoolTokenInformation memory) {
+        PoolTokenInformation memory poolTokenInfo;
+         if (!poolExistsMap[_poolId]) {
+            // Return an empty array if the pool does not exist
+            return poolTokenInfo;
+        }
+
+        // Retrieve the index of the pool in the pools array
+        uint256 index = getPoolIndexById(_poolId);
+        PoolConfig memory pool = pools[index];
+        poolTokenInfo.poolId = _poolId;
+
+        poolTokenInfo.marketToken = pool.marketToken;
+        poolTokenInfo.longToken = pool.longToken;
+        poolTokenInfo.shortToken = pool.shortToken;
+
+        poolTokenInfo.marketTokenBalance = IERC20(pool.marketToken).balanceOf(address(this));
+        poolTokenInfo.longTokenBalance = IERC20(pool.longToken).balanceOf(address(this));
+        poolTokenInfo.shortTokenBalance = IERC20(pool.shortToken).balanceOf(address(this));
+
+        poolTokenInfo.marketTokenDecimals = IERC20Metadata(pool.marketToken).decimals();
+        poolTokenInfo.longTokenDecimals = TokenPriceConsumer(tokenPriceConsumer).getTokenDecimal(pool.longToken);
+        poolTokenInfo.shortTokenDecimals = TokenPriceConsumer(tokenPriceConsumer).getTokenDecimal(pool.shortToken);
+
+        return poolTokenInfo;
+    }
+
+    function getMarketsInfo() public view returns (PoolTokenInformation[] memory){
+        PoolTokenInformation[] memory poolTokenInfo = new PoolTokenInformation[](pools.length);
+        for (uint256 i = 0; i < pools.length; i++) {
+            poolTokenInfo[i] = getMarketInfo(pools[i].poolId);
+        }
+        return poolTokenInfo;
     }
 
     receive() external payable {}
