@@ -75,6 +75,9 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         uint256 longTokenDecimals;
         uint256 shortTokenDecimals;
         uint256 marketTokenDecimals;
+        uint256 longTokenValue;
+        uint256 shortTokenValue;
+        uint256 marketTokenValue;
     }
 
     /* ========== STATE VARIABLES ========== */
@@ -359,6 +362,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     // Function to calculate the total liquidity (totalAsset) of the vault, considering balances in unique tokens and pools.
     function getTotalLiquidity() public view returns (uint256 totalAsset) {
         // Iterate over uniqueTokens and calculate totalAsset based on token balances.
+        totalAsset = 0;
         for (uint256 i = 0; i < uniqueTokens.length; ++i) {
             address tokenAddress = uniqueTokens[i];
             uint256 tokenBalance = IERC20(tokenAddress).balanceOf(address(this));
@@ -929,6 +933,12 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         poolTokenInfo.marketTokenDecimals = IERC20Metadata(pool.marketToken).decimals();
         poolTokenInfo.longTokenDecimals = TokenPriceConsumer(tokenPriceConsumer).getTokenDecimal(pool.longToken);
         poolTokenInfo.shortTokenDecimals = TokenPriceConsumer(tokenPriceConsumer).getTokenDecimal(pool.shortToken);
+
+        int256 marketTokenPrice = getPoolTokenPrice(pool.poolId, true);
+
+        poolTokenInfo.marketTokenValue = marketTokenPrice <= 0 ? 0 : convertDecimals(poolTokenInfo.marketTokenBalance * uint256(marketTokenPrice), poolTokenInfo.marketTokenDecimals + MARKET_TOKEN_PRICE_DECIMALS, ASSET_DECIMALS);
+        poolTokenInfo.longTokenValue = calculateTokenValueInUsd(pool.longToken, poolTokenInfo.longTokenBalance);
+        poolTokenInfo.shortTokenValue = calculateTokenValueInUsd(pool.shortToken, poolTokenInfo.shortTokenBalance);
 
         return poolTokenInfo;
     }
