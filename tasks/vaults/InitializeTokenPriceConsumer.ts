@@ -1,7 +1,7 @@
 import { ethers  } from 'hardhat'
 import {networkConfigs} from '../../utils/networkConfigs'
 import { contractNames } from '../../utils/names/contractNames'
-import {cliConfirmation, cliCyan} from '../../utils/cliUtils'
+import {cliConfirmation, cliCyan, cliSelectItem} from '../../utils/cliUtils'
 import { pluginNames } from '../../utils/names/pluginNames'
 import { gmxPluginInfo } from '../../utils/vaultPlugins/gmxVaultPlugins'
 import { ContractUtils } from '../../utils/contractUtils'
@@ -24,6 +24,20 @@ export const main = async () => {
     taskManager.registerFinalizeCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
     });
 
+    taskManager.registerTask('addPriceFeed', false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+        const tokens = getTokens(networkConfig.networkName)
+        const functionName = 'addPriceFeed'
+        const tokenIndex = await cliSelectItem('Select a token to add', tokens.map(token=>[token.symbol, token.address]), true)   
+        const propertyNames= ['mapping:tokenPriceFeeds']
+        const propertyValues = [tokens[tokenIndex].address, tokens[tokenIndex].priceFeedAddress, tokens[tokenIndex].heartBeatDuration]
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, ...propertyValues)
+        return {
+            functionName,
+            propertyStructName: '',
+            propertyNames,
+            propertyValues
+        }
+    })
     
     taskManager.registerTask('setTokenDecimals',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const tokens = getTokens(networkConfig.networkName).filter(token => token.synthetic)

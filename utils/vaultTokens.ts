@@ -82,6 +82,8 @@ const baseTokens: VaultToken[] =Array.from(new Set<VaultToken>([
     , new VaultToken('GMX', tokenSymbols.GMX, 18)
     , new VaultToken('Pepe', tokenSymbols.PEPE, 18)
     , new VaultToken('LTC', tokenSymbols.LTC, 8, true)
+    , new VaultToken('ATOM', tokenSymbols.ATOM, 6, true),
+    new VaultToken('NEAR', tokenSymbols.NEAR, 24, true)
 ]))
 
 const vaultTokens: VaultToken[] = [
@@ -100,7 +102,7 @@ const arbitrumOneTokens: VaultToken[] = [
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.LINK, '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4', '0x86E53CF1B870786351Da77A57575e79CB55812CB', 3600, true, true, networkNames.arbitrumOne),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.ARB, '0x912CE59144191C1204E64559FE8253a0e49E6548', '0xb2A824043730FE05F3DA2efaFa1CBbe83fa548D6', 86400, true, true, networkNames.arbitrumOne),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.USDCe, '0xFF970A61A04b1cA14834A43f5dE4533eBDDB5CC8', '0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3', 86400, false, false, networkNames.arbitrumOne),
-    VaultToken.fromVaultToken(baseTokens,tokenSymbols.USDT, '0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7', '0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063', 86400, true, true, networkNames.arbitrumOne),
+    VaultToken.fromVaultToken(baseTokens,tokenSymbols.USDT, '0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9', '0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7', 86400, true, true, networkNames.arbitrumOne),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.DAI, '0xDA10009cBd5D07dd0CeCc66161FC93D7c9000da1', '0xc5C8E77B397E531B8EC06BFb0048328B30E9eCfB', 86400, true, true, networkNames.arbitrumOne),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.XRP, '0xc14e065b0067dE91534e032868f5Ac6ecf2c6868', '0xB4AD57B52aB9141de9926a3e0C8dc6264c2ef205', 86400, true, true, networkNames.arbitrumOne),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.WBNB, '0xa9004A5421372E1D83fB1f85b0fc986c912f91f3', '0x6970460aabF80C5BE983C6b74e5D06dEDCA95D4A', 86400, true, true, networkNames.arbitrumOne),
@@ -109,7 +111,9 @@ const arbitrumOneTokens: VaultToken[] = [
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.OP, '0xaC800FD6159c2a2CB8fC31EF74621eB430287a5A', '0x205aaD468a11fd5D34fA7211bC6Bad5b3deB9b98', 86400, true, true, networkNames.arbitrumOne),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.GMX, '0xfc5A1A6EB076a2C7aD06eD22C90d7E710E35ad0a', '0xDB98056FecFff59D032aB628337A4887110df3dB', 86400, true, true, networkNames.arbitrumOne),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.PEPE, '0x25d887Ce7a35172C62FeBFD67a1856F20FaEbB00', '0x02DEd5a7EDDA750E3Eb240b54437a54d57b74dBE', 3600, true, true, networkNames.arbitrumOne),
-    VaultToken.fromVaultToken(baseTokens,tokenSymbols.LTC, '0xB46A094Bc4B0adBD801E14b9DB95e05E28962764', '0x5698690a7B7B84F6aa985ef7690A8A7288FBc9c8', 86400, true, true, networkNames.arbitrumOne),
+    VaultToken.fromVaultToken(baseTokens,tokenSymbols.LTC, '0xB46A094Bc4B0adBD801E14b9DB95e05E28962764', '0x5698690a7B7B84F6aa985ef7690A8A7288FBc9c8', 86400, false, false, networkNames.arbitrumOne),
+    VaultToken.fromVaultToken(baseTokens,tokenSymbols.ATOM, '0x7D7F1765aCbaF847b9A1f7137FE8Ed4931FbfEbA', '0xCDA67618e51762235eacA373894F0C79256768fa', 86400, false, false, networkNames.arbitrumOne),
+    VaultToken.fromVaultToken(baseTokens,tokenSymbols.NEAR, '0x1FF7F3EFBb9481Cbd7db4F932cBCD4467144237C', '0xBF5C3fB2633e924598A46B9D07a174a9DBcF57C0', 86400, false, false, networkNames.arbitrumOne),
     //GM market tokens
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.GMToken,'0x47c031236e19d024b42f8AE6780E44A573170703','',0,false,false,networkNames.arbitrumOne),
     VaultToken.fromVaultToken(baseTokens,tokenSymbols.GMToken,'0x70d95587d40A2caf56bd97485aB3Eec10Bee6336','',0,false,false,networkNames.arbitrumOne),
