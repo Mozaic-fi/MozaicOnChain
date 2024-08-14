@@ -93,7 +93,7 @@ describe('TheseusVault Test', () => {
     ethAmount2 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('2'): ethers.utils.parseEther('0.002'); // 2 Ether
     ethAmount05 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('0.5'): ethers.utils.parseEther('0.0005'); // 0.5 Ether
     ethAmount001 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('0.001'):ethers.utils.parseEther('0'); // 0.001 Ether
-    gasAmount = network.networkName===networkNames.avalancheFuji?5000000: 2000000; // 0.05 Ether
+    gasAmount = network.networkName===networkNames.avalancheFuji?5000000: 25000000; 
 
     //fuji or arbi
     let wethgmxaddress= network.networkName===networkNames.avalancheFuji? '0xbf338a6C595f06B7Cfff2FA8c958d49201466374':'0x70d95587d40A2caf56bd97485aB3Eec10Bee6336'
@@ -131,7 +131,7 @@ describe('TheseusVault Test', () => {
       const payload = ethers.utils.defaultAbiCoder.encode(['uint256'], [minGMAmount]);
       let lpTokenBalanceBefore = await vaultContract.balanceOf(user.address);
 
-      const tx = await vaultContract.connect(user).addDepositRequest(token.address, amount, user.address, payload, {value: ethAmount001, gasLimit: gasAmount} )
+      const tx = await vaultContract.connect(user).addDepositRequest(token.address, amount, user.address, payload, { gasLimit: gasAmount} )
       await tx.wait()
       await sleep(10000)
 
@@ -243,7 +243,7 @@ describe('TheseusVault Test', () => {
       if(pluginBalance.lt(ethAmount1)){
         await (await owner.sendTransaction({
             to: gmxPlugin.contractAddress,
-            value: ethAmount2,
+            value: ethAmount05,
         })).wait();
       }
     }
@@ -259,7 +259,7 @@ describe('TheseusVault Test', () => {
 
   describe('user should be able to deposit', async()=>{
     it('USDC', async () => { 
-      await deposit(USDCToken, user2, '1', '0')
+      await deposit(USDCToken, owner, '1', '0')
     })
 
     // it('Canceled-USDC', async () => { 
