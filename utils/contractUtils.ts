@@ -97,6 +97,11 @@ export class ContractUtils {
         return await this.hre.ethers.getContractAt(this.contractName, this._contractAddress, signer)
     }
 
+    async getContractABI(){
+        const contractArtifact = await this.hre.deployments.getArtifact(this.contractName)
+        return contractArtifact.abi
+    }
+
     async setContractConfigValues(functionName: string, prevValuesFunctionNames: string[], args: any[]) {
         console.log(`Setting contract values for function: ${cliYellow(functionName)} on ${cliGreen(this.contractName)} at ${cliBlue(this.network)}`)
         const contract = await this.getDeployedContract()

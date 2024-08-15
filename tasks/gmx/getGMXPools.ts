@@ -7,7 +7,7 @@ import { gmxPluginInfo, gmxPool } from '../../utils/vaultPlugins/gmxVaultPlugins
 
 async function main() {
     const pools = await getContractPools()
-    console.log(pools.filter(p => p.indexToken.symbol === tokenSymbols.None).map(p => p.indexToken.address));
+    console.log(pools.map(p => p.marketToken.address));
 }
 
 main()

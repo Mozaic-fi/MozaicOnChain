@@ -56,6 +56,7 @@ describe('TheseusVault Test', () => {
   let WETHToken: VaultToken
   let USDCToken: VaultToken
   let WBTCToken: VaultToken
+  let USDTToken: VaultToken
   let WETHPool: gmxPool
   let WBTCPool: gmxPool
   let tokenPriceConsumer: ContractUtils
@@ -88,6 +89,7 @@ describe('TheseusVault Test', () => {
     WETHToken = getToken(tokenSymbols.WETH,network.networkName)
     USDCToken = getToken(tokenSymbols.USDC,network.networkName)
     WBTCToken = getToken(tokenSymbols.WBTC,network.networkName)
+    USDTToken = getToken(tokenSymbols.USDT,network.networkName)
     ethAmount01 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('0.1') : ethers.utils.parseEther('0.001'); // 0.1 Ether
     ethAmount1 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('1'): ethers.utils.parseEther('0.001'); // 1 Ether
     ethAmount2 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('2'): ethers.utils.parseEther('0.002'); // 2 Ether
@@ -257,16 +259,16 @@ describe('TheseusVault Test', () => {
     await gmxBalanceTopUp()
   }) 
 
-  describe('user should be able to deposit', async()=>{
-    it('USDC', async () => { 
-      await deposit(USDCToken, owner, '1', '0')
-    })
+  // describe('user should be able to deposit', async()=>{
+  //   // it('USDC', async () => { 
+  //   //   await deposit(USDCToken, owner, '5', '0')
+  //   // })
 
-    // it('Canceled-USDC', async () => { 
-    //   await sleep(3000)
-    //   await deposit(USDCToken, user2, '5', '100000')
-    // })
-  })
+  //   // it('Canceled-USDC', async () => { 
+  //   //   await sleep(3000)
+  //   //   await deposit(USDCToken, user2, '5', '100000')
+  //   // })
+  // })
 
   // describe('user should be able to withdraw', async()=>{
   //   it('USDC-WETH', async () => {
@@ -418,17 +420,24 @@ describe('TheseusVault Test', () => {
   //   // })
   // })
 
-  // describe('Lifi API should give out correct quotes', async()=>{
-  //   it('USDC-WETH', async () => {
-  //     const quote = await getQuote('arb', 'arb', tokenSymbols.USDC, tokenSymbols.WETH, '1000', vault.contractAddress)
-  //     console.log(quote)
-  //   })
+  describe('Lifi API should give out correct quotes', async()=>{
+    it('USDC-WETH', async () => {
+      const tokenIn = USDCToken
+      const tokenOut = WETHToken
+      const amount = '1'
+      const amounteth = ethers.utils.parseUnits(amount, tokenIn.decimals)
+      const quote = await getQuote('arb', 'arb', tokenSymbols.USDC, tokenSymbols.WETH, amount, vault.contractAddress)
+      console.log(quote)
+      const vaultContract = await hre.ethers.getContractAt(await vault.getContractABI(), multiCallVaultMasterContract.contractAddress)
+      const tx = await (await vaultContract.connect(owner).bridgeViaLifi(tokenIn.address, amounteth, 0, false, quote)).wait()
+      console.log(tx)
+    })
 
-  //   it('USDC-WBTC', async () => {
-  //     const quote = await getQuote('arb', 'arb', tokenSymbols.USDC, tokenSymbols.WBTC, '1000', vault.contractAddress)
-  //     console.log(quote)
-  //   })
-  // })
+    // it('USDC-WBTC', async () => {
+    //   const quote = await getQuote('arb', 'arb', tokenSymbols.USDC, tokenSymbols.WBTC, '1000', vault.contractAddress)
+    //   console.log(quote)
+    // })
+  })
 
 })
 
