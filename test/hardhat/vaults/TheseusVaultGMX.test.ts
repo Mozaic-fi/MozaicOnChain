@@ -97,7 +97,8 @@ describe('TheseusVault Test', () => {
     ethAmount2 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('2'): ethers.utils.parseEther('0.002'); // 2 Ether
     ethAmount05 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('0.5'): ethers.utils.parseEther('0.0005'); // 0.5 Ether
     ethAmount001 = network.networkName===networkNames.avalancheFuji ?ethers.utils.parseEther('0.001'):ethers.utils.parseEther('0'); // 0.001 Ether
-    gasAmount = network.networkName===networkNames.avalancheFuji?5000000: 25000000; 
+    gasAmount = network.networkName===networkNames.avalancheFuji?5000000: 25000000;
+    ; 
 
     //fuji or arbi
     let wethgmxaddress= network.networkName===networkNames.avalancheFuji? '0xbf338a6C595f06B7Cfff2FA8c958d49201466374':'0x70d95587d40A2caf56bd97485aB3Eec10Bee6336'
@@ -263,7 +264,7 @@ describe('TheseusVault Test', () => {
 
   describe('user should be able to deposit', async()=>{
     it('USDC', async () => { 
-      await deposit(USDCToken, owner, '5', '0')
+      await deposit(USDCToken, owner, '0.1', '0')
     })
 
     // it('Canceled-USDC', async () => { 
@@ -308,6 +309,23 @@ describe('TheseusVault Test', () => {
   //   })
   // })
 
+  //   describe('master should be able to rebalance single call', async()=>{
+  //     it('unstake', async () => {
+  //       const token1 = USDCToken
+  //       const token2 = WETHToken
+  //       const token1Contract = await hre.ethers.getContractAt(erc20ABI,token1.address)
+  //       const token2Contract = await hre.ethers.getContractAt(erc20ABI,token2.address)
+  //       const balance1Before = await token1Contract.balanceOf(vault.contractAddress)
+  //       const balance2Before = await token2Contract.balanceOf(vault.contractAddress)
+  //       const market1 = await hre.ethers.getContractAt(gmxUtils.getContractAbi(gmxContracts.marketToken), WETHPool.marketToken.address)
+  //       const market1BalanceBefore = await market1.balanceOf(gmxPlugin.contractAddress)
+  //       const vaultContract = await hre.ethers.getContractAt(await vault.getContractABI(), unsafeMultiCallVaultMasterContract.contractAddress)
+  //       const basePayload = ethers.utils.defaultAbiCoder.encode(['uint256', 'uint256'],[0, 0])
+  //       const payload = ethers.utils.defaultAbiCoder.encode(['uint8', 'uint256', 'uint256', 'address', 'bytes'],[WETHPool.poolId, market1BalanceBefore, 0, vault.contractAddress, basePayload]);
+  //       const tx = await (await vaultContract.connect(master).execute(pluginNames.gmx.id, ActionType.Unstake, payload, {gasLimit: gasAmount})).wait()
+  //       console.log(tx)
+  //     })
+  //  })
   // describe('master should be able to rebalance', async()=>{
   //   // it('multicall unstake', async () => {
   //   //   const token1 = USDCToken
