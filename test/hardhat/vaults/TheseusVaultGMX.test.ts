@@ -426,11 +426,15 @@ describe('TheseusVault Test', () => {
       const tokenOut = WETHToken
       const amount = '1'
       const amounteth = ethers.utils.parseUnits(amount, tokenIn.decimals)
-      const quote = await getQuote('arb', 'arb', tokenSymbols.USDC, tokenSymbols.WETH, amount, vault.contractAddress)
+      const quote = await getQuote('arb', 'arb', tokenSymbols.USDC, tokenSymbols.WETH, amounteth.toString(), '0xFa1D3D10A8c81599878bE427E2ac5eD3e8cf96cB', '0xFa1D3D10A8c81599878bE427E2ac5eD3e8cf96cB', 'Mozaic')
       console.log(quote)
-      const vaultContract = await hre.ethers.getContractAt(await vault.getContractABI(), multiCallVaultMasterContract.contractAddress)
-      const tx = await (await vaultContract.connect(owner).bridgeViaLifi(tokenIn.address, amounteth, 0, false, quote)).wait()
+      // const vaultContract = await hre.ethers.getContractAt(await vault.getContractABI(), multiCallVaultMasterContract.contractAddress)
+      // const tx = await (await vaultContract.connect(owner).bridgeViaLifi(tokenIn.address, amounteth, 0, false, quote)).wait()
+      // console.log(tx)
+      const vaultMasterContract = await multiCallVaultMasterContract.getDeployedContract()
+      const tx = await (await vaultMasterContract.connect(owner).bridgeViaLifi(tokenIn.address,tokenOut.address, amounteth, 0, false, quote.transactionRequest.data)).wait()
       console.log(tx)
+      
     })
 
     // it('USDC-WBTC', async () => {
@@ -445,7 +449,7 @@ function sleep(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-const getQuote = async (fromChain:string, toChain:string, fromToken:string, toToken:string, fromAmount:string, fromAddress:string) => {
+const getQuote = async (fromChain:string, toChain:string, fromToken:string, toToken:string, fromAmount:string, fromAddress:string, toAddress: string, integrator: string) => {
   const result = await axios.get('https://li.quest/v1/quote', {
       params: {
           fromChain,
@@ -454,6 +458,8 @@ const getQuote = async (fromChain:string, toChain:string, fromToken:string, toTo
           toToken,
           fromAmount,
           fromAddress,
+          toAddress,
+          integrator
       }
   });
   return result.data;

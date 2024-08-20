@@ -10,6 +10,7 @@ export const contractNames = {
         Theseus: {
             Vault: 'Vault',
             MultiCallVaultMaster: 'MultiCallVaultMaster',
+            UnsafeMultiCallVaultMaster: 'UnsafeMultiCallVaultMaster',
             GmxPlugin: 'GmxPlugin',
             GmxCallback: 'GmxCallback'
         }
