@@ -13,7 +13,7 @@ import hre from 'hardhat';
 export const main = async () => {
     const contractName = contractNames.Vaults.Theseus.Vault
     
-    const taskManager = new TaskManagerUtils(hre, contractName, [contractNames.Vaults.TokenPriceConsumer, contractNames.Vaults.Theseus.GmxCallback, contractNames.Vaults.Theseus.GmxPlugin, contractNames.Vaults.Theseus.MultiCallVaultMaster])
+    const taskManager = new TaskManagerUtils(hre, contractName, [contractNames.Vaults.TokenPriceConsumer, contractNames.Vaults.Theseus.GmxCallback, contractNames.Vaults.Theseus.GmxPlugin, contractNames.Vaults.Theseus.MultiCallVaultMaster,contractNames.Vaults.Theseus.UnsafeMultiCallVaultMaster ])
     taskManager.registerInitCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         console.log(`Initializing ${contractName} on ${hre.network.name}`)
         data.vaultInfo = networkConfig?.theseusVaultInfo!
@@ -29,6 +29,24 @@ export const main = async () => {
     taskManager.registerTask('setMaster',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const propertyNames= ['masterContract']
         const propertyValues = [dependencies.get(contractNames.Vaults.Theseus.MultiCallVaultMaster)]
+        const functionName = 'setMaster'
+        await (data.contractUtil as ContractUtils).setContractConfigValues(functionName, propertyNames, propertyValues)
+        return {
+            functionName,
+            propertyStructName: '',
+            propertyNames,
+            propertyValues
+        }
+    });
+
+    taskManager.registerTask('setUnsafeMaster',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+        const functionName1 = 'addPlugin' 
+        const propertyNames1= ['array:plugins']
+        const propertyValues1 = ['2', dependencies.get(contractNames.Vaults.Theseus.UnsafeMultiCallVaultMaster)]
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName1, propertyValues1[0], propertyValues1[1])
+
+        const propertyNames= ['masterContract']
+        const propertyValues = [dependencies.get(contractNames.Vaults.Theseus.UnsafeMultiCallVaultMaster)]
         const functionName = 'setMaster'
         await (data.contractUtil as ContractUtils).setContractConfigValues(functionName, propertyNames, propertyValues)
         return {

@@ -119,9 +119,9 @@ contract UnsafeMultiCallVaultMaster is Ownable {
         Vault(vault).approveTokens(2, _tokens, _amounts);
         IERC20 sourceToken = IERC20(_srcToken);
         IERC20 destinationToken = IERC20(_dstToken);
+        sourceToken.safeTransferFrom(vault, address(this), _amount);
         uint256 currentSourceBalance = sourceToken.balanceOf(address(this));
         uint256 currentDestinationBalance = destinationToken.balanceOf(address(this));
-        sourceToken.safeTransferFrom(vault, address(this), _amount);
         bool isNative = (_srcToken == address(0));
         if (!isNative) {           
             uint256 currentAllowance = sourceToken.allowance(address(this), address(LIFI_CONTRACT));
