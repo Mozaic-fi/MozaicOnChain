@@ -139,6 +139,10 @@ contract UnsafeMultiCallVaultMaster is Ownable {
         require(destinationToken.balanceOf(address(this)) > currentDestinationBalance, "UnsafeMultiCallVaultMaster: destination token balance mismatch");
         destinationToken.safeTransfer(vault, destinationToken.balanceOf(address(this)));
     }
+    
+    function getTotalLiquidity() external view returns (uint256){
+        return 0;
+    }
 
     fallback() external payable onlyAdmin {
         assembly {

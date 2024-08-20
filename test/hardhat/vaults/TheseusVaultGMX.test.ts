@@ -261,16 +261,16 @@ describe('TheseusVault Test', () => {
     await gmxBalanceTopUp()
   }) 
 
-  // describe('user should be able to deposit', async()=>{
-  //   // it('USDC', async () => { 
-  //   //   await deposit(USDCToken, owner, '5', '0')
-  //   // })
+  describe('user should be able to deposit', async()=>{
+    it('USDC', async () => { 
+      await deposit(USDCToken, owner, '5', '0')
+    })
 
-  //   // it('Canceled-USDC', async () => { 
-  //   //   await sleep(3000)
-  //   //   await deposit(USDCToken, user2, '5', '100000')
-  //   // })
-  // })
+    // it('Canceled-USDC', async () => { 
+    //   await sleep(3000)
+    //   await deposit(USDCToken, user2, '5', '100000')
+    // })
+  })
 
   // describe('user should be able to withdraw', async()=>{
   //   it('USDC-WETH', async () => {
@@ -422,44 +422,44 @@ describe('TheseusVault Test', () => {
   //   // })
   // })
 
-  describe('Lifi API should give out correct quotes', async()=>{
-    // it('USDC-WETH', async () => {
-    //   const tokenIn = USDCToken
-    //   const tokenOut = WETHToken
-    //   const amount = '1'
-    //   const amounteth = ethers.utils.parseUnits(amount, tokenIn.decimals)
-    //   const quote = await getQuote('arb', 'arb', tokenSymbols.USDC, tokenSymbols.WETH, amounteth.toString(), unsafeMultiCallVaultMasterContract.contractAddress, unsafeMultiCallVaultMasterContract.contractAddress, 'Mozaic')
-    //   console.log(quote)
-    //   // const vaultContract = await hre.ethers.getContractAt(await vault.getContractABI(), multiCallVaultMasterContract.contractAddress)
-    //   // const tx = await (await vaultContract.connect(owner).bridgeViaLifi(tokenIn.address, amounteth, 0, false, quote)).wait()
-    //   // console.log(tx)
-    //   const vaultMasterContract = await unsafeMultiCallVaultMasterContract.getDeployedContract()
-    //   const tx = await (await vaultMasterContract.connect(owner).bridgeViaLifi(tokenIn.address,tokenOut.address, amounteth, 0, false, quote.transactionRequest.data)).wait()
-    //   console.log(tx)
+  // describe('Lifi API should give out correct quotes', async()=>{
+  //   // it('USDC-WETH', async () => {
+  //   //   const tokenIn = USDCToken
+  //   //   const tokenOut = WETHToken
+  //   //   const amount = '1'
+  //   //   const amounteth = ethers.utils.parseUnits(amount, tokenIn.decimals)
+  //   //   const quote = await getQuote('arb', 'arb', tokenSymbols.USDC, tokenSymbols.WETH, amounteth.toString(), unsafeMultiCallVaultMasterContract.contractAddress, unsafeMultiCallVaultMasterContract.contractAddress, 'Mozaic')
+  //   //   console.log(quote)
+  //   //   // const vaultContract = await hre.ethers.getContractAt(await vault.getContractABI(), multiCallVaultMasterContract.contractAddress)
+  //   //   // const tx = await (await vaultContract.connect(owner).bridgeViaLifi(tokenIn.address, amounteth, 0, false, quote)).wait()
+  //   //   // console.log(tx)
+  //   //   const vaultMasterContract = await unsafeMultiCallVaultMasterContract.getDeployedContract()
+  //   //   const tx = await (await vaultMasterContract.connect(owner).bridgeViaLifi(tokenIn.address,tokenOut.address, amounteth, 0, false, quote.transactionRequest.data)).wait()
+  //   //   console.log(tx)
       
-    // })
+  //   // })
 
-    it('WETH-USDC', async () => {
-      const tokenIn = WETHToken
-      const tokenOut = USDCToken
-      const amount = '0.00037'
-      const amounteth = ethers.utils.parseUnits(amount, tokenIn.decimals)
-      const quote = await getQuote('arb', 'arb', tokenIn.symbol, tokenOut.symbol, amounteth.toString(), unsafeMultiCallVaultMasterContract.contractAddress, unsafeMultiCallVaultMasterContract.contractAddress, 'Mozaic')
-      console.log(quote)
-      // const vaultContract = await hre.ethers.getContractAt(await vault.getContractABI(), multiCallVaultMasterContract.contractAddress)
-      // const tx = await (await vaultContract.connect(owner).bridgeViaLifi(tokenIn.address, amounteth, 0, false, quote)).wait()
-      // console.log(tx)
-      const vaultMasterContract = await unsafeMultiCallVaultMasterContract.getDeployedContract()
-      const tx = await (await vaultMasterContract.connect(owner).bridgeViaLifi(tokenIn.address,tokenOut.address, amounteth, 0, false, quote.transactionRequest.data)).wait()
-      console.log(tx)
+  //   // it('WETH-USDC', async () => {
+  //   //   const tokenIn = WETHToken
+  //   //   const tokenOut = USDCToken
+  //   //   const amount = '0.00037'
+  //   //   const amounteth = ethers.utils.parseUnits(amount, tokenIn.decimals)
+  //   //   const quote = await getQuote('arb', 'arb', tokenIn.symbol, tokenOut.symbol, amounteth.toString(), unsafeMultiCallVaultMasterContract.contractAddress, unsafeMultiCallVaultMasterContract.contractAddress, 'Mozaic')
+  //   //   console.log(quote)
+  //   //   // const vaultContract = await hre.ethers.getContractAt(await vault.getContractABI(), multiCallVaultMasterContract.contractAddress)
+  //   //   // const tx = await (await vaultContract.connect(owner).bridgeViaLifi(tokenIn.address, amounteth, 0, false, quote)).wait()
+  //   //   // console.log(tx)
+  //   //   const vaultMasterContract = await unsafeMultiCallVaultMasterContract.getDeployedContract()
+  //   //   const tx = await (await vaultMasterContract.connect(owner).bridgeViaLifi(tokenIn.address,tokenOut.address, amounteth, 0, false, quote.transactionRequest.data)).wait()
+  //   //   console.log(tx)
       
-    })
+  //   // })
 
-    // it('USDC-WBTC', async () => {
-    //   const quote = await getQuote('arb', 'arb', tokenSymbols.USDC, tokenSymbols.WBTC, '1000', vault.contractAddress)
-    //   console.log(quote)
-    // })
-  })
+  //   // it('USDC-WBTC', async () => {
+  //   //   const quote = await getQuote('arb', 'arb', tokenSymbols.USDC, tokenSymbols.WBTC, '1000', vault.contractAddress)
+  //   //   console.log(quote)
+  //   // })
+  // })
 
 })
 
