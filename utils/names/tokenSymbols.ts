@@ -24,5 +24,7 @@ export enum tokenSymbols {
     DOGE = 'DOGE',
     XRP = 'XRP',
     PEPE = 'PEPE',
-    LTC = 'LTC'
+    LTC = 'LTC',
+    NEAR = 'NEAR',
+    ATOM = 'ATOM'
 }

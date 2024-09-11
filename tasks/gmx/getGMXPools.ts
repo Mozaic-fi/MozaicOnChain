@@ -6,7 +6,8 @@ import hre from 'hardhat';
 import { gmxPluginInfo, gmxPool } from '../../utils/vaultPlugins/gmxVaultPlugins';
 
 async function main() {
-    getPoolByTokenSymbol(getConfigPools(), tokenSymbols.USDC);
+    const pools = await getContractPools()
+    console.log(pools.map(p => p.marketToken.address));
 }
 
 main()

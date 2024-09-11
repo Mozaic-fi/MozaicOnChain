@@ -1,5 +1,3 @@
-import { get } from "http";
-
 export enum networkNames {
     arbitrumSepolia = 'arbitrumSepolia',
     baseSepolia = 'baseSepolia',

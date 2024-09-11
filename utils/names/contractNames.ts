@@ -9,6 +9,7 @@ export const contractNames = {
         TokenPriceConsumer: 'TokenPriceConsumer',
         Theseus: {
             Vault: 'Vault',
+            MultiCallVaultMaster: 'MultiCallVaultMaster',
             GmxPlugin: 'GmxPlugin',
             GmxCallback: 'GmxCallback'
         }

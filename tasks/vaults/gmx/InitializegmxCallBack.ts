@@ -23,23 +23,7 @@ export const main = async () => {
     taskManager.registerFinalizeCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
     });
 
-    taskManager.registerTask('setHandlers',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
-        const vaultInfo = networkConfig?.theseusVaultInfo?.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
-        const propertyNames = ['depositHandler', 'withdrawalHandler' , 'orderHandler']  
-        const propertyValues = [vaultInfo.handlerInfo.depositHandlerAddress, vaultInfo.handlerInfo.withdrawHandlerAddress, vaultInfo.handlerInfo.orderHandlerAddress]
-        const functionName = 'setHandler'
-
-        await (data.contractUtil as ContractUtils).setContractConfigValues(functionName, propertyNames, propertyValues)
-        return {
-            functionName,
-            propertyStructName: '',
-            propertyNames,
-            propertyValues
-        }
-    });
-
     taskManager.registerTask('setConfig',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
-        const vaultInfo = networkConfig?.theseusVaultInfo?.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
         const propertyNames = ['vault', 'gmxPlugin']  
         const propertyValues = [dependencies.get(contractNames.Vaults.Theseus.Vault),  dependencies.get(contractNames.Vaults.Theseus.GmxPlugin)]
         const functionName = 'setConfig'
@@ -54,14 +38,8 @@ export const main = async () => {
     });
 
     taskManager.registerTask('getContractBasicStorage',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
-        const depositHandler = await (data.contractUtil as ContractUtils).getVariableValues('depositHandler')
-        console.log(`depositHandler address: ${cliCyan(depositHandler)}`)
-
-        const withdrawalHandler = await (data.contractUtil as ContractUtils).getVariableValues('withdrawalHandler')
-        console.log(`withdrawalHandler address: ${cliCyan(withdrawalHandler)}`)
-
-        const orderHandler = await (data.contractUtil as ContractUtils).getVariableValues('orderHandler')
-        console.log(`orderHandler address: ${cliCyan(orderHandler)}`)
+        const roleStore = await (data.contractUtil as ContractUtils).getVariableValues('roleStore')
+        console.log(`roleStore: ${cliCyan(roleStore)}`)
 
         const config = await (data.contractUtil as ContractUtils).getVariableValues('config')
         console.log(`config: ${cliCyan(config)}`)

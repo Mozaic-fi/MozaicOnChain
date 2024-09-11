@@ -1,7 +1,7 @@
 import { ethers  } from 'hardhat'
 import {networkConfigs} from '../../utils/networkConfigs'
 import { contractNames } from '../../utils/names/contractNames'
-import {cliSelectItem, cliInputList, cliCyan, cliBlue, cliBold, cliRed, cliSelectItems, cliGreen} from '../../utils/cliUtils'
+import {cliSelectItem, cliInputList, cliCyan, cliBlue, cliBold, cliRed, cliSelectItems, cliGreen, cliConfirmation} from '../../utils/cliUtils'
 import { pluginNames } from '../../utils/names/pluginNames'
 import { gmxPluginInfo } from '../../utils/vaultPlugins/gmxVaultPlugins'
 import { ContractUtils } from '../../utils/contractUtils'
@@ -13,21 +13,22 @@ import hre from 'hardhat';
 export const main = async () => {
     const contractName = contractNames.Vaults.Theseus.Vault
     
-    const taskManager = new TaskManagerUtils(hre, contractName, [contractNames.Vaults.TokenPriceConsumer, contractNames.Vaults.Theseus.GmxCallback, contractNames.Vaults.Theseus.GmxPlugin])
+    const taskManager = new TaskManagerUtils(hre, contractName, [contractNames.Vaults.TokenPriceConsumer, contractNames.Vaults.Theseus.GmxCallback, contractNames.Vaults.Theseus.GmxPlugin, contractNames.Vaults.Theseus.MultiCallVaultMaster])
     taskManager.registerInitCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         console.log(`Initializing ${contractName} on ${hre.network.name}`)
         data.vaultInfo = networkConfig?.theseusVaultInfo!
         //TODO: This will work for one gmx plugin, however we need to update the scripts to support multiple plugins
         data.vpi = data.vaultInfo.vaultPlugins.get(pluginNames.gmx.name) as gmxPluginInfo
         data.contractUtil = new ContractUtils(hre, contractName, [], false, contractAddress)
+        data.gmxPlugin = new ContractUtils(hre, contractNames.Vaults.Theseus.GmxPlugin, [], false, dependencies.get(contractNames.Vaults.Theseus.GmxPlugin))
     })
     
     taskManager.registerFinalizeCallback(async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
     });
 
     taskManager.registerTask('setMaster',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
-        const propertyNames= ['master']
-        const propertyValues = [data.vaultInfo.vaultMasterAddress]
+        const propertyNames= ['masterContract']
+        const propertyValues = [dependencies.get(contractNames.Vaults.Theseus.MultiCallVaultMaster)]
         const functionName = 'setMaster'
         await (data.contractUtil as ContractUtils).setContractConfigValues(functionName, propertyNames, propertyValues)
         return {
@@ -154,18 +155,76 @@ export const main = async () => {
     //     }
     // })
 
-    taskManager.registerTask('addAcceptedTokens',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    // taskManager.registerTask('addAcceptedTokens',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    //     const tokens = getTokens(networkConfig.networkName)
+    //     const functionName = 'addAcceptedToken'
+    //     const gmxUniques = await (data.gmxPlugin as ContractUtils).getArrayValues('uniqueTokens')
+    //     let tokenIndex: number[] = []
+    //     if(gmxUniques.length != 0) {
+    //         console.log('Default Values (GMXPlugin uniqueTokens):')
+    //         for (let token of gmxUniques) {
+    //             console.log(`${cliGreen(tokens.filter(t=>t.address==token).map(t=>t.symbol)[0])}: ${cliCyan(token)}`)
+    //         }
+    //         if(await cliConfirmation('Do you want to use gmxPlugin uniqueTokens?', true)) {
+    //             tokenIndex = tokens.map((t,i) => gmxUniques.includes(t.address) ? i : -1).filter(i => i !== -1)
+    //         }
+    //         else{
+    //             tokenIndex = await cliSelectItems('Select a tokens to add', tokens.map(token=>[token.symbol, token.address]), true)   
+    //         }
+    //     }
+    //     const propertyNames= ['array:acceptedTokens']
+    //     const propertyValues:any[] = []
+    //     for (let index of tokenIndex) {
+    //         const token =tokens[index]
+    //         const acceptedTokens: string[] = await (data.contractUtil as ContractUtils).getArrayValues('acceptedTokens')
+    //         if(acceptedTokens.includes(token.address)){
+    //             console.log(`${cliGreen(token.symbol)}:${cliBlue(token.address)} is already added`)
+    //             continue
+    //         }
+    //         console.log(`Adding token ${cliGreen(token.symbol)}:${cliBlue(token.address)}`)
+    //         await (data.contractUtil as ContractUtils).runContractFunction(functionName,token.address )
+    //         propertyValues.push(token.address)
+    //     }
+    //     return {
+    //         functionName,
+    //         propertyStructName: '',
+    //         propertyNames,
+    //         propertyValues
+    //     }
+    // })
+    
+
+    taskManager.registerTask('addAcceptedTokens',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const tokens = getTokens(networkConfig.networkName)
-        const functionName = 'addAcceptedToken'
-        const tokenIndex = await cliSelectItems('Select a tokens to add', tokens.map(token=>[token.symbol, token.address]), true)   
-        const propertyNames= ['array:acceptedTokens']
+        const functionName = 'addAcceptedTokens'
+        const gmxUniques = await (data.gmxPlugin as ContractUtils).getArrayValues('uniqueTokens')
+        let tokenIndex: number[] = []
+        if(gmxUniques.length != 0) {
+            console.log('Default Values (GMXPlugin uniqueTokens):')
+            for (let token of gmxUniques) {
+                console.log(`${cliGreen(tokens.filter(t=>t.address==token && !t.synthetic).map(t=>t.symbol)[0])}: ${cliCyan(token)}`)
+            }
+            if(await cliConfirmation('Do you want to use gmxPlugin uniqueTokens?', true)) {
+                tokenIndex = tokens.map((t,i) => (gmxUniques.includes(t.address) && !t.synthetic) ? i : -1).filter(i => i !== -1)
+            }
+            else{
+                tokenIndex = await cliSelectItems('Select a tokens to add', tokens.map(token=>[token.symbol, token.address]), true)   
+            }
+        }
+        const propertyNames= ['acceptedTokens']
         const propertyValues:any[] = []
+        const acceptedTokens: string[] = await (data.contractUtil as ContractUtils).getArrayValues(propertyNames[0])
         for (let index of tokenIndex) {
             const token =tokens[index]
+            if(acceptedTokens.includes(token.address)){
+                console.log(`${cliGreen(token.symbol)}:${cliBlue(token.address)} is already added`)
+                continue
+            }
             console.log(`Adding token ${cliGreen(token.symbol)}:${cliBlue(token.address)}`)
-            await (data.contractUtil as ContractUtils).runContractFunction(functionName,token.address )
             propertyValues.push(token.address)
         }
+        let values: string[] = (propertyValues as string[])
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName, values)
         return {
             functionName,
             propertyStructName: '',
@@ -173,7 +232,6 @@ export const main = async () => {
             propertyValues
         }
     })
-    
 
     taskManager.registerTask('getAcceptedToken',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const acceptedTokens: string[] = await (data.contractUtil as ContractUtils).getArrayValues('acceptedTokens')
@@ -217,18 +275,76 @@ export const main = async () => {
     //     }
     // })
 
-    taskManager.registerTask('addDepositAllowedTokens',false, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    // taskManager.registerTask('addDepositAllowedTokens',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+    //     const tokens = getTokens(networkConfig.networkName)
+    //     const functionName = 'addDepositAllowedToken'
+    //     const gmxUniques = await (data.gmxPlugin as ContractUtils).getArrayValues('uniqueTokens')
+    //     let tokenIndex: number[] = []
+    //     if(gmxUniques.length != 0) {
+    //         console.log('Default Values (GMXPlugin uniqueTokens):')
+    //         for (let token of gmxUniques) {
+    //             console.log(`${cliGreen(tokens.filter(t=>t.address==token).map(t=>t.symbol)[0])}: ${cliCyan(token)}`)
+    //         }
+    //         if(await cliConfirmation('Do you want to use gmxPlugin uniqueTokens?', true)) {
+    //             tokenIndex = tokens.map((t,i) => gmxUniques.includes(t.address) ? i : -1).filter(i => i !== -1)
+    //         }
+    //         else{
+    //             tokenIndex = await cliSelectItems('Select a tokens to add', tokens.map(token=>[token.symbol, token.address]), true)   
+    //         }
+    //     }  
+    //     const propertyNames= ['array:depositAllowedTokens']
+    //     const propertyValues:any[] = []
+    //     for (let index of tokenIndex) {
+    //         const token =tokens[index]
+    //         const depositAllowedTokens: string[] = await (data.contractUtil as ContractUtils).getArrayValues('depositAllowedTokens')
+    //         if(depositAllowedTokens.includes(token.address)){
+    //             console.log(`${cliGreen(token.symbol)}:${cliBlue(token.address)} is already added`)
+    //             continue
+    //         }
+    //         console.log(`Adding token ${cliGreen(token.symbol)}:${cliBlue(token.address)}`)
+    //         await (data.contractUtil as ContractUtils).runContractFunction(functionName,token.address )
+    //         propertyValues.push(token.address)
+    //     }
+    //     return {
+    //         functionName,
+    //         propertyStructName: '',
+    //         propertyNames,
+    //         propertyValues
+    //     }
+    // })
+
+    
+    taskManager.registerTask('addDepositAllowedTokens',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
         const tokens = getTokens(networkConfig.networkName)
-        const functionName = 'addDepositAllowedToken'
-        const tokenIndex = await cliSelectItems('Select a tokens to add', tokens.map(token=>[token.symbol, token.address]), true)   
-        const propertyNames= ['array:depositAllowedTokens']
+        const functionName = 'addDepositAllowedTokens'
+        const gmxUniques = await (data.gmxPlugin as ContractUtils).getArrayValues('uniqueTokens')
+        let tokenIndex: number[] = []
+        if(gmxUniques.length != 0) {
+            console.log('Default Values (GMXPlugin uniqueTokens):')
+            for (let token of gmxUniques) {
+                console.log(`${cliGreen(tokens.filter(t=>t.address==token && !t.synthetic).map(t=>t.symbol)[0])}: ${cliCyan(token)}`)
+            }
+            if(await cliConfirmation('Do you want to use gmxPlugin uniqueTokens?', true)) {
+                tokenIndex = tokens.map((t,i) => (gmxUniques.includes(t.address) && !t.synthetic) ? i : -1).filter(i => i !== -1)
+            }
+            else{
+                tokenIndex = await cliSelectItems('Select a tokens to add', tokens.map(token=>[token.symbol, token.address]), true)   
+            }
+        }  
+        const propertyNames= ['depositAllowedTokens']
         const propertyValues:any[] = []
+        const depositAllowedTokens: string[] = await (data.contractUtil as ContractUtils).getArrayValues(propertyNames[0])
         for (let index of tokenIndex) {
-            const token =tokens[index]
+            const token =tokens[index]           
+            if(depositAllowedTokens.includes(token.address)){
+                console.log(`${cliGreen(token.symbol)}:${cliBlue(token.address)} is already added`)
+                continue
+            }
             console.log(`Adding token ${cliGreen(token.symbol)}:${cliBlue(token.address)}`)
-            await (data.contractUtil as ContractUtils).runContractFunction(functionName,token.address )
             propertyValues.push(token.address)
         }
+        let values:string[] =(propertyValues as string[])
+        await (data.contractUtil as ContractUtils).runContractFunction(functionName,values)
         return {
             functionName,
             propertyStructName: '',
@@ -357,6 +473,11 @@ export const main = async () => {
     });
 
     taskManager.registerTask('setVaultLocker as GMXCallBack',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+        const vaultLockers = await (data.contractUtil as ContractUtils).getArrayValues('vaultLockers')
+        if(vaultLockers.includes(dependencies.get(contractNames.Vaults.Theseus.GmxCallback))){
+            console.log('GMXCallback is already added as vault locker')
+            return
+        }
         const propertyNames= ['array:vaultLockers']
         const propertyValues = [dependencies.get(contractNames.Vaults.Theseus.GmxCallback)]
         const functionName = 'setVaultLockers'
@@ -399,6 +520,11 @@ export const main = async () => {
     });
 
     taskManager.registerTask('setVaultManager as GMXCallBack',true, async( hre, contractName, signer, contractAddress, networkConfig,  dependencies, data) => {
+        const vaultManagers = await (data.contractUtil as ContractUtils).getArrayValues('vaultManagers')
+        if(vaultManagers.includes(dependencies.get(contractNames.Vaults.Theseus.GmxCallback))){
+            console.log('GMXCallback is already added as vault manager')
+            return
+        }
         const propertyNames= ['array:vaultManagers']
         const propertyValues = [dependencies.get(contractNames.Vaults.Theseus.GmxCallback)]
         const functionName = 'setVaultManagers'

@@ -15,7 +15,7 @@ const deploy: DeployFunction = async (hre) => {
     const theseusVaultDeploymentAddress = (await hre.deployments.get(contractNames.Vaults.Theseus.Vault)).address
     const gmxPluginDeploymentAddress = (await hre.deployments.get(contractNames.Vaults.Theseus.GmxPlugin)).address
 
-    const constructorArgs = [theseusVaultDeploymentAddress, gmxPluginDeploymentAddress]
+    const constructorArgs = [theseusVaultDeploymentAddress, gmxPluginDeploymentAddress, (networkConfig?.theseusVaultInfo?.vaultPlugins?.get(pluginNames.gmx.name) as gmxPluginInfo)?.vaultInfo?.roleStoreAddress!]
     const deployer = new ContractUtils(hre, contractName, constructorArgs, false)
 
     await deployer.deployAndVerifyContract()

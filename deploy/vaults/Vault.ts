@@ -10,15 +10,16 @@ const deploy: DeployFunction = async (hre) => {
 
     const networkConfig = networkConfigs.get(hre.network.name)
 
-    const TokenPriceConsumerAddress = (await hre.deployments.get(contractNames.Vaults.TokenPriceConsumer )).address
+    const TokenPriceConsumerAddress = (await hre.deployments.get(contractNames.Vaults.TokenPriceConsumer)).address
+    const MultiCallVaultMasterAddress = (await hre.deployments.get(contractNames.Vaults.Theseus.MultiCallVaultMaster)).address
 
-    const constructorArgs = [networkConfig?.theseusVaultInfo?.vaultMasterAddress,networkConfig?.theseusVaultInfo?.vaultAdminAddress,TokenPriceConsumerAddress, networkConfig?.theseusVaultInfo?.treasuryAddress ]
+    const constructorArgs = [MultiCallVaultMasterAddress, networkConfig?.theseusVaultInfo?.vaultAdminAddress,TokenPriceConsumerAddress, networkConfig?.theseusVaultInfo?.treasuryAddress ]
     const deployer = new ContractUtils(hre, contractName, constructorArgs, false)
 
     await deployer.deployAndVerifyContract()
 }
 
 deploy.tags = [contractName]
-deploy.dependencies = [ contractNames.Vaults.TokenPriceConsumer ]
+deploy.dependencies = [ contractNames.Vaults.TokenPriceConsumer, contractNames.Vaults.Theseus.MultiCallVaultMaster ]
 
 export default deploy

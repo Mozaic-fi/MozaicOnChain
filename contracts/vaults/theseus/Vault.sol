@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
 
@@ -29,8 +28,8 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     // A constant representing the denominator for basis points (BP). Used for percentage calculations.
     uint256 public constant BP_DENOMINATOR = 1e4;
 
-    // A constant representing the maximum fee percentage allowed (1000 basis points or 10% in this case).
-    uint256 public constant MAX_FEE = 1e3;
+    // A constant representing the maximum fee percentage allowed (2000 basis points or 20% in this case).
+    uint256 public constant MAX_FEE = 2e3;
 
     // The Address of lifi contract
     address public constant LIFI_CONTRACT = 0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE;
@@ -42,8 +41,8 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     }
     
     /* ========== STATE VARIABLES ========== */
-    // Stores the address of the master contract.
-    address public master;
+    // Stores the address of the multicall master Contract contract. 
+    address public masterContract;
 
     // Stores the address of the contract admin.
     address public admin;
@@ -134,9 +133,9 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
 
 
     /* ========== MODIFIERS ========== */
-    // Modifier allowing only the master contract to execute the function.
+    // Modifier allowing only the masterContract contract to execute the function.
     modifier onlyMaster() {
-        require(msg.sender == master, "Vault: caller must be master");
+        require(msg.sender == masterContract, "Vault: caller must be masterContract");
         _;
     }
 
@@ -180,7 +179,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         require(_tokenPriceConsumer != address(0), "Vault: Invalid Address");
         require(_treasury != address(0), "Vault: Invalid Address");
 
-        master = _master;
+        masterContract = _master;
         tokenPriceConsumer = _tokenPriceConsumer;
         treasury = _treasury;
         admin = _admin;
@@ -190,18 +189,18 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         lifiReceiverWhiteList[treasury] = lifiWhiteListReceiver(block.chainid, true);
     }
 
-    // Allows the owner to set a new master address for the Vault.
+    // Allows the owner to set a new masterContract address for the Vault.
     function setMaster(address _newMaster) external onlyOwner {
-        // Ensure that the new master address is valid.
+        // Ensure that the new masterContract address is valid.
         require(_newMaster != address(0), "Vault: Invalid Address");
 
-        // Store the current master address before updating.
-        address _oldMaster = master;
+        // Store the current masterContract address before updating.
+        address _oldMaster = masterContract;
 
-        // Update the master address to the new value.
-        master = _newMaster;
+        // Update the masterContract address to the new value.
+        masterContract = _newMaster;
 
-        // Emit an event to log the master address update.
+        // Emit an event to log the masterContract address update.
         emit MasterUpdated(_oldMaster, _newMaster);
     }
 
@@ -253,7 +252,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         emit SetLifiReceiverWhiteList(_receiver, _chaindId, _status);
     }
 
-    // Allows the master contract to select a plugin and pool.
+    // Allows the masterContract contract to select a plugin and pool.
     function selectPluginAndPool(uint8 _pluginId, uint8 _poolId) onlyAdmin public {
         // Set the selectedPluginId and selectedPoolId to the provided values.
         selectedPluginId = _pluginId;
@@ -275,7 +274,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
 
 
     // Allows the owner to add a new accepted token.
-    function addAcceptedToken(address _token) external onlyOwner {
+    function addAcceptedToken(address _token) internal {
         // Check if the token does not already exist in the accepted tokens mapping.
         if (acceptedTokenMap[_token] == false) {
             // Set the token as accepted, add it to the acceptedTokens array, and emit an event.
@@ -285,6 +284,12 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         } else {
             // Revert if the token already exists in the accepted tokens.
             revert("Vault: Token already exists.");
+        }
+    }
+
+    function addAcceptedTokens(address[] memory _tokens) external onlyOwner {
+        for(uint256 i = 0; i < _tokens.length; i++) {
+            addAcceptedToken(_tokens[i]);
         }
     }
 
@@ -308,7 +313,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     }
 
     // Allows the owner to add a new deposit allowed token.
-    function addDepositAllowedToken(address _token) external onlyOwner {
+    function addDepositAllowedToken(address _token) internal {
         // Check if the token does not already exist in the deposit allowed tokens mapping.
         if (depositAllowedTokenMap[_token] == false) {
             // Set the token as allowed for deposit, add it to the depositAllowedTokens array, and emit an event.
@@ -318,6 +323,12 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         } else {
             // Revert if the token already exists in the deposit allowed tokens.
             revert("Vault: Token already exists.");
+        }
+    }
+
+    function addDepositAllowedTokens(address[] memory _tokens) external onlyOwner {
+        for(uint256 i = 0; i < _tokens.length; i++) {
+            addDepositAllowedToken(_tokens[i]);
         }
     }
 
@@ -490,7 +501,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     }
 
     // Function to add a withdrawal request for a specified LP token amount from a selected pool using a specified plugin.
-    function addWithdrawalRequest(uint256 _lpAmount, uint8 _pluginId, uint8 _poolId, address _receiver, bytes memory payload) external payable whenNotPaused nonReentrant{
+    function addWithdrawalRequest(uint256 _lpAmount, uint8 _pluginId, uint8 _poolId, address _receiver, bytes memory payload) external payable nonReentrant whenNotPaused{
         // Ensure that the vault is not locked before processing withdrawal requests.
         require(getVaultStatus() == true, "Vault: Vault is locked");
 
@@ -566,8 +577,8 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     
     /* ========== MASTER FUNCTIONS ========== */
     
-    // Allows the master contract to execute actions on a specified plugin.
-    function execute(uint8 _pluginId, IPlugin.ActionType _actionType, bytes memory _payload) public onlyMaster nonReentrant whenNotPaused{
+    // Allows the masterContract contract to execute actions on a specified plugin.
+    function execute(uint8 _pluginId, IPlugin.ActionType _actionType, bytes memory _payload) public onlyMaster whenNotPaused {
         // Ensure that the specified plugin exists.
         require(pluginIdToIndex[_pluginId] != 0, "Plugin with this ID does not exist");
 
@@ -599,8 +610,8 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         emit Execute(_pluginId, _actionType, _payload);
     }
 
-    // Allows the master contract to approve tokens for a specified plugin based on the provided payload.
-    function approveTokens(uint8 _pluginId, address[] memory _tokens, uint256[] memory _amounts) external onlyMaster nonReentrant whenNotPaused {
+    // Allows the masterContract contract to approve tokens for a specified plugin based on the provided payload.
+    function approveTokens(uint8 _pluginId, address[] memory _tokens, uint256[] memory _amounts) external onlyMaster whenNotPaused {
         // Ensure that the specified plugin exists.
         require(pluginIdToIndex[_pluginId] != 0, "Plugin with this ID does not exist");
 
@@ -652,7 +663,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     }
 
     // Withdraws protocol fees stored in the vault for a specific token.
-    function withdrawProtocolFee(address _token) external onlyMaster nonReentrant whenNotPaused {
+    function withdrawProtocolFee(address _token) external onlyAdmin whenNotPaused {
         require(isAcceptedToken(_token), "Vault: Invalid token");
 
         // Calculate the token amount from the protocol fee in the vault
@@ -677,7 +688,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     }
 
     // Transfers the execution fee to the specified plugin.
-    function transferExecutionFee(uint8 _pluginId, uint256 _amount) external onlyMaster nonReentrant whenNotPaused {
+    function transferExecutionFee(uint8 _pluginId, uint256 _amount) external onlyMaster whenNotPaused {
         // Retrieve information about the specified plugin
         Plugin memory plugin = getPlugin(_pluginId);
         
@@ -697,7 +708,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         uint256 _value,
         bool _bridge,
         bytes calldata _data
-    ) external onlyMaster nonReentrant {
+    ) payable external onlyMaster whenNotPaused {
 
         if(_bridge) {
             ( , , address receiver, , uint256 destinationChainId, , ) = ICalldataVerificationFacet(LIFI_CONTRACT).extractMainParameters(_data);
@@ -854,7 +865,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
         }
 
         // Retrieve the token and price consumer decimals.
-        uint256 tokenDecimals = IERC20Metadata(_tokenAddress).decimals();
+        uint256 tokenDecimals = TokenPriceConsumer(tokenPriceConsumer).getTokenDecimal(_tokenAddress);
         uint256 priceConsumerDecimals = TokenPriceConsumer(tokenPriceConsumer).decimals(_tokenAddress);
 
         // Retrieve the token price from the price consumer.
@@ -866,7 +877,7 @@ contract Vault is Ownable, ERC20, ERC20Pausable, ReentrancyGuard {
     // Calculate the token amount corresponding to a given USD value based on token price and decimals.
     function calculateTokenAmountFromUsd(address _tokenAddress, uint256 _tokenValueUsd) public view returns (uint256) {
         // Retrieve the token and price consumer decimals.
-        uint256 tokenDecimals = IERC20Metadata(_tokenAddress).decimals();
+        uint256 tokenDecimals = TokenPriceConsumer(tokenPriceConsumer).getTokenDecimal(_tokenAddress);
         uint256 priceConsumerDecimals = TokenPriceConsumer(tokenPriceConsumer).decimals(_tokenAddress);
 
         // Convert the USD value to the desired ASSET_DECIMALS.

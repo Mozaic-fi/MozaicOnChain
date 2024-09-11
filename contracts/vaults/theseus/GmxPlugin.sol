@@ -64,6 +64,22 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         uint256 poolValue;
     }
 
+    struct PoolTokenInformation {
+        uint8 poolId;
+        address longToken;
+        address shortToken;
+        address marketToken;
+        uint256 longTokenBalance;
+        uint256 shortTokenBalance;
+        uint256 marketTokenBalance;
+        uint256 longTokenDecimals;
+        uint256 shortTokenDecimals;
+        uint256 marketTokenDecimals;
+        uint256 longTokenValue;
+        uint256 shortTokenValue;
+        uint256 marketTokenValue;
+    }
+
     /* ========== STATE VARIABLES ========== */
     // Address of the local vault associated with the smart contract.
     address public localVault;
@@ -90,22 +106,19 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     address public tokenPriceConsumer;
 
     address[] public rewardTokens;
-    
-    mapping(address => uint8) public tokenDecimalList;
 
     /* ========== EVENTS ========== */
-    event SetMaster(address master);
     event SetTreasury(address payable treasury);
     event SetRouterConfig(address _exchangeRouter, address _router, address _depositVault, address _withdrawVault, address _orderVault, address _reader);
     event SetGmxParams(address _uiFeeReceiver, address _callbackContract, uint256 _callbackGasLimit, uint256 _executionFee, bool _shouldUnwrapNativeToken, bytes32 _pnlFactorType);
     event SetTokenPriceConsumer(address _tokenPriceConsumer);
-    event SetTokenDecimals(address _token, uint8 _decimals);
     event SetRewardTokens(address[] _rewardTokens);
     event PoolAdded(uint8 poolId);
     event PoolRemoved(uint8 poolId);
     event Execute(ActionType _actionType, bytes _payload);
     event TransferAllTokensToVault();
     event CancelAction(uint8 _actionType, bytes32 _key);
+    event ClaimFromGMX(ActionType _actionType,  uint256[] claimedAmounts);
     /* ========== MODIFIERS ========== */
 
     // Modifier allowing only the local vault to execute the function.
@@ -196,20 +209,6 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         emit SetGmxParams(_uiFeeReceiver, _callbackContract, _callbackGasLimit, _executionFee, _shouldUnwrapNativeToken, _pnlFactorType);
     }
 
-    function setTokenDecimals(address _token, uint8 _decimals) public onlyOwner {
-        tokenDecimalList[_token] = _decimals;
-
-        emit SetTokenDecimals(_token, _decimals);
-    }
-
-
-    function setTokenDecimalsBatch(address[] calldata _tokens, uint8[] calldata _newDecimals) external onlyOwner {
-        require(_tokens.length == _newDecimals.length, "Arrays must have the same length");
-        for (uint256 i = 0; i < _tokens.length; i++) {
-            setTokenDecimals(_tokens[i], _newDecimals[i]);
-        }
-    }
-
     // Function allowing the owner to set the token price consumer contract address.
     function setTokenPriceConsumer(address _tokenPriceConsumer) public onlyOwner {
         // Ensure the provided token price consumer address is valid.
@@ -234,7 +233,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         address _longToken,
         address _shortToken,
         address _marketToken
-    ) external onlyOwner {
+    ) internal {
         // Ensure the pool with the given poolId does not already exist.
         require(_poolId != 0, "GMX: Invalid Pool Id");
         require(!poolExistsMap[_poolId], "GMX: Pool with this poolId already exists");
@@ -257,6 +256,16 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
 
         // Emit an event indicating the addition of a new pool.
         emit PoolAdded(_poolId);
+    }
+
+    function addPools(
+        PoolConfig[] memory _pools
+    ) external onlyOwner {
+    
+
+        for (uint256 i = 0; i < _pools.length; i++) {
+            addPool(_pools[i].poolId, _pools[i].indexToken, _pools[i].longToken, _pools[i].shortToken, _pools[i].marketToken);
+        }
     }
 
     // Function allowing the owner to remove an existing pool.
@@ -306,9 +315,30 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
             cancelAction(_payload);
         } else if (_actionType == ActionType.ClaimRewards) {
             claimRewards();
+        } else {
+            claimFromGMX(_actionType, _payload);
         }
 
         emit Execute(_actionType, _payload);
+    }
+
+    function claimFromGMX(ActionType _actionType, bytes calldata _payload) internal {
+        (address[] memory markets, address[] memory tokens, uint256[] memory timeKeys, uint256 amount) = abi.decode(_payload, (address[], address[], uint256[], uint256));
+        uint256[] memory claimedAmounts = new uint256[](markets.length);
+        IExchangeRouter _exchangeRouter = IExchangeRouter(routerConfig.exchangeRouter);
+        if (_actionType == ActionType.ClaimUiFees ) {
+            claimedAmounts = _exchangeRouter.claimUiFees{value: amount}(markets, tokens, localVault);
+            emit ClaimFromGMX(_actionType, claimedAmounts);
+        } else if (_actionType == ActionType.ClaimAffiliateRewards) {
+            claimedAmounts = _exchangeRouter.claimAffiliateRewards{value: amount}(markets, tokens, localVault);
+            emit ClaimFromGMX(_actionType, claimedAmounts);
+        } else if (_actionType == ActionType.ClaimCollateral) {
+            claimedAmounts = _exchangeRouter.claimCollateral{value: amount}(markets, tokens, timeKeys, localVault);
+            emit ClaimFromGMX(_actionType, claimedAmounts);
+        } else if (_actionType == ActionType.ClaimFundingFees) {
+            claimedAmounts = _exchangeRouter.claimFundingFees{value: amount}(markets, tokens, localVault);
+            emit ClaimFromGMX(_actionType, claimedAmounts);
+        }
     }
 
     // Transfers all ERC-20 tokens held by this contract to a designated vault.
@@ -332,6 +362,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
     // Function to calculate the total liquidity (totalAsset) of the vault, considering balances in unique tokens and pools.
     function getTotalLiquidity() public view returns (uint256 totalAsset) {
         // Iterate over uniqueTokens and calculate totalAsset based on token balances.
+        totalAsset = 0;
         for (uint256 i = 0; i < uniqueTokens.length; ++i) {
             address tokenAddress = uniqueTokens[i];
             uint256 tokenBalance = IERC20(tokenAddress).balanceOf(address(this));
@@ -399,7 +430,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
 
     // Function to calculate the USD value of a given token amount based on its price and decimals.
     function calculateTokenValueInUsd(address _tokenAddress, uint256 _tokenAmount) public view returns (uint256) {
-        uint256 tokenDecimals = IERC20Metadata(_tokenAddress).decimals();
+        uint256 tokenDecimals = TokenPriceConsumer(tokenPriceConsumer).getTokenDecimal(_tokenAddress);
         uint256 priceConsumerDecimals = TokenPriceConsumer(tokenPriceConsumer).decimals(_tokenAddress);
 
         // Get the token price from the TokenPriceConsumer.
@@ -797,12 +828,7 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         // Create an instance of TokenPriceConsumer for fetching token prices
         TokenPriceConsumer priceConsumer = TokenPriceConsumer(tokenPriceConsumer);
 
-        uint256 tokenDecimal;
-        if(isContract(token)) {
-            tokenDecimal = IERC20Metadata(token).decimals();
-        } else {
-            tokenDecimal = tokenDecimalList[token];        
-        }
+        uint256 tokenDecimal = priceConsumer.getTokenDecimal(token);
         
         IPrice.Props memory tokenPrice = IPrice.Props(
             convertDecimals(priceConsumer.getTokenPrice(token), priceConsumer.decimals(token), MARKET_TOKEN_PRICE_DECIMALS - tokenDecimal),
@@ -883,22 +909,48 @@ contract GmxPlugin is Ownable, IPlugin, ReentrancyGuard {
         require(success, "Vault: Failed to send Ether");
     }
 
-    receive() external payable {}
-    fallback() external payable {}
 
-    // Public view function to determine whether the given address is a contract or an externally-owned account (EOA).
-    // It uses the assembly block to efficiently check the size of the code at the specified address.
-    // If the size of the code (extcodesize) is greater than 0, the address is considered a contract.
-    // Returns true if the address is a contract and false if it is an externally-owned account.
-    function isContract(address _addr) public view returns (bool) {
-        uint32 size;
-
-        // Use assembly to get the size of the code at the specified address.
-        assembly {
-            size := extcodesize(_addr)
+    function getMarketInfo(uint8 _poolId) public view returns (PoolTokenInformation memory) {
+        PoolTokenInformation memory poolTokenInfo;
+         if (!poolExistsMap[_poolId]) {
+            // Return an empty array if the pool does not exist
+            return poolTokenInfo;
         }
 
-        // Return true if the size of the code is greater than 0, indicating a contract.
-        return (size > 0);
+        // Retrieve the index of the pool in the pools array
+        uint256 index = getPoolIndexById(_poolId);
+        PoolConfig memory pool = pools[index];
+        poolTokenInfo.poolId = _poolId;
+
+        poolTokenInfo.marketToken = pool.marketToken;
+        poolTokenInfo.longToken = pool.longToken;
+        poolTokenInfo.shortToken = pool.shortToken;
+
+        poolTokenInfo.marketTokenBalance = IERC20(pool.marketToken).balanceOf(address(this));
+        poolTokenInfo.longTokenBalance = IERC20(pool.longToken).balanceOf(address(this));
+        poolTokenInfo.shortTokenBalance = IERC20(pool.shortToken).balanceOf(address(this));
+
+        poolTokenInfo.marketTokenDecimals = IERC20Metadata(pool.marketToken).decimals();
+        poolTokenInfo.longTokenDecimals = TokenPriceConsumer(tokenPriceConsumer).getTokenDecimal(pool.longToken);
+        poolTokenInfo.shortTokenDecimals = TokenPriceConsumer(tokenPriceConsumer).getTokenDecimal(pool.shortToken);
+
+        int256 marketTokenPrice = getPoolTokenPrice(pool.poolId, true);
+
+        poolTokenInfo.marketTokenValue = marketTokenPrice <= 0 ? 0 : convertDecimals(poolTokenInfo.marketTokenBalance * uint256(marketTokenPrice), poolTokenInfo.marketTokenDecimals + MARKET_TOKEN_PRICE_DECIMALS, ASSET_DECIMALS);
+        poolTokenInfo.longTokenValue = calculateTokenValueInUsd(pool.longToken, poolTokenInfo.longTokenBalance);
+        poolTokenInfo.shortTokenValue = calculateTokenValueInUsd(pool.shortToken, poolTokenInfo.shortTokenBalance);
+
+        return poolTokenInfo;
     }
+
+    function getMarketsInfo() public view returns (PoolTokenInformation[] memory){
+        PoolTokenInformation[] memory poolTokenInfo = new PoolTokenInformation[](pools.length);
+        for (uint256 i = 0; i < pools.length; i++) {
+            poolTokenInfo[i] = getMarketInfo(pools[i].poolId);
+        }
+        return poolTokenInfo;
+    }
+
+    receive() external payable {}
+    fallback() external payable {}
 }
