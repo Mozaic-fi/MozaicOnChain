@@ -4,10 +4,12 @@ import { tokenSymbols } from '../../utils/names/tokenSymbols';
 
 import hre from 'hardhat';
 import { gmxPluginInfo, gmxPool } from '../../utils/vaultPlugins/gmxVaultPlugins';
+import { all } from 'axios';
 
 async function main() {
     const pools = await getContractPools()
-    console.log(pools.map(p => p.marketToken.address));
+    //console.log(pools.map(pool => `${pool.poolId}, ${pool.indexToken.symbol}, ${pool.longToken.symbol}, ${pool.shortToken.symbol}, ${pool.marketToken.address}`));
+    comparePools(getConfigPools(), pools);
 }
 
 main()
@@ -31,10 +33,25 @@ function comparePools(allpools: gmxPool[], contractPools: gmxPool[]) {
             && p.longToken.address === pool.longToken.address
             && p.shortToken.address === pool.shortToken.address
             && p.marketToken.address === pool.marketToken.address)) {
-            console.log('Pool found:', [pool.poolId, pool.indexToken.symbol, pool.longToken.symbol, pool.shortToken.symbol, pool.marketToken.address]);
+            const poolInfo = {
+                poolId: allpools.find(p => p.marketToken.address === pool.marketToken.address)!.poolId,
+                indexToken: `${pool.indexToken.symbol}: ${pool.indexToken.address}`,
+                longToken: `${pool.longToken.symbol}: ${pool.longToken.address}`,
+                shortToken: `${pool.shortToken.symbol}: ${pool.shortToken.address}`,
+                GMTokenAddress: pool.marketToken.address
+            }
+            console.log(poolInfo)
+            //console.log('Pool found:', [pool.poolId, pool.indexToken.symbol, pool.longToken.symbol, pool.shortToken.symbol, pool.marketToken.address]);
         }
         else {
-            console.error('Pool not found:', [pool.poolId, pool.indexToken.symbol, pool.longToken.symbol, pool.shortToken.symbol, pool.marketToken.address]);
+            const poolInfo = {
+                indexToken: `${pool.indexToken.symbol}: ${pool.indexToken.address}`,
+                longToken: `${pool.longToken.symbol}: ${pool.longToken.address}`,
+                shortToken: `${pool.shortToken.symbol}: ${pool.shortToken.address}`,
+                GMTokenAddress: pool.marketToken.address
+            }
+            //console.log(poolInfo)
+            //console.error('Pool not found:', `${pool.poolId}, ${pool.indexToken.symbol}, ${pool.longToken.symbol}, ${pool.shortToken.symbol}, ${pool.marketToken.address}`);
         }
     }
 }
